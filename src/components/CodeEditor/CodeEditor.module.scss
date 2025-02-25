@@ -1,0 +1,237 @@
+// .wrapper {
+//   display: flex;
+//   height: 95vh;
+//   // gap: 20px;
+//   // padding: 20px;
+// }
+.toggleBtn {
+  background-color: #4C5770; // Темно-синій
+  color: #fff;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background-color: #3a475e;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+
+// .lessonInfo h2 {
+//   font-size: 20px;
+//   margin-bottom: 10px;
+// }
+
+// .lessonInfo h3 {
+//   margin-top: 15px;
+//   font-size: 18px;
+// }
+
+// .lessonInfo ul {
+//   padding-left: 20px;
+// }
+
+// .lessonInfo {
+//   width: 0%;
+//   background: #ffff;
+//   color: #222433;
+//   border-radius: 10px;
+//   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+//   overflow-y: auto;
+//   transition: width 0.3s ease-in-out;
+// }
+
+// .lessonInfo.show {
+//   width: 30%; // або будь-який інший відсоток, який тобі підходить
+// }
+
+.editorContainer {
+  flex-grow: 1;
+  transition: width 0.3s ease-in-out;
+}
+
+
+.container {
+  display: flex;
+  height: 84%;
+  background: linear-gradient(135deg, #1e1e2e, #282c34, #3a3f51);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  overflow: hidden;
+}
+.editorView {
+  width: 50%;
+}
+.output {
+  background: #ffffff;
+  width: 100%;
+  height: 100%;
+  // height: calc(100% - 40px);
+}
+
+.browserWindow {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: #f8f8f8;
+}
+
+.addressBar {
+  width: 100%;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: #e0e0e0;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+}
+
+.addressBar input {
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+}
+
+// .output {
+//   width: 100%;
+//   height: calc(100% - 40px); /* Мінус висота address-bar */
+//   border: none;
+// }
+
+.tabs {
+  display: flex;
+  // justify-content: space-between;
+  align-items: center;
+  background: #1e1e2e;
+  backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  border-radius: 10px;
+}
+.bottomBtn {
+  margin: 5% 0px;
+  display: flex;
+  justify-content: space-evenly;
+}
+.neonBtn {
+  position: relative;
+  display: inline-block;
+  padding: 12px 32px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 2px;
+  border: 2px solid #0ff;
+  border-radius: 8px;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.neonBtn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 255, 255, 0.4) 10%,
+    transparent 50%
+  );
+  transition: 0.3s;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.neonBtn:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.neonBtn:hover {
+  box-shadow: 0 0 15px #0ff, 0 0 30px #0ff;
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+}
+
+.neonBtn:active {
+  box-shadow: 0 0 5px #0ff, 0 0 15px #0ff;
+  transform: scale(0.95);
+}
+
+.clearBtn {
+  position: relative;
+  display: inline-block;
+  padding: 12px 32px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 2px;
+  border: 2px solid #f00;
+  border-radius: 8px;
+  text-shadow: 0 0 5px #f00, 0 0 10px #f00;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.clearBtn:hover {
+  box-shadow: 0 0 15px #f00, 0 0 30px #f00;
+  color: #f00;
+  text-shadow: 0 0 10px #f00, 0 0 20px #f00;
+}
+
+.clearBtn:active {
+  box-shadow: 0 0 5px #f00, 0 0 15px #f00;
+  transform: scale(0.95);
+}
+
+.tabButtons {
+  background: transparent;
+  border: none;
+  color: #cfd3dc;
+  font-size: 15px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  font-weight: 500;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.editor {
+  height: 50vh;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
