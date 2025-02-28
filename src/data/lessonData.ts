@@ -1,5 +1,6 @@
-// src/data/lessonsData.ts
-export const lessonsData = [
+import { Lesson } from "../types/lessonTypes";
+
+export const lessonsData: Lesson[] = [
   {
     id: 1,
     title: "Основи HTML",

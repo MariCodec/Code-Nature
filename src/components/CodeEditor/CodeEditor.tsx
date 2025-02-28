@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./CodeEditor.module.scss";
 import Editor from "@monaco-editor/react";
 // import { editor } from "monaco-editor";
@@ -6,6 +6,7 @@ import { useMonaco } from "@monaco-editor/react";
 import { FileNames, Files } from "../../types";
 // import * as monaco from "monaco-editor";
 import Output from "./Output"; // Підключаємо Output
+import { editor } from "monaco-editor";
 // import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 interface CodeEditorProps {
@@ -23,7 +24,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   toggleBtn,
   isVisible,
 }) => {
-  // const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [fileName, setFileName] = useState<FileNames>(FileNames.HTML);
   // const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);]
 
@@ -42,9 +43,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   const monaco = useMonaco(); // Отримуємо об'єкт Monaco
 
+  const formatCode = () => {
+    editorRef.current?.getAction("editor.action.formatDocument")?.run();
+  };
+
   useEffect(() => {
     if (monaco) {
       // Ось тут ми можемо використовувати Monaco API
+
       monaco.editor.defineTheme("myCustomTheme", {
         base: "vs-dark",
         inherit: true,
@@ -65,12 +71,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     }
   }, [monaco]);
 
-  // const onMount = (editor: editor.IStandaloneCodeEditor) => {
-  //   editorRef.current = editor;
+  const onMount = (editor: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
 
-  //   editor.focus();
+    editor.focus();
+  };
 
-  // };
   const files: Files = {
     "script.js": {
       name: "script.js",
@@ -92,6 +98,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   // Оновлюємо редактор при зміні вкладки
   useEffect(() => {
     setValue(files[fileName].value);
+    formatCode();
   }, [fileName]);
 
   // Оновлюємо стан при зміні тексту
@@ -108,6 +115,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     setOutputHtml(htmlCode);
     setOutputCss(cssCode);
     setOutputJs(jsCode);
+    formatCode();
   };
 
   const clearCode = () => {
@@ -117,6 +125,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     setOutputHtml(initialHtml);
     setOutputCss(initialCss);
     setOutputJs(initialJs);
+    if (fileName === FileNames.HTML) setValue(initialHtml);
+    if (fileName === FileNames.STYLE) setValue(initialCss);
+    if (fileName === FileNames.SCRIPT) setValue(initialJs);
   };
 
   return (
@@ -161,12 +172,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
               formatOnPaste: true,
               formatOnType: true,
               wordWrap: "on",
+
               minimap: {
                 enabled: false, // Вимкнути мінімапу
               },
             }}
             value={value}
-            // onMount={onMount}
+            onMount={onMount}
             onChange={handleChange}
           />
           <div className={styles.bottomBtn}>
