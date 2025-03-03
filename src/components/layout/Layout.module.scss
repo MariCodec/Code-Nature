@@ -1,0 +1,49 @@
+$nav-color: rgba(255, 255, 255, 0.6); // Світло-сірий для тексту посилань
+$nav-hover: white;
+
+
+.part2 {
+  text-shadow: 0 0 10px rgba(129, 61, 174, 1), 0 0 20px rgba(129, 61, 174, 0.8);
+  font-family: fantasy;
+  color: white;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 20px 40px;
+  background: #1e1e2e;
+  // position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  // backdrop-filter: blur(10px);
+
+  .logoContainer {
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 50px;
+      height: auto;
+    }
+  }
+
+  .navLinks {
+    display: flex;
+    gap: 20px;
+
+    .navLink {
+      font-size: 1rem;
+      font-weight: 400;
+      color: $nav-color;
+      text-decoration: none;
+      transition: color 0.3s ease-in-out;
+
+      &:hover {
+        color: $nav-hover;
+      }
+    }
+  }
+}

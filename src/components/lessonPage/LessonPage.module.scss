@@ -1,6 +1,6 @@
 .wrapper {
   display: flex;
-  height: 95vh;
+  height: 89vh;
   // gap: 20px;
   // padding: 20px;
 }
@@ -8,8 +8,8 @@
   width: 0%;
   background: #ffff;
   color: #222433;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  // border-radius: 10px;
+  // box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
   transition: width 0.3s ease-in-out;
 }

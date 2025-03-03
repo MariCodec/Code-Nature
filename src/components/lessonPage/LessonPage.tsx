@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { lessonsData } from "../../data/lessonData";
+import { htmlLessons, cssLessons } from "../../data/lessonData";
+
 import CodeEditor from "../CodeEditor/CodeEditor";
 import styles from "./LessonPage.module.scss";
 import { useParams } from "react-router-dom";
@@ -14,7 +15,9 @@ const LessonPage = () => {
   const { id } = useParams<{ id: string }>();
   console.log(id);
 
-  const lesson = lessonsData.find((l) => l.id === Number(id));
+  const lesson =
+    htmlLessons.find((lesson) => lesson.id === id) ||
+    cssLessons.find((lesson) => lesson.id === id);
   //  const lesson = lessonsData[0];
 
   if (!lesson) return <h2>Урок не знайдено</h2>;

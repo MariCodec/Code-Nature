@@ -1,0 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+$color-start: #1a1228; // Темний фіолетовий#, #
+$color-end: #010f25; // Темний синьо-фіолетовий
+$text-glow-1: #1967d2; // Насичений синій → дасть темно-синю тінь
+$text-glow-2: #6a1b9a; // Насичений фіолетовий → дасть глибокий фіолетовий
+$text-glow-3: #c62828; // Яскравий червоний → після розмиття стане бордовим
+$text-glow-4: #8e24aa; // Насичений пурпуровий → дасть темно-пурпурову тінь
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+ font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, $color-start, $color-end);
+  color: white;
+
+h1 .part1 {
+  text-shadow: 0 0 10px rgba(42, 114, 194, 1), 
+               0 0 20px rgba(42, 114, 194, 0.8);
+}
+
+h1 .part2 {
+  text-shadow: 0 0 10px rgba(129, 61, 174, 1), 
+               0 0 20px rgba(129, 61, 174, 0.8);
+                    font-family: fantasy;
+}
+
+h1 .part3 {
+  text-shadow: 0 0 10px rgba(211, 58, 58, 1), 
+               0 0 20px rgba(211, 58, 58, 0.8);
+          
+}
+
+h1 .part4 {
+  text-shadow: 0 0 10px rgba(165, 66, 104, 1), 
+               0 0 20px rgba(165, 66, 104, 0.8);
+               font-family: fantasy;
+}
+
+  p {
+    font-size: 1.2rem;
+    font-weight: 300;
+    max-width: 600px;
+    margin-top: 10px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+
+  .neonButton {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    background: transparent;
+    // border: 2px solid $text-glow-1;
+    // border-radius: 8px;
+    // cursor: pointer;
+    // text-transform: uppercase;
+    // transition: all 0.3s ease-in-out;
+    // box-shadow: 0 0 10px $text-glow-1, 0 0 30px $text-glow-2;
+
+    // &:hover {
+    //   background: $text-glow-1;
+    //   color: black;
+    //   box-shadow: 0 0 20px $text-glow-2, 0 0 40px $text-glow-1;
+    // }
+  }
+}

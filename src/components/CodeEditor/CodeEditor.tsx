@@ -166,7 +166,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       <div className={styles.container}>
         <div className={styles.editorView}>
           <Editor
-            height="85%"
+            height="82%"
             language={files[fileName].language}
             options={{
               formatOnPaste: true,
@@ -187,6 +187,21 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
             </button>
             <button className={styles.clearBtn} onClick={clearCode}>
               Clear Code
+            </button>
+            <button className={styles.formatCodeBtn} onClick={formatCode}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 16l5-5-5-5"></path>
+                <path d="M21 16l-5-5 5-5"></path>
+                <path d="M12 21V3"></path>
+              </svg>
+              Format Code
             </button>
           </div>
         </div>

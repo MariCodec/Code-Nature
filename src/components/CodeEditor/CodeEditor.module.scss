@@ -1,11 +1,5 @@
-// .wrapper {
-//   display: flex;
-//   height: 95vh;
-//   // gap: 20px;
-//   // padding: 20px;
-// }
 .toggleBtn {
-  background-color: #4C5770; // Темно-синій
+  background-color: #4c5770; // Темно-синій
   color: #fff;
   padding: 10px 16px;
   border: none;
@@ -24,46 +18,16 @@
   }
 }
 
-
-// .lessonInfo h2 {
-//   font-size: 20px;
-//   margin-bottom: 10px;
-// }
-
-// .lessonInfo h3 {
-//   margin-top: 15px;
-//   font-size: 18px;
-// }
-
-// .lessonInfo ul {
-//   padding-left: 20px;
-// }
-
-// .lessonInfo {
-//   width: 0%;
-//   background: #ffff;
-//   color: #222433;
-//   border-radius: 10px;
-//   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-//   overflow-y: auto;
-//   transition: width 0.3s ease-in-out;
-// }
-
-// .lessonInfo.show {
-//   width: 30%; // або будь-який інший відсоток, який тобі підходить
-// }
-
 .editorContainer {
   flex-grow: 1;
   transition: width 0.3s ease-in-out;
 }
 
-
 .container {
   display: flex;
-  height: 84%;
+  height: calc(100% - 65px);
   background: linear-gradient(135deg, #1e1e2e, #282c34, #3a3f51);
-  border-radius: 12px;
+box-sizing: border-box;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   padding: 20px;
   overflow: hidden;
@@ -108,12 +72,6 @@
   outline: none;
 }
 
-// .output {
-//   width: 100%;
-//   height: calc(100% - 40px); /* Мінус висота address-bar */
-//   border: none;
-// }
-
 .tabs {
   display: flex;
   // justify-content: space-between;
@@ -121,7 +79,7 @@
   background: #1e1e2e;
   backdrop-filter: blur(10px);
   padding: 12px 20px;
-  border-radius: 10px;
+  // border-radius: 10px;
 }
 .bottomBtn {
   margin: 5% 0px;
@@ -234,4 +192,31 @@
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.formatCodeBtn {
+  background-color: #4c5770; // Темно-синій фон
+  color: #ffffff; // Білий текст
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px; // Відстань між текстом і іконкою
+
+  &:hover {
+    background-color: #384256; // Трохи темніший при наведенні
+  }
+
+  &:active {
+    transform: scale(0.95); // Легке зменшення при кліку
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
