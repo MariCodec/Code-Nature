@@ -21,7 +21,7 @@ export const htmlLessons: Lesson[] = [
 ];
 export const cssLessons: Lesson[] = [
   {
-    id: 1,
+    id: "1",
     title: "Основи HTML",
     description: "Вивчимо базові теги HTML.",
     task: "Створіть заголовок <h1> та абзац <p>.",
@@ -30,7 +30,7 @@ export const cssLessons: Lesson[] = [
     initialJs: `console.log("Hello, JavaScript!");`,
   },
   {
-    id: 2,
+    id: "2",
     title: "HTML Списки",
     description: "Дізнаємось, як створювати списки.",
     task: "Створіть нумерований та ненумерований список.",

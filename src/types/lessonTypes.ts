@@ -1,5 +1,5 @@
 export interface Lesson {
-  id: number | string;
+  id:  string;
   title: string;
   description: string;
   task: string;
