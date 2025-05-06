@@ -3,7 +3,8 @@ import "./App.scss";
 import LessonPage from "./components/lessonPage/LessonPage";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
-import HtmlLessons from "./components/htmlLessons/HtmlLessons";
+
+import LessonsList from "./components/htmlLessons/LessonsList";
 
 function App() {
   return (
@@ -11,10 +12,12 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/html" element={<HtmlLessons />} />
-            {/* Окремий HTML урок */}
-            <Route path="/html/:id" element={<LessonPage />} />
+            <Route index element={<Home />} />
+            {/* <Route path="html" element={<HtmlLessons />} /> */}
+            {/* <Route path="css" element={<CssLessons />} />  */}
+            <Route path=":category" element={<LessonsList />} />
+            {/* Універсальний маршрут для уроків HTML і CSS */}
+            <Route path=":category/:id" element={<LessonPage />} />
           </Route>
         </Routes>
       </Router>

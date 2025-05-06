@@ -4,10 +4,10 @@ import styles from "./CodeEditor.module.scss";
 interface OutputProps {
   html: string;
   css: string;
-  js: string;
+  // js: string;
 }
 
-const Output: React.FC<OutputProps> = ({ html, css, js }) => {
+const Output: React.FC<OutputProps> = ({ html, css }) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
@@ -22,14 +22,14 @@ const Output: React.FC<OutputProps> = ({ html, css, js }) => {
             </head>
             <body>
               ${html}
-              <script>${js}</script>
+      
             </body>
           </html>
         `);
         document.close();
       }
     }
-  }, [html, css, js]);
+  }, [html, css]);
 
   return (
     <div className={styles.browserWindow}>

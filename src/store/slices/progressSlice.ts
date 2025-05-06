@@ -1,15 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface ProgressState {
-  completedLessons: string[]; // список завершених уроків
-  currentLessonId: string | null; // поточний урок
+  completedLessons: string[];
+  currentLessonId: string | null;
+  taskStatus: { [taskId: string]: boolean }; // статус по кожному завданню
 }
 
 const initialState: ProgressState = {
-  completedLessons: [], // початковий стан — порожній список
-  currentLessonId: null, // без поточного уроку на початку
+  completedLessons: [],
+  currentLessonId: null,
+  taskStatus: {}, // { "task-1": true, "task-2": false }
 };
-
 const progressSlice = createSlice({
   name: "progress",
   initialState,
@@ -22,13 +23,23 @@ const progressSlice = createSlice({
         state.completedLessons.push(action.payload);
       }
     },
+    markTaskAsCompleted: (state, action: PayloadAction<string>) => {
+      state.taskStatus[action.payload] = true;
+    },
     resetProgress: (state) => {
       state.completedLessons = [];
       state.currentLessonId = null;
+      state.taskStatus = {};
     },
   },
 });
 
-export const { setCurrentLesson, markLessonAsCompleted, resetProgress } =
-  progressSlice.actions;
+export const {
+  setCurrentLesson,
+  markLessonAsCompleted,
+  markTaskAsCompleted,
+  resetProgress,
+} = progressSlice.actions;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const selectTaskStatus = (state: any) => state.progress.taskStatus;
 export default progressSlice.reducer;

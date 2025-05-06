@@ -7,49 +7,65 @@ import { FileNames, Files } from "../../types";
 // import * as monaco from "monaco-editor";
 import Output from "./Output"; // Підключаємо Output
 import { editor } from "monaco-editor";
+import LessonNavigation from "../lessonNavigation/LessonNavigation";
+
 // import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 interface CodeEditorProps {
   initialHtml: string;
   initialCss: string;
-  initialJs: string;
+  // initialJs: string;
   toggleBtn: () => void;
   isVisible: boolean;
+  currentLessonId: string;
+  setUserCode: (code: { html: string; css: string }) => void;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
   initialHtml,
   initialCss,
-  initialJs,
+  // initialJs,
   toggleBtn,
   isVisible,
+  currentLessonId,
+  setUserCode,
 }) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [fileName, setFileName] = useState<FileNames>(FileNames.HTML);
-  // const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);]
 
   // Поточні значення в редакторі
   const [htmlCode, setHtmlCode] = useState<string>(initialHtml);
   const [cssCode, setCssCode] = useState<string>(initialCss);
   console.log(initialCss);
 
-  const [jsCode, setJsCode] = useState<string>(initialJs);
+  // const [jsCode, setJsCode] = useState<string>(initialJs);
   const [value, setValue] = useState<string>(initialHtml);
 
   // Збережені значення для Output (тільки після натискання "Run Code")
   const [outputHtml, setOutputHtml] = useState<string>(initialHtml);
   const [outputCss, setOutputCss] = useState<string>(initialCss);
-  const [outputJs, setOutputJs] = useState<string>(initialJs);
+  // const [outputJs, setOutputJs] = useState<string>(initialJs);
 
   const monaco = useMonaco(); // Отримуємо об'єкт Monaco
 
   const formatCode = () => {
     editorRef.current?.getAction("editor.action.formatDocument")?.run();
   };
-
+  useEffect(() => {
+    setHtmlCode(initialHtml);
+    setCssCode(initialCss);
+    setUserCode({ html: initialHtml, css: initialCss });
+    setOutputHtml(initialHtml);
+    setOutputCss(initialCss);
+    if (fileName === FileNames.HTML) {
+      setValue(initialHtml);
+    } else if (fileName === FileNames.STYLE) {
+      setValue(initialCss);
+    }
+  }, [initialHtml, initialCss, fileName]);
   useEffect(() => {
     if (monaco) {
-      // Ось тут ми можемо використовувати Monaco API
+      const savedTheme = localStorage.getItem("editorTheme") || "myCustomTheme";
 
       monaco.editor.defineTheme("myCustomTheme", {
         base: "vs-dark",
@@ -61,13 +77,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         colors: {
           "editor.background": "#1e1e2e",
           "editor.foreground": "#ffffff",
-          // "editor.lineHighlightBackground": "#333333",
           "editor.selectionBackground": "#264f78",
           "editorCursor.foreground": "#ffffff",
         },
       });
 
-      monaco.editor.setTheme("myCustomTheme");
+      monaco.editor.setTheme(savedTheme);
     }
   }, [monaco]);
 
@@ -78,11 +93,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const files: Files = {
-    "script.js": {
-      name: "script.js",
-      language: "javascript",
-      value: jsCode,
-    },
+    // "script.js": {
+    //   name: "script.js",
+    //   language: "javascript",
+    //   value: jsCode,
+    // },
     "style.css": {
       name: "style.css",
       language: "css",
@@ -97,9 +112,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   // Оновлюємо редактор при зміні вкладки
   useEffect(() => {
-    setValue(files[fileName].value);
+    if (fileName === FileNames.HTML) setValue(htmlCode);
+    if (fileName === FileNames.STYLE) setValue(cssCode);
     formatCode();
-  }, [fileName]);
+  }, [fileName, htmlCode, cssCode]);
 
   // Оновлюємо стан при зміні тексту
   const handleChange = (newValue: string | undefined) => {
@@ -107,27 +123,32 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
     if (fileName === FileNames.HTML) setHtmlCode(newValue || "");
     if (fileName === FileNames.STYLE) setCssCode(newValue || "");
-    if (fileName === FileNames.SCRIPT) setJsCode(newValue || "");
+    // if (fileName === FileNames.SCRIPT) setJsCode(newValue || "");
   };
 
   // Функція для оновлення Output після натискання "Run Code"
   const handleRunCode = () => {
     setOutputHtml(htmlCode);
     setOutputCss(cssCode);
-    setOutputJs(jsCode);
-    formatCode();
+    // setOutputJs(jsCode);
+
+    setUserCode({
+      html: htmlCode,
+      css: cssCode,
+    });
+    // formatCode();
   };
 
   const clearCode = () => {
     setHtmlCode(initialHtml);
     setCssCode(initialCss);
-    setJsCode(initialJs);
+    // setJsCode(initialJs);
     setOutputHtml(initialHtml);
     setOutputCss(initialCss);
-    setOutputJs(initialJs);
+    // setOutputJs(initialJs);
     if (fileName === FileNames.HTML) setValue(initialHtml);
     if (fileName === FileNames.STYLE) setValue(initialCss);
-    if (fileName === FileNames.SCRIPT) setValue(initialJs);
+    // if (fileName === FileNames.SCRIPT) setValue(initialJs);
   };
 
   return (
@@ -140,13 +161,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         >
           {isVisible ? "Приховати деталі уроку" : "Деталі уроку"}
         </button>
-        <button
+        {/* <button
           className={styles.tabButtons}
           disabled={fileName === FileNames.SCRIPT}
           onClick={() => setFileName(FileNames.SCRIPT)}
         >
           script.js
-        </button>
+        </button> */}
         <button
           className={styles.tabButtons}
           disabled={fileName === FileNames.STYLE}
@@ -161,6 +182,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         >
           index.html
         </button>
+        <LessonNavigation currentLessonId={currentLessonId} />
       </div>
 
       <div className={styles.container}>
@@ -205,7 +227,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
             </button>
           </div>
         </div>
-        <Output html={outputHtml} css={outputCss} js={outputJs} />
+        <Output
+          html={outputHtml}
+          css={outputCss}
+          // js={outputJs}
+        />
       </div>
     </div>
   );

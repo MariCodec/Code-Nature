@@ -1,5 +1,5 @@
 export enum FileNames {
-  SCRIPT = "script.js",
+  // SCRIPT = "script.js",
   STYLE = "style.css",
   HTML = "index.html",
 }
@@ -11,7 +11,7 @@ export interface FileData {
 }
 
 export interface Files {
-  [FileNames.SCRIPT]: FileData;
+  // [FileNames.SCRIPT]: FileData;
   [FileNames.STYLE]: FileData;
   [FileNames.HTML]: FileData;
 }
