@@ -2,17 +2,27 @@ $nav-color: rgba(255, 255, 255, 0.6); // Світло-сірий для текс
 $nav-hover: white;
 
 
-.part2 {
-  text-shadow: 0 0 10px rgba(129, 61, 174, 1), 0 0 20px rgba(129, 61, 174, 0.8);
-  font-family: fantasy;
-  color: white;
+.siteName {
+    font-size: 31px;
+    line-height: 31px;
+    font-weight: 500;
+    text-align: left;
+    align-self: end;
+  background: linear-gradient(90deg, #37A7AB, #56C89D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  span {
+    display: block;
+  }
 }
 .header {
   display: flex;
   justify-content: space-between;  
   box-sizing: border-box;
   align-items: center;
-  padding: 20px 40px;
+  padding: 10px 20px;
+  // background: #0F1A24;
+  border-bottom: 0.2px solid #fff;
   background: #1e1e2e;
   // position: fixed;
   width: 100%;
@@ -23,11 +33,11 @@ $nav-hover: white;
   .logoContainer {
     display: flex;
     align-items: center;
-
-    img {
-      width: 50px;
-      height: auto;
-    }
+    gap: 20px;
+    // img {
+    //   width: 150px;
+    //   height: auto;
+    // }
   }
 
   .navLinks {
