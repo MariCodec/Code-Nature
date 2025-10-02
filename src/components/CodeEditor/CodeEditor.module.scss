@@ -76,12 +76,18 @@ box-sizing: border-box;
   }
 }
 }
-:global(.errorLine) {
-  background-color: rgba(255, 0, 0, 0.2);
+:global(.underline-error) {
+  text-decoration: red wavy underline;
 }
-:global(.errorGlyph) {
-  background-color: red;
-}
+// .underline-error {
+//   text-decoration: red wavy underline;
+// }
+// :global(.errorLine) {
+//   background-color: rgba(255, 0, 0, 0.2);
+// }
+// :global(.errorGlyph) {
+//   background-color: red;
+// }
 .output {
   background: #ffffff;
   width: 100%;
