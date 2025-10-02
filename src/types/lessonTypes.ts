@@ -2,6 +2,8 @@
 export type LessonTask = {
   id: string; // Унікальний ідентифікатор завдання
   text: string; // Опис завдання
+  htmlSelectors?: { selector: string; next?: string }[]; // селектор і наступний тег (для перевірки порядку)
+  cssChecks?: { selector: string; property: keyof CSSStyleDeclaration; value: string }[]; // перевірки CSS
   validate?: (doc: Document) => boolean; // Функція перевірки DOM
    validateHtmlCss?: (doc: Document) => boolean;
 };

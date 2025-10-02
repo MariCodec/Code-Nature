@@ -7,7 +7,8 @@ import {
   markLessonAsCompleted,
 } from "../../store/slices/progressSlice";
 import { LessonItem } from "../../types/lessonTypes";
-
+import { isHtmlWellFormed } from "../../utils/validateHtmlCss"; 
+import { validateHtmlCss } from "../../utils/validateHtmlCss";
 
 interface LessonCheckerProps {
   lesson: LessonItem;
@@ -21,7 +22,8 @@ const LessonChecker: React.FC<LessonCheckerProps> = ({
   userCss,
 }) => {
   const dispatch = useDispatch();
-
+  console.log(userHtml);
+  console.log(isHtmlWellFormed(userHtml));
   // Мемоізований селектор для уникнення нових об'єктів
   const taskStatus = useSelector(
     (state: RootState) => state.progress.taskStatus[lesson.id] ?? {},
@@ -31,6 +33,10 @@ const LessonChecker: React.FC<LessonCheckerProps> = ({
   useEffect(() => {
     if (!lesson.tasks.length) return;
 
+     if (!isHtmlWellFormed(userHtml)) {
+       console.warn("HTML має помилки у тегах");
+       return; // зупиняємо перевірку, якщо теги не закриті
+     }
     // Створюємо прихований iframe для перевірки
     const iframe = document.createElement("iframe");
     iframe.style.display = "none";
@@ -53,10 +59,14 @@ const LessonChecker: React.FC<LessonCheckerProps> = ({
       // Перевірка завдань
       const completedTaskIds: string[] = [];
 
+
+
       lesson.tasks.forEach((task) => {
         if (!taskStatus[task.id]) {
-          const success =
-            task.validateHtmlCss?.(doc) ?? task.validate?.(doc) ?? false;
+           const success = validateHtmlCss(userHtml, doc, {
+             htmlSelectors: task.htmlSelectors ?? [],
+             cssChecks: task.cssChecks,
+           });;
 
           if (success) {
             completedTaskIds.push(task.id);

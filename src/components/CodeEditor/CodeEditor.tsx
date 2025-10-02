@@ -6,6 +6,8 @@ import { useMonaco } from "@monaco-editor/react";
 import { FileNames } from "../../types";
 import Output from "./Output";
 import LessonNavigation from "../lessonNavigation/LessonNavigation";
+import "../../utils/monacoSetup";
+
 
 interface CodeEditorProps {
   initialHtml: string;
@@ -30,7 +32,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const [fileName, setFileName] = useState<FileNames>(FileNames.HTML);
   const [code, setCode] = useState({ html: initialHtml, css: initialCss });
   const [output, setOutput] = useState({ html: initialHtml, css: initialCss });
-  // const [error, setError] = useState<null | string>(null); 
+  //  const [error, setError] = useState<null | string>(null); 
  // const [isErrorVisible, setIsErrorVisible] = useState(false); 
   // Worker для Monaco
 
@@ -49,6 +51,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const handleRunCode = () => {
     setOutput({ ...code });
     setUserCode({ ...code });
+    
   };
 
   const clearCode = () => {
@@ -83,28 +86,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
     monaco.editor.setTheme(savedTheme);
 
-    // HTML валідація та форматування
-    // (monaco.languages.html.htmlDefaults as any).setOptions({
-    //   validate: true,
-    //   format: {
-    //     tabSize: 2,
-    //     insertSpaces: true,
-    //     wrapLineLength: 120,
-    //     unformatted: "b|em|strong|span",
-    //     contentUnformatted: "pre|code",
-    //     indentInnerHtml: true,
-    //     preserveNewLines: true,
-    //     maxPreserveNewLines: 2,
-    //     indentHandlebars: false,
-    //     extraLiners: "head|body|/html",
-    //     endWithNewline: false,
-    //     wrapAttributes: "auto",
-    //   },
-    //   lint: {
-    //     "attr-name-style": "warning",
-    //     "id-unique": "error",
-    //   },
-    // });
+
+  
   }, [monaco]);
 
   return (
@@ -135,6 +118,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
       <div className={styles.container}>
         <div className={styles.editorView}>
+         
           {/* {error && ( 
           <div className={${styles.errorMessage} ${!isErrorVisible ? styles.hidden : ""}} 
           onTransitionEnd={() => { if (!isErrorVisible) { setError(null); } }} > 
