@@ -33,9 +33,42 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const [code, setCode] = useState({ html: initialHtml, css: initialCss });
   const [output, setOutput] = useState({ html: initialHtml, css: initialCss });
   //  const [error, setError] = useState<null | string>(null); 
- // const [isErrorVisible, setIsErrorVisible] = useState(false); 
+ // const [isErrorVisible, setIsErrorVisible] = useState(false);
   // Worker для Monaco
 
+  const [dividerPosition, setDividerPosition] = useState(50); // % ширини
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isResizing = useRef(false);
+
+ useEffect(() => {
+   const handleMouseMove = (e: MouseEvent) => {
+     if (!isResizing.current || !containerRef.current) return;
+     const containerWidth = containerRef.current.offsetWidth;
+     const newPosition = (e.clientX / containerWidth) * 100;
+     if (newPosition > 10 && newPosition < 90) {
+       setDividerPosition(newPosition);
+     }
+   };
+
+   const handleMouseUp = () => {
+     isResizing.current = false;
+     document.body.style.cursor = "default";
+   };
+
+   document.addEventListener("mousemove", handleMouseMove);
+   document.addEventListener("mouseup", handleMouseUp);
+
+   return () => {
+     document.removeEventListener("mousemove", handleMouseMove);
+     document.removeEventListener("mouseup", handleMouseUp);
+   };
+ }, []);
+
+ const startResizing = () => {
+   isResizing.current = true;
+   document.body.style.cursor = "col-resize";
+ };
+  
   const onMount = (editorInstance: editor.IStandaloneCodeEditor) => {
     editorRef.current = editorInstance;
     editorInstance.focus();
@@ -156,7 +189,7 @@ const getHtmlErrorDecorations = (
   }, [monaco]);
 
   return (
-    <div className={styles.editorContainer}>
+    <div className={styles.editorContainer} ref={containerRef}>
       <div className={styles.tabs}>
         <button className={styles.toggleBtn} onClick={toggleBtn}>
           {isVisible ? "Приховати деталі уроку" : "Деталі уроку"}
@@ -182,8 +215,10 @@ const getHtmlErrorDecorations = (
       </div>
 
       <div className={styles.container}>
-        <div className={styles.editorView}>
-         
+        <div
+          className={styles.editorView}
+          style={{ width: `${dividerPosition}%` }}
+        >
           {/* {error && ( 
           <div className={${styles.errorMessage} ${!isErrorVisible ? styles.hidden : ""}} 
           onTransitionEnd={() => { if (!isErrorVisible) { setError(null); } }} > 
@@ -191,7 +226,6 @@ const getHtmlErrorDecorations = (
            <button onClick={() => setIsErrorVisible(false)}>×</button>
             </div> )} */}
           <Editor
-            height="82%"
             theme="myCustomTheme"
             language={fileName === FileNames.HTML ? "html" : "css"}
             value={fileName === FileNames.HTML ? code.html : code.css}
@@ -206,7 +240,7 @@ const getHtmlErrorDecorations = (
           />
 
           <div className={styles.bottomBtn}>
-            <button className={styles.neonBtn} onClick={handleRunCode}>
+            <button className={styles.runBtn} onClick={handleRunCode}>
               Run Code
             </button>
             <button className={styles.clearBtn} onClick={clearCode}>
@@ -218,7 +252,15 @@ const getHtmlErrorDecorations = (
           </div>
         </div>
 
-        <Output html={output.html} css={output.css} />
+        {/* draggable line */}
+        <div className={styles.resizer} onMouseDown={startResizing} />
+
+        <div
+          className={styles.browserWindow}
+          style={{ width: `${100 - dividerPosition}%` }}
+        >
+          <Output html={output.html} css={output.css} />
+        </div>
       </div>
     </div>
   );

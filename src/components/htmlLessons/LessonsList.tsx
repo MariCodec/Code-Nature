@@ -8,7 +8,7 @@ import { Lessons } from "../../types/lessonTypes";
 
 const LessonsList = () => {
   const navigate = useNavigate();
-  const { category } = useParams<{ category: string }>(); // Отримуємо категорію (html або css) з URL
+  const { category } = useParams<{ category: string }>(); 
   const completedLessons = useSelector(
     (state: RootState) => state.progress.completedLessons
   );

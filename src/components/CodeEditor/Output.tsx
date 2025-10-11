@@ -32,12 +32,12 @@ const Output: React.FC<OutputProps> = ({ html, css }) => {
   }, [html, css]);
 
   return (
-    <div className={styles.browserWindow}>
+    <>
       <div className={styles.addressBar}>
         <input type="text" value="https://your-preview.com" readOnly />
       </div>
-      <iframe className={styles.output} ref={iframeRef} />;
-    </div>
+      <iframe className={styles.output} ref={iframeRef} />
+    </>
   );
 };
 
