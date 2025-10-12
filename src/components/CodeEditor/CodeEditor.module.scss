@@ -61,7 +61,12 @@ height: calc(100% - 45px);
 //   justify-content: space-evenly;
 // }
 
-
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  cursor: col-resize;
+}
 .resizer {
   width: 6px;
   cursor: col-resize;

@@ -35,38 +35,53 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   //  const [error, setError] = useState<null | string>(null); 
  // const [isErrorVisible, setIsErrorVisible] = useState(false);
   // Worker для Monaco
-
+const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [dividerPosition, setDividerPosition] = useState(50); // % ширини
   const containerRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
 
- useEffect(() => {
-   const handleMouseMove = (e: MouseEvent) => {
-     if (!isResizing.current || !containerRef.current) return;
-     const containerWidth = containerRef.current.offsetWidth;
-     const newPosition = (e.clientX / containerWidth) * 100;
-     if (newPosition > 10 && newPosition < 90) {
-       setDividerPosition(newPosition);
-     }
-   };
+useEffect(() => {
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isResizing.current || !containerRef.current) return;
 
-   const handleMouseUp = () => {
-     isResizing.current = false;
-     document.body.style.cursor = "default";
-   };
+    // отримуємо координати саме блоку з редактором і Output
+    const rect = containerRef.current
+      .querySelector(`.${styles.container}`)
+      ?.getBoundingClientRect();
 
-   document.addEventListener("mousemove", handleMouseMove);
-   document.addEventListener("mouseup", handleMouseUp);
+    if (!rect) return;
 
-   return () => {
-     document.removeEventListener("mousemove", handleMouseMove);
-     document.removeEventListener("mouseup", handleMouseUp);
-   };
- }, []);
+    // враховуємо зсув контейнера відносно екрана
+    const newPosition = ((e.clientX - rect.left) / rect.width) * 100;
+
+    if (newPosition > 30 && newPosition < 70) {
+      setDividerPosition(newPosition);
+    }
+  };
+
+  const handleMouseUp = () => {
+    isResizing.current = false;
+    setIsOverlayVisible(false);
+    document.body.style.cursor = "default";
+    document.body.style.userSelect = "auto";
+  };
+
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+
+  return () => {
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  };
+}, []);
+
 
  const startResizing = () => {
    isResizing.current = true;
+      setIsOverlayVisible(true);
    document.body.style.cursor = "col-resize";
+   document.body.style.userSelect = "none";
+
  };
   
   const onMount = (editorInstance: editor.IStandaloneCodeEditor) => {
@@ -262,6 +277,7 @@ const getHtmlErrorDecorations = (
           <Output html={output.html} css={output.css} />
         </div>
       </div>
+      {isOverlayVisible && <div className={styles.overlay} />}
     </div>
   );
 };
