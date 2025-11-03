@@ -4,7 +4,7 @@ import LessonPage from "./components/lessonPage/LessonPage";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 
-import LessonsList from "./components/htmlLessons/LessonsList";
+import LessonsList from "./components/LessonsList/LessonsList";
 
 function App() {
   return (

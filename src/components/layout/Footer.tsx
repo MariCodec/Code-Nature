@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer className="footer">© 2024 CodeHub. All rights reserved.</footer>
+    <footer className="footer">© 2024 CodeNature. All rights reserved.</footer>
   );
 };
 

@@ -5,15 +5,16 @@
 
 }
 .lessonInfo {
-  width: 0%;
+  flex: 0;
+      box-sizing: border-box;
   overflow-y: auto;
-  transition: width 0.3s ease-in-out;
+  transition: flex 0.3s ease-in-out, padding 0.3s ease-in-out;
       background: #dce3ef;
       //  background: linear-gradient(90deg, #2dc8a387, #18b99f30);
 
 }
 
 .lessonInfo.show {
-  width: 30%; 
+  flex: 0 0 30%;
     padding: 20px;
 }
