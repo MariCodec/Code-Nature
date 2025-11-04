@@ -1,4 +1,4 @@
-
+@use "../../styles/variables" as *;
 :global(.underline-error) {
   text-decoration: red wavy underline;
 }
@@ -199,22 +199,23 @@ padding: 10px 16px;
   letter-spacing: 0.5px;
   border: 2px solid transparent;
   transition: all .18s ease;
-    color: #fff;
+    color: $text-main;
   cursor: pointer;
 }
 
 /* Run Code */
 .runBtn {
   @extend .btn;
-    border: 2px solid #2dc8a387;
-background: linear-gradient(90deg, #2dc8a387, #18b99f30);
-  box-shadow: 0 6px 22px rgba(24,185,159,0.12);
+  background: linear-gradient(90deg, rgba($accent-strong, 0.55), rgba($accent-alt, 0.15));
+    border: 2px solid rgba($accent-strong, 0.4);
+  box-shadow: 0 6px 22px rgba($accent-strong, 0.12);
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 15px rgba(46,203,166,0.45);
+      box-shadow: 0 0 15px rgba($accent-strong, 0.45);
 
   }
 }
+
 
 /* Clear Code */
 .clearBtn {

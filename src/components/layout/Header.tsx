@@ -5,7 +5,7 @@ const Header = () => {
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        <div>
+        <Link to='/'>
           <svg
             width="37"
             height="50"
@@ -48,7 +48,7 @@ const Header = () => {
               fill="#3BACAA"
             />
           </svg>
-        </div>
+        </Link>
         {/* <img src={logo} alt="logo" width={200} height={200}/> */}
         <div className={styles.siteName}>
           <span>Code</span>

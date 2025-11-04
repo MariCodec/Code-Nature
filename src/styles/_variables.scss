@@ -1,0 +1,51 @@
+
+// === Backgrounds ===
+$bg-100: #141a24;          // головний темний фон
+$bg-200: #1e1e2e;          // варіант для header / editor
+$bg-300: #282c34;          // глибший фон для секцій
+$panel: rgba(255, 255, 255, 0.04); // напівпрозорі панелі
+
+// === Accent Colors ===
+$accent-main: #9bfdff;     // головний блакитний (CTA, hover)
+$accent-alt: #56c89d;      // другий бірюзовий
+$accent-strong: #2dc8a3;   // насичений акцент (editor, кнопки)
+$accent-glow: rgba(155, 253, 255, 0.18); // підсвічування
+
+// === Text ===
+$text-main: #ffffff;
+$text-muted: rgba(255, 255, 255, 0.78);
+$text-dark: #262c29;       // для світлих блоків (наприклад output браузера)
+
+// === States ===
+$danger: #ff4d5a;          // помилки
+$success: #37c784;
+
+// === Shadows ===
+$shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.5);
+$shadow-accent: 0 0 25px rgba(155, 253, 255, 0.3);
+
+// === Radii ===
+$radius-sm: 5px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-round: 999px;
+
+// === Fonts ===
+$font-main: "Inter", sans-serif;
+$font-code: "Fira Code", monospace;
+
+// === Transitions ===
+$transition-base: all 0.25s ease;
+
+// === Optional CSS Variables (для тем/JS) ===
+:root {
+  --accent-main: #9bfdff;
+  --accent-alt: #56c89d;
+  --accent-strong: #2dc8a3;
+  --danger: #ff4d5a;
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.78);
+  --bg-100: #141a24;
+  --bg-200: #1e1e2e;
+  --bg-300: #282c34;
+}

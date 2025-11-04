@@ -1,73 +1,286 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+@use "../styles/variables" as *;
 
-$color-start: #1a1228; // Темний фіолетовий#, #
-$color-end: #010f25; // Темний синьо-фіолетовий
-$text-glow-1: #1967d2; // Насичений синій → дасть темно-синю тінь
-$text-glow-2: #6a1b9a; // Насичений фіолетовий → дасть глибокий фіолетовий
-$text-glow-3: #c62828; // Яскравий червоний → після розмиття стане бордовим
-$text-glow-4: #8e24aa; // Насичений пурпуровий → дасть темно-пурпурову тінь
-.home {
+// === HERO ===
+.hero {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  text-align: center;
- font-family: 'Orbitron', sans-serif;
-  text-transform: uppercase;
-  background: linear-gradient(135deg, $color-start, $color-end);
-  color: white;
-
-h1 .part1 {
-  text-shadow: 0 0 10px rgba(42, 114, 194, 1), 
-               0 0 20px rgba(42, 114, 194, 0.8);
+  justify-content: space-between;
+  min-height: 90vh;
+  padding: 0 6rem;
+  background: linear-gradient(135deg, $bg-100 0%, $bg-200 100%);
+  overflow: hidden;
 }
 
-h1 .part2 {
-  text-shadow: 0 0 10px rgba(129, 61, 174, 1), 
-               0 0 20px rgba(129, 61, 174, 0.8);
-                    font-family: fantasy;
+/* Летючі символи */
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    color: rgba($accent-main, 0.06);
+    font-family: "Fira Code", monospace;
+    font-size: 2.4rem;
+    letter-spacing: 0.03em;
+    animation: float 12s ease-in-out infinite;
+    user-select: none;
+    transform-origin: center;
+  }
+
+  span:nth-child(1) { top: 8%; left: 14%; animation-delay: 0s; }
+  span:nth-child(2) { top: 35%; right: 18%; animation-delay: 2s; }
+  span:nth-child(3) { bottom: 12%; left: 36%; animation-delay: 4s; }
+  span:nth-child(4) { bottom: 26%; right: 12%; animation-delay: 6s; }
 }
 
-h1 .part3 {
-  text-shadow: 0 0 10px rgba(211, 58, 58, 1), 
-               0 0 20px rgba(211, 58, 58, 0.8);
-          
+@keyframes float {
+  0%   { transform: translateY(0) rotate(-2deg); opacity: 0.25; }
+  50%  { transform: translateY(-18px) rotate(6deg); opacity: 0.8; }
+  100% { transform: translateY(0) rotate(-2deg); opacity: 0.25; }
 }
 
-h1 .part4 {
-  text-shadow: 0 0 10px rgba(165, 66, 104, 1), 
-               0 0 20px rgba(165, 66, 104, 0.8);
-               font-family: fantasy;
-}
+// === HERO CONTENT ===
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  animation: fadeIn 1.2s ease forwards;
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(90deg, $accent-main, $accent-alt);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-wrap: balance;
+    text-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  }
 
   p {
+    color: $text-muted;
     font-size: 1.2rem;
-    font-weight: 300;
-    max-width: 600px;
-    margin-top: 10px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    margin-bottom: 2rem;
+  }
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.primary {
+  background: $accent-main;
+  border: none;
+  color: $text-dark;
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  box-shadow: 0 0 25px rgba($accent-main, 0.3);
+
+  &:hover {
+background: #7fe6ff; box-shadow: 0 0 25px rgba(155, 253, 255, 0.3);
+  }
+}
+
+.secondary {
+  background: transparent;
+  border: 2px solid $accent-main;
+  color: $accent-main;
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba($accent-main, 0.1);
+  }
+}
+
+// === HERO IMAGE ===
+.heroImage {
+  position: relative;
+  width: 400px;
+  height: 300px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow: 0 0 40px rgba($accent-main, 0.15);
+  z-index: 1;
+}
+
+.codePreview {
+  background: $bg-300;
+  color: $accent-main;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-family: "Fira Code", monospace;
+  font-size: 1.1rem;
+  box-shadow: inset 0 0 12px rgba($accent-main, 0.6);
+}
+
+.plant {
+  position: absolute;
+  bottom: -15px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 50% 0%, $accent-main 0%, transparent 70%);
+  filter: blur(25px);
+  animation: grow 4s ease-in-out infinite alternate;
+}
+
+@keyframes grow {
+  from { transform: scale(0.9); opacity: 0.7; }
+  to { transform: scale(1.1); opacity: 1; }
+}
+
+// === ABOUT ===
+.about {
+  text-align: center;
+  padding: 5.5rem 6rem;
+  background: radial-gradient(circle at center, $bg-200 0%, $bg-300 70%);
+background: radial-gradient(circle at center, #2a2a40 0%, #1e1e2e 70%);
+  color: $text-main;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, $accent-main, $accent-alt);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
-  .neonButton {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 1.2rem;
+  p {
+    max-width: 760px;
+    margin: 0 auto 2rem;
+    color: $text-muted;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .icons {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+
+    div {
+      background: $panel;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      color: $text-main;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+// === STEPS ===
+.steps {
+  padding: 5rem 6rem;
+  background: linear-gradient(180deg, $bg-200, $bg-100);
+  text-align: center;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1.6rem;
+    color: $text-main;
+  }
+
+  ul {
+    display: flex;
+    justify-content: center;
+    gap: 1.6rem;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    background: $panel;
+    padding: 1.2rem 1.8rem;
+    border-radius: 12px;
+    color: $text-main;
+    min-width: 200px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    span {
+      color: $accent-alt;
+      font-weight: 700;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// === FREE LESSON ===
+.freeLesson {
+  padding: 5.5rem 6rem;
+  background: linear-gradient(135deg, $bg-100, $bg-200);
+  text-align: center;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, $accent-main, $accent-alt);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  p {
+    color: $text-muted;
+    margin-bottom: 1.8rem;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .primary {
+    background: $accent-main;
+    color: $text-dark;
+    padding: 0.9rem 2rem;
+    border-radius: 10px;
     font-weight: 700;
-    color: white;
-    background: transparent;
-    // border: 2px solid $text-glow-1;
-    // border-radius: 8px;
-    // cursor: pointer;
-    // text-transform: uppercase;
-    // transition: all 0.3s ease-in-out;
-    // box-shadow: 0 0 10px $text-glow-1, 0 0 30px $text-glow-2;
-
-    // &:hover {
-    //   background: $text-glow-1;
-    //   color: black;
-    //   box-shadow: 0 0 20px $text-glow-2, 0 0 40px $text-glow-1;
-    // }
+    box-shadow: 0 12px 40px rgba($accent-main, 0.12);
+      &:hover {
+background: #7fe6ff; box-shadow: 0 0 25px rgba(155, 253, 255, 0.3);
   }
+  }
+}
+
+// === RESPONSIVE ===
+@media (max-width: 980px) {
+  .hero {
+    flex-direction: column;
+    padding: 4rem 3rem;
+    gap: 2rem;
+    min-height: auto;
+  }
+
+  .heroImage {
+    width: 92%;
+    height: auto;
+    padding: 1.2rem;
+  }
+
+  .codePreview { font-size: 0.95rem; }
+
+  .home, .about, .steps, .freeLesson {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+// === ANIMATIONS ===
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px); } 
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -1,3 +1,4 @@
+@use "../../styles/variables" as *;
 $nav-color: rgba(255, 255, 255, 0.6); // Світло-сірий для тексту посилань
 $nav-hover: white;
 
@@ -8,7 +9,7 @@ $nav-hover: white;
     font-weight: 500;
     text-align: left;
     align-self: end;
-  background: linear-gradient(90deg, #37A7AB, #56C89D);
+background: linear-gradient(90deg, $accent-main, $accent-alt);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   span {
@@ -22,18 +23,16 @@ $nav-hover: white;
   align-items: center;
   padding: 10px 20px;
   height: 64px;
-  // background: #0F1A24;
    background: #1e1e2e;
+background: linear-gradient(135deg, #1e1e2e 0%, #1a2030 100%);
   border-bottom: 0.2px solid #fff;
-  // background: linear-gradient(180deg, rgba(15, 23, 32, 0.96), rgba(10, 14, 20, 0.92));
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
-  // position: fixed;
   width: 100%;
   top: 0;
   left: 0;
-  // backdrop-filter: blur(10px);
+
 
   .logoContainer {
     display: flex;
