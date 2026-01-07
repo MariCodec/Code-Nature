@@ -5,15 +5,14 @@ import { Lessons } from "../../types/lessonTypes";
 
 import CodeEditor from "../CodeEditor/CodeEditor";
 import TaskList from "../taskList/TasksList";
-import LessonChecker from "../lessonChecker/LessonChecker";
 import styles from "./LessonPage.module.scss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { selectLessonCode } from "../../store/slices/userCodeSlice";
 
 const LessonPage = () => {
   const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);
-  const [userCode, setUserCode] = useState({ html: "", css: "" });
-
   const { category, id } = useParams<{ category: string; id: string }>();
-
 
   const lesson = lessons[category as keyof Lessons]?.find(
     (lesson) => lesson.id === id
@@ -22,6 +21,13 @@ const LessonPage = () => {
   if (!lesson) return <h2>Урок не знайдено</h2>;
 
   const toggleBtn = () => setIsLessonInfoVisible((prev) => !prev);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const lessonCode = useSelector((state: RootState) =>
+    selectLessonCode(state, lesson.id)
+  );
+console.log(lessonCode);
+console.log(lesson);
 
   return (
     <div className={styles.wrapper}>
@@ -33,31 +39,18 @@ const LessonPage = () => {
         <h1>{lesson.title}</h1>
         <p>{lesson.description}</p>
 
-        {/* Список завдань */}
-        <TaskList
-          lessonId={lesson.id}
-          tasks={lesson.tasks}
-         
-        />
+        <TaskList lessonId={lesson.id} tasks={lesson.tasks} />
       </div>
 
-      {/* CodeEditor */}
       <CodeEditor
-         key={lesson.id}
-        initialHtml={lesson.initialHtml}
-        initialCss={lesson.initialCss}
+        key={lesson.id}
+        lesson={lesson}
         toggleBtn={toggleBtn}
         isVisible={isLessonInfoVisible}
-        currentLessonId={lesson.id}
-        setUserCode={setUserCode}
+    
       />
 
-      {/* Перевірка завдань */}
-      <LessonChecker
-        lesson={lesson}
-        userHtml={userCode.html}
-        userCss={userCode.css}
-      />
+   
     </div>
   );
 };
