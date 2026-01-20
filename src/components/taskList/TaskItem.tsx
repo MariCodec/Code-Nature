@@ -20,22 +20,27 @@ const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId }) => {
   );
 
   const isDisabled = !prevCompleted;
-
+  const isActive = !isCompleted && !isDisabled; 
   return (
     <div
-      className={`${styles.taskItem} ${isCompleted ? styles.completed : ""} ${
-        isDisabled ? styles.disabled : ""
-      }`}
+      className={`${styles.taskItem}
+        ${isCompleted ? styles.completed : ""}
+        ${isDisabled ? styles.disabled : ""}
+        ${isActive ? styles.active : ""}`}
     >
-      <div className={styles.text}>
-        <span>{task.id}.</span> <label>{task.text}</label>
+      <div className={styles.left}>
+        <span className={styles.index}>{1}</span>
       </div>
+      <div className={styles.text}>{task.text}</div>
       <div className={styles.controls}>
-        {isCompleted && <span className={styles.like}>👍</span>}
+        {isCompleted && (
+          <span className={`${styles.iconBadge} ${styles.pop}`}>✓</span>
+        )}
+        {isDisabled && <span className={styles.icon}>🔒</span>}
       </div>
     </div>
   );
 };
 
-// додаємо мемо для запобігання зайвим перерендеренням
+
 export default React.memo(TaskItem);

@@ -32,12 +32,14 @@ console.log(lesson);
   return (
     <div className={styles.wrapper}>
       <div
-        className={`${styles.lessonInfo} ${
-          isLessonInfoVisible ? styles.show : ""
-        }`}
+        className={`${styles.lessonInfo} ${isLessonInfoVisible ? styles.show : ""}`}
       >
-        <h1>{lesson.title}</h1>
-        <p>{lesson.description}</p>
+        <div className={styles.lessonHeader}>
+          <div className={styles.lessonTitle}>
+            <h1>{lesson.title}</h1>
+            <p>{lesson.description}</p>
+          </div>
+        </div>
 
         <TaskList lessonId={lesson.id} tasks={lesson.tasks} />
       </div>
@@ -47,10 +49,7 @@ console.log(lesson);
         lesson={lesson}
         toggleBtn={toggleBtn}
         isVisible={isLessonInfoVisible}
-    
       />
-
-   
     </div>
   );
 };

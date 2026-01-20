@@ -16,6 +16,7 @@
     "@prettier/plugin-xml": "^3.4.2",
     "@reduxjs/toolkit": "^2.6.1",
     "monaco-editor": "^0.52.2",
+    "parse5": "^8.0.0",
     "prettier": "^3.6.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

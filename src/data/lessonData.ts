@@ -24,6 +24,12 @@ export const lessons: Lessons = {
           htmlSelectors: [{ selector: "p" }],
          
         },
+        {
+          id: "task-3",
+          text: "Додайте абзац <p> після заголовка.",
+          htmlSelectors: [{ selector: "p" }],
+         
+        },
       ],
     },
     {

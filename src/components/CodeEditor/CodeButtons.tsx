@@ -4,17 +4,24 @@ interface CodeButtonsProps {
   handleRunCode: () => void;
   clearCode: () => void;
   formatCode: () => void;
+  htmlError: string | null;
 }
 export const CodeButtons: React.FC<CodeButtonsProps> = ({
   handleRunCode,
   clearCode,
   formatCode,
+  htmlError,
 }) => {
   return (
     <>
       {" "}
       <div className={styles.bottomBtn}>
-        <button className={styles.runBtn} onClick={handleRunCode}>
+        <button
+          className={`${styles.runBtn} ${htmlError ? styles.runBtnDisabled : ""}`}
+          onClick={handleRunCode}
+          aria-disabled={!!htmlError}
+          title={htmlError ? "Виправте помилки в HTML, щоб запустити код" : ""}
+        >
           Run Code
         </button>
         <button className={styles.clearBtn} onClick={clearCode}>

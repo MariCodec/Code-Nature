@@ -1,14 +1,15 @@
 @use "../../styles/variables" as *;
-:global(.underline-error) {
-  text-decoration: red wavy underline;
-}
+// :global(.underline-error) {
+//   text-decoration: red wavy underline;
+// }
 
-:global(.errorLine) {
-  background-color: rgba(255, 0, 0, 0.2);
-}
-:global(.errorGlyph) {
-  background-color: red;
-}
+// :global(.errorLine) {
+//   background-color: rgba(255, 0, 0, 0.2);
+// }
+// :global(.errorGlyph) {
+//   background-color: red;
+// }
+
 .output {
   background: #ffffff;
   width: 100%;
@@ -216,6 +217,19 @@ padding: 10px 16px;
   }
 }
 
+.runBtn {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.runBtnDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: translateY(0); 
+
+  &:active {
+    transform: translateY(0); 
+  }
+}
 
 /* Clear Code */
 .clearBtn {
