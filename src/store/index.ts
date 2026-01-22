@@ -1,14 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
 import themeReducer from "./slices/themeSlice";
 import progressReducer from "./slices/progressSlice";
-import userCodeSlice from "./slices/userCodeSlice";
+import userCodeReducer from "./slices/userCodeSlice";
+import authReducer from "./slices/authSlice";
 // import lessonReducer from "./slices/lessonSlice";
 
 const store = configureStore({
   reducer: {
+    auth: authReducer,
     theme: themeReducer,
     progress: progressReducer,
-    userCode: userCodeSlice,
+    userCode: userCodeReducer,
     // lesson: lessonReducer,
   },
 });
