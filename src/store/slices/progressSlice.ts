@@ -29,7 +29,7 @@ const progressSlice = createSlice({
     },
     markTaskAsCompleted: (
       state,
-      action: PayloadAction<{ lessonId: string; taskId: string }>
+      action: PayloadAction<{ lessonId: string; taskId: string }>,
     ) => {
       const { lessonId, taskId } = action.payload;
 
@@ -41,7 +41,7 @@ const progressSlice = createSlice({
     },
     resetTasksForLesson: (
       state,
-      action: PayloadAction<{ lessonId: string; taskIds: string[] }>
+      action: PayloadAction<{ lessonId: string; taskIds: string[] }>,
     ) => {
       const { lessonId, taskIds } = action.payload;
       state.taskStatus[lessonId] = {};
@@ -54,10 +54,14 @@ const progressSlice = createSlice({
       state.currentLessonId = null;
       state.taskStatus = {};
     },
+    hydrateProgress: (_state, action: PayloadAction<ProgressState>) => {
+      return action.payload;
+    },
   },
 });
 
 export const {
+  hydrateProgress,
   setCurrentLesson,
   markLessonAsCompleted,
   markTaskAsCompleted,

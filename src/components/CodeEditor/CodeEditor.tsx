@@ -11,7 +11,7 @@ import { validateHtmlWithParse5 } from "../../utils/validateHtmlParse5";
 
 import { CodeButtons } from "./CodeButtons";
 import "../../utils/monacoSetup";
-import { RootState } from "../../store";
+import { AppDispatch, RootState } from "../../store";
 import {
   selectLessonCode,
   updateHtml,
@@ -24,6 +24,7 @@ import { resetTasksForLesson } from "../../store/slices/progressSlice";
 import { LessonItem } from "../../types/lessonTypes";
 import { checkLesson } from "../../utils/checkLesson";
 import { setupMonaco } from "../../utils/monacoSetup";
+import { saveUserData } from "../../store/thunks/syncThunks";
 
 interface CodeEditorProps {
   lesson: LessonItem;
@@ -39,7 +40,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   isVisible,
   lesson,
 }) => {
-  const dispatch = useDispatch();
+ 
+const dispatch = useDispatch<AppDispatch>();
 const lessonCode = useSelector((state: RootState) =>
   selectLessonCode(state, lesson.id)
 );
@@ -153,7 +155,7 @@ const handleChange = (newValue: string | undefined) => {
         css: lessonCode.css || lesson.initialCss,
       })
     );
-
+dispatch(saveUserData());
     // HTML валідація
     // if (monaco && editorRef.current) {
     //   validateHtml(monaco, editorRef.current, lessonCode.html || lesson.initialHtml);

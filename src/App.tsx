@@ -5,10 +5,14 @@ import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 
 import LessonsList from "./components/LessonsList/LessonsList";
+import { AppInitializer } from "./AppInitializer";
 
 function App() {
+
+
   return (
     <>
+    <AppInitializer />;
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>

@@ -19,14 +19,14 @@ const userCodeSlice = createSlice({
   reducers: {
     setLessonCode: (
       state,
-      action: PayloadAction<{ lessonId: string; html: string; css: string }>
+      action: PayloadAction<{ lessonId: string; html: string; css: string }>,
     ) => {
       const { lessonId, html, css } = action.payload;
       state[lessonId] = { html, css };
     },
     updateHtml: (
       state,
-      action: PayloadAction<{ lessonId: string; html: string }>
+      action: PayloadAction<{ lessonId: string; html: string }>,
     ) => {
       if (!state[action.payload.lessonId]) {
         state[action.payload.lessonId] = { html: "", css: "" };
@@ -35,7 +35,7 @@ const userCodeSlice = createSlice({
     },
     updateCss: (
       state,
-      action: PayloadAction<{ lessonId: string; css: string }>
+      action: PayloadAction<{ lessonId: string; css: string }>,
     ) => {
       if (!state[action.payload.lessonId]) {
         state[action.payload.lessonId] = { html: "", css: "" };
@@ -45,11 +45,22 @@ const userCodeSlice = createSlice({
     resetLessonCode: (state, action: PayloadAction<{ lessonId: string }>) => {
       state[action.payload.lessonId] = { html: "", css: "" };
     },
+    // + у reducers:
+    hydrateUserCode: (_state, action: PayloadAction<UserCodeState>) => {
+      return action.payload;
+    },
   },
 });
 
-export const { setLessonCode, updateHtml, updateCss, resetLessonCode } =
-  userCodeSlice.actions;
+
+  export const {
+    hydrateUserCode,
+    setLessonCode,
+    updateHtml,
+    updateCss,
+    resetLessonCode,
+  } = userCodeSlice.actions;
+
 export const selectLessonCode = createSelector(
   (state: RootState) => state.userCode,
   (_: RootState, lessonId: string) => lessonId,
