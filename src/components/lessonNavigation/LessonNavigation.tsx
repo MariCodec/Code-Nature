@@ -5,7 +5,7 @@ import styles from "./LessonNavigation.module.scss";
 import { lessons } from "../../data/lessonData";
 import { RootState } from "../../store";
 // import { markLessonAsCompleted } from "../../store/slices/progressSlice";
-import { Lessons } from "../../types/lessonTypes";
+import { LessonCategory } from "../../types/lessonTypes";
 
 const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   currentLessonId,
@@ -17,12 +17,13 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
     (state: RootState) => state.progress.completedLessons
   );
 
-  if (!category || !lessons[category as keyof Lessons]) {
-    return <h2>Категорія не знайдена</h2>;
-  }
+
+if (!category || !lessons[category as LessonCategory]) {
+  return <h2>Категорія не знайдена</h2>;
+}
 
   // Отримуємо список уроків для поточної категорії (html або css)
-  const categoryLessons = lessons[category as keyof Lessons];
+  const categoryLessons = lessons[category as LessonCategory];
 
   // Знаходимо індекс поточного уроку
   const currentIndex = categoryLessons.findIndex(

@@ -9,6 +9,7 @@ import Home from "./pages/Home/Home";
 
 import LessonsList from "./pages/LessonsList/LessonsList";
 import { AppInitializer } from "./AppInitializer";
+import DocsPage from "./pages/Docs/DocsPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path=":category" element={<LessonsList />} />
             <Route path=":category/:id" element={<LessonPage />} />
+            <Route path=":category" element={<DocsPage />} />
           </Route>
         </Routes>
       </Router>
