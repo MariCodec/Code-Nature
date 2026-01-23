@@ -174,8 +174,12 @@
 /* ---------- COMPLETED ---------- */
 .completed {
   opacity: 0.9;
-  background: rgba(v.$text-main, 0.03);
-  border-color: rgba(v.$accent-secondary, 0.16);
+ border-color: rgba(v.$accent-secondary, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(v.$accent-secondary, 0.14),
+    rgba(255, 255, 255, 0.03)
+  );
 }
 
 .completed .text {

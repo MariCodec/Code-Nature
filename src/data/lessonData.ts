@@ -9,6 +9,7 @@ export const lessons: Lessons = {
       description: "Вивчимо базові теги HTML.",
       initialHtml: `<h1>Привіт, HTML!</h1>`,
       initialCss: `h1 { color: red; }`,
+      
       tasks: [
         {
           id: "task-1",

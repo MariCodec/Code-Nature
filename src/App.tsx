@@ -1,18 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.scss";
-import LessonPage from "./components/lessonPage/LessonPage";
+import LessonPage from "./pages/lessonPage/LessonPage";
 import Layout from "./components/layout/Layout";
-import Home from "./pages/Home";
+import Home from "./pages/Home/Home";
 // import LoginPage from "./features/auth/LoginPage";
 // import RegisterPage from "./features/auth/RegisterPage";
 // import AuthGuard from "./features/auth/AuthGuard";
 
-import LessonsList from "./components/LessonsList/LessonsList";
+import LessonsList from "./pages/LessonsList/LessonsList";
 import { AppInitializer } from "./AppInitializer";
 
 function App() {
-
-
   return (
     <>
       <AppInitializer />

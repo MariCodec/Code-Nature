@@ -1,0 +1,39 @@
+@use "../../styles/variables" as v;
+
+.wrapper {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.lessonInfo {
+  flex: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+
+  transition: flex v.$tr-base, padding v.$tr-base;
+
+  /* темний фон як у всій системі */
+  background: linear-gradient(180deg, v.$bg-main, #070a12);
+  border-right: 1px solid v.$border;
+}
+
+.lessonInfo.show {
+  flex: 0 0 30%;
+  padding: 10px;
+}
+
+.sidebarCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  // padding: 16px;
+  // border-radius: v.$radius-lg;
+
+  // background: rgba(255, 255, 255, 0.04);
+  // border: 1px solid v.$border;
+  // box-shadow: v.$shadow-card;
+  // backdrop-filter: blur(10px);
+}
+
