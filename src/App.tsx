@@ -31,7 +31,8 @@ function App() {
             <Route index element={<Home />} />
             <Route path=":category" element={<LessonsList />} />
             <Route path=":category/:id" element={<LessonPage />} />
-            <Route path=":category" element={<DocsPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/docs/:category/:id" element={<DocsPage />} />
           </Route>
         </Routes>
       </Router>
