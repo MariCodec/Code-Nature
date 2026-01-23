@@ -8,8 +8,7 @@ import {
   selectAuthStatus,
   selectIsAuthenticated,
 } from "../../store/slices/authSlice";
-
-import styles from "./LoginPage.module.scss";
+import styles from "./RegisterPage.module.scss";
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();

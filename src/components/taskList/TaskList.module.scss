@@ -1,31 +1,13 @@
-/* =========================
-   TASKS – SEGMENTED PILLS UI
-   (totally different design)
-   ========================= */
+@use "../../styles/variables" as v;
 
 .taskListWrapper {
-  /* palette */
-  --panel: rgba(255, 255, 255, 0.62);
-  --panel-solid: #ffffff;
-  --ink: #0b1220;
-  --muted: rgba(11, 18, 32, 0.58);
-  --stroke: rgba(11, 18, 32, 0.10);
-
-  --accent: #1f9d72;        /* teal-green */
-  --accent-soft: rgba(31, 157, 114, 0.14);
-  --accent-stroke: rgba(31, 157, 114, 0.28);
-
-  --warn: rgba(11, 18, 32, 0.10);
-
   padding: 14px;
-  border-radius: 20px;
+  border-radius: v.$radius-lg;
 
-  border: 1px solid var(--stroke);
-
-  /* “дорога” глибина: дуже м’яка тінь + легкий inset */
-  box-shadow:
-    0 18px 40px rgba(11, 18, 32, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  background: v.$panel;
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(10px);
 
   display: flex;
   flex-direction: column;
@@ -39,35 +21,34 @@
   justify-content: space-between;
 
   padding: 6px 6px 10px;
-  border-bottom: 1px solid rgba(11, 18, 32, 0.08);
+  border-bottom: 1px solid v.$border;
 }
 
 .header h3 {
   margin: 0;
   font-size: 15px;
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--ink);
+  color: v.$text-main;
 }
 
 .counter {
   height: 26px;
   min-width: 28px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: v.$radius-round;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 750;
 
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(11, 18, 32, 0.10);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: v.$text-muted;
+  background: rgba(v.$text-main, 0.05);
+  border: 1px solid v.$border;
 }
 
 /* ---------- List ---------- */
@@ -76,10 +57,9 @@
   flex-direction: column;
   gap: 10px;
   padding: 4px 2px 2px;
-  background: transparent;
 }
 
-/* ---------- Task Item (pill) ---------- */
+/* ---------- Task Item ---------- */
 .taskItem {
   position: relative;
 
@@ -88,40 +68,24 @@
   align-items: center;
   gap: 12px;
 
-  padding: 12px 12px;
-  border-radius: 16px;
+  padding: 12px;
+  border-radius: v.$radius-md;
 
-  background: rgba(255, 255, 255, 0.70);
-  border: 1px solid rgba(11, 18, 32, 0.10);
+  background: rgba(v.$text-main, 0.04);
+  border: 1px solid v.$border;
 
-  /* інсет робить “дорого” */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 10px 22px rgba(11, 18, 32, 0.06);
-
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
   cursor: pointer;
 
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease,
-    opacity 160ms ease;
+  transition: transform v.$tr-fast, box-shadow v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast, opacity v.$tr-fast;
 }
 
 .taskItem:hover {
   transform: translateY(-1px);
-  border-color: rgba(11, 18, 32, 0.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 16px 34px rgba(11, 18, 32, 0.10);
+  border-color: rgba(v.$accent-primary, 0.25);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
 }
 
-.taskItem:active {
-  transform: translateY(0);
-}
-
-/* ---------- Left / Index (badge) ---------- */
 .left {
   display: flex;
   align-items: center;
@@ -131,24 +95,23 @@
 .index {
   width: 32px;
   height: 32px;
-  border-radius: 12px; /* не коло — інший стиль! */
+  border-radius: v.$radius-md;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 800;
   line-height: 1;
 
-  color: rgba(11, 18, 32, 0.65);
-  background: rgba(11, 18, 32, 0.05);
-  border: 1px solid rgba(11, 18, 32, 0.10);
+  color: v.$text-muted;
+  background: rgba(v.$text-main, 0.04);
+  border: 1px solid v.$border;
 }
 
-/* ---------- Text ---------- */
 .text {
-  color: var(--ink);
+  color: v.$text-main;
   font-size: 14px;
   line-height: 1.35;
   font-weight: 560;
@@ -159,7 +122,6 @@
   overflow: hidden;
 }
 
-/* ---------- Right controls ---------- */
 .controls {
   display: flex;
   justify-content: flex-end;
@@ -169,38 +131,33 @@
 .iconBadge {
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: v.$radius-round;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
 
-  color: rgba(11, 18, 32, 0.65);
-  background: rgba(11, 18, 32, 0.05);
-  border: 1px solid rgba(11, 18, 32, 0.10);
+  color: v.$text-main;
+  background: rgba(v.$accent-secondary, 0.14);
+  border: 1px solid rgba(v.$accent-secondary, 0.28);
 }
 
-/* ---------- ACTIVE (glow + inset accent) ---------- */
+/* ---------- ACTIVE ---------- */
 .active {
-  background: rgba(31, 157, 114, 0.10);
-  border-color: var(--accent-stroke);
-
-  box-shadow:
-    inset 0 0 0 1px rgba(31, 157, 114, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.70),
-    0 16px 34px rgba(31, 157, 114, 0.12);
+  background: rgba(v.$accent-secondary, 0.10);
+  border-color: rgba(v.$accent-secondary, 0.28);
+  box-shadow: 0 16px 34px rgba(v.$accent-secondary, 0.12);
 }
 
 .active .index {
-  background: rgba(31, 157, 114, 0.14);
-  border-color: rgba(31, 157, 114, 0.30);
-  color: rgba(31, 157, 114, 0.95);
+  background: rgba(v.$accent-secondary, 0.14);
+  border-color: rgba(v.$accent-secondary, 0.30);
+  color: v.$glow-strong;
 }
 
-/* маленький “маркер” без рейки */
 .active::after {
   content: "";
   position: absolute;
@@ -209,51 +166,38 @@
   transform: translateY(-50%);
   width: 6px;
   height: 6px;
-  border-radius: 999px;
-  background: rgba(31, 157, 114, 0.95);
+  border-radius: v.$radius-round;
+  background: v.$glow-strong;
   opacity: 0.9;
 }
 
-/* ---------- COMPLETED (clean, no strike) ---------- */
+/* ---------- COMPLETED ---------- */
 .completed {
-  background: rgba(255, 255, 255, 0.62);
-  border-color: rgba(31, 157, 114, 0.16);
+  opacity: 0.9;
+  background: rgba(v.$text-main, 0.03);
+  border-color: rgba(v.$accent-secondary, 0.16);
 }
 
 .completed .text {
-  color: rgba(11, 18, 32, 0.55);
-text-decoration: line-through;
+  color: rgba(v.$text-main, 0.55);
+  text-decoration: line-through;
 }
 
 .completed .index {
-  background: rgba(31, 157, 114, 0.10);
-  border-color: rgba(31, 157, 114, 0.22);
-  color: rgba(31, 157, 114, 0.90);
-}
-
-.completed .iconBadge {
-  background: rgba(31, 157, 114, 0.14);
-  border-color: rgba(31, 157, 114, 0.26);
-  color: rgba(31, 157, 114, 0.95);
+  background: rgba(v.$accent-secondary, 0.10);
+  border-color: rgba(v.$accent-secondary, 0.22);
+  color: rgba(v.$glow-strong, 0.9);
 }
 
 /* ---------- DISABLED ---------- */
 .disabled {
   cursor: not-allowed;
   opacity: 0.55;
-
-  background: rgba(255, 255, 255, 0.52);
-  border-color: rgba(11, 18, 32, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 8px 18px rgba(11, 18, 32, 0.04);
 }
 
 .disabled:hover {
   transform: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 8px 18px rgba(11, 18, 32, 0.04);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
 }
 
 /* ---------- Check pop ---------- */

@@ -1,96 +1,104 @@
-/* Загальний контейнер */
-.container {
-  background-color: #1e1e2e;
-  color: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 900px;
-  margin: 40px auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+
+@use "../../styles/variables" as v;
+
+/* full page background */
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 28px 16px 44px;
+
+  background:
+    radial-gradient(1200px 700px at 15% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
+    radial-gradient(900px 500px at 85% 18%, rgba(120, 170, 255, 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, #070a12);
 }
 
-/* Заголовок */
+/* center card */
+.container {
+  max-width: 1100px;          /* можна змінити */
+  margin: 0 auto;
+  padding: 22px;
+
+  border-radius: v.$radius-lg;
+  background: v.$panel;
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(12px);
+}
+
 .heading {
   font-size: 26px;
-  font-weight: bold;
+  font-weight: 900;
   text-align: center;
-  margin-bottom: 20px;
-  color: #80d4ff;
+  margin: 8px 0 18px;
+
+  background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Контейнер карток (сітка) */
 .lessonCardContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* ширше */
   gap: 16px;
-  justify-content: center;
 }
 
-/* Окрема картка уроку */
+/* lesson card */
 .lessonCard {
-  background: linear-gradient(135deg, #2a2a40, #343454);
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #404060;
+  padding: 18px 18px 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid v.$border;
+
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.3s ease;
   min-height: 170px;
+
+  cursor: pointer;
+  transition: transform v.$tr-base, box-shadow v.$tr-base, border-color v.$tr-base;
 }
 
 .lessonCard:hover {
-  background: #3b3b5c;
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  border-color: rgba(v.$accent-primary, 0.25);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
 }
 
-/* Стилі завершеного уроку */
-.completedCard {
-  border: 1px solid #16db93;
-  background: #1e2f24;
-}
-
-/* Заголовок уроку */
 .lessonCardTitle {
   font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #b0e3ff;
+  font-weight: 900;
+  margin: 0 0 8px;
+  color: rgba(v.$accent-primary, 0.95);
 }
 
-/* Кнопка завершення уроку */
-.lessonCardButton {
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s;
-  width: 100%;
+.lessonCard p {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.45;
 }
 
-.lessonCardButton:hover {
-  background-color: #ff6b81;
+.completedCard {
+  border-color: rgba(v.$accent-secondary, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(v.$accent-secondary, 0.14),
+    rgba(255, 255, 255, 0.03)
+  );
 }
 
-.lessonCardButton:disabled {
-  background-color: #555;
-  cursor: not-allowed;
-}
-
-/* Стилізація іконок */
 .icon {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 16px;
-  margin-top: 8px;
+  margin-top: 10px;
+  color: v.$text-muted;
 }
 
-/* Текст завершеного уроку */
 .completedText {
-  color: #16db93;
-  font-weight: bold;
+  color: rgba(v.$accent-secondary, 0.95);
+  font-weight: 900;
 }

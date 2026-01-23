@@ -1,0 +1,70 @@
+@use "../../styles/variables" as v;
+
+.bottomBtn {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 14px;
+}
+
+/* base */
+.btn {
+  padding: 12px 22px;
+  border-radius: v.$radius-sm;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 2px solid transparent;
+  color: v.$text-main;
+  cursor: pointer;
+  transition: all v.$tr-base;
+}
+
+/* Run */
+.runBtn {
+  @extend .btn;
+background: linear-gradient(
+  90deg,
+  rgba(45, 200, 163, 0.55),  
+  rgba(86, 200, 157, 0.15) 
+);
+  border-color: rgba(v.$accent-primary, 0.4);
+  box-shadow: 0 6px 22px rgba(v.$accent-primary, 0.12);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(v.$accent-primary, 0.45);
+  }
+}
+
+/* Disabled state for run */
+.runBtnDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: translateY(0);
+  pointer-events: none;
+}
+
+/* Clear */
+.clearBtn {
+  @extend .btn;
+  background: transparent;
+  border-color: rgba(v.$danger, 0.18);
+  box-shadow: 0 6px 18px rgba(v.$danger, 0.08);
+
+  &:hover {
+    background: v.$danger-bg;
+    border-color: rgba(v.$danger, 0.25);
+  }
+}
+
+/* Format */
+.formatCodeBtn {
+  @extend .btn;
+  background: v.$panel;
+  border-color: v.$border;
+
+  &:hover {
+    background: v.$border;
+    transform: translateY(-1px);
+  }
+}

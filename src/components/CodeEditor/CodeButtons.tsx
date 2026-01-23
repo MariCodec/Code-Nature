@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './CodeEditor.module.scss';
+import styles from "./CodeButtons.module.scss";
 interface CodeButtonsProps {
   handleRunCode: () => void;
   clearCode: () => void;

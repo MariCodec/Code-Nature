@@ -1,47 +1,48 @@
-@use "../../styles/variables" as *;
-$nav-color: rgba(255, 255, 255, 0.6); // Світло-сірий для тексту посилань
-$nav-hover: white;
-
+@use "../../styles/variables" as v;
 
 .siteName {
-    font-size: 26px;
-    line-height: 26px;
-    font-weight: 500;
-    text-align: left;
-    align-self: end;
-background: linear-gradient(90deg, $accent-main, $accent-alt);
+  font-size: 26px;
+  line-height: 26px;
+  font-weight: 500;
+  text-align: left;
+  align-self: end;
+
+  background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+
   span {
     display: block;
   }
 }
+
 .header {
   display: flex;
-  justify-content: space-between;  
-  box-sizing: border-box;
+  justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
+
   padding: 10px 20px;
   height: 64px;
-   background: #1e1e2e;
-background: linear-gradient(135deg, #1e1e2e 0%, #1a2030 100%);
-  border-bottom: 0.2px solid #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
   width: 100%;
+
+  background: linear-gradient(
+    135deg,
+    v.$bg-surface 0%,
+    rgba(26, 32, 48, 1) 100%
+  );
+
+  border-bottom: 1px solid v.$border;
+  box-shadow: v.$shadow-soft;
+  backdrop-filter: blur(10px);
+
   top: 0;
   left: 0;
-
 
   .logoContainer {
     display: flex;
     align-items: center;
     gap: 20px;
-    // img {
-    //   width: 150px;
-    //   height: auto;
-    // }
   }
 
   .navLinks {
@@ -51,12 +52,12 @@ background: linear-gradient(135deg, #1e1e2e 0%, #1a2030 100%);
     .navLink {
       font-size: 1rem;
       font-weight: 400;
-      color: $nav-color;
+      color: v.$text-muted;
       text-decoration: none;
-      transition: color 0.3s ease-in-out;
+      transition: color v.$tr-base;
 
       &:hover {
-        color: $nav-hover;
+        color: v.$text-main;
       }
     }
   }

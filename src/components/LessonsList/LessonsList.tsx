@@ -18,6 +18,7 @@ const LessonsList = () => {
   }
 
   return (
+    <div className={styles.page}>
     <div className={styles.container}>
       <h2 className={styles.heading}>{category.toUpperCase()} Уроки</h2>
       <div className={styles.lessonCardContainer}>
@@ -47,7 +48,8 @@ const LessonsList = () => {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+      </div>
   );
 };
 

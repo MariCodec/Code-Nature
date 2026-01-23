@@ -1,3 +1,5 @@
+@use "../../styles/variables" as v;
+
 .wrapper {
   min-height: calc(100vh - 80px);
   display: grid;
@@ -6,9 +8,10 @@
   position: relative;
   overflow: hidden;
 
-  background: radial-gradient(1200px 700px at 30% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
-              radial-gradient(900px 500px at 70% 15%, rgba(120, 170, 255, 0.10), transparent 55%),
-              linear-gradient(180deg, #0b1020, #070a12);
+  background:
+    radial-gradient(1200px 700px at 30% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
+    radial-gradient(900px 500px at 70% 15%, rgba(120, 170, 255, 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, #070a12);
 }
 
 .wrapper::before,
@@ -17,7 +20,7 @@
   position: absolute;
   width: 520px;
   height: 520px;
-  border-radius: 999px;
+  border-radius: v.$radius-round;
   filter: blur(40px);
   opacity: 0.8;
   pointer-events: none;
@@ -39,10 +42,10 @@
   width: 100%;
   max-width: 420px;
   padding: 28px 26px 22px;
-  border-radius: 18px;
+  border-radius: v.$radius-lg;
 
   background: rgba(18, 24, 38, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid v.$border;           // було 0.12 → зводимо до border
   box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(14px);
 }
@@ -51,14 +54,14 @@
   margin: 0 0 6px;
   font-size: 28px;
   font-weight: 800;
-  color: rgba(230, 255, 250, 0.95);
+  color: v.$text-main;                   // зводимо “майже білий” до text
 }
+
 .subtitle {
   margin: 0 0 18px;
   font-size: 14px;
-  color: rgba(220, 235, 255, 0.65);
+  color: v.$text-muted;                  // 0.60–0.75 → text-muted
 }
-
 
 .form {
   display: grid;
@@ -73,41 +76,37 @@
 .label {
   font-size: 12px;
   letter-spacing: 0.2px;
-  color: rgba(220, 235, 255, 0.65);
+  color: v.$text-muted;
 }
 
 .input {
   width: 100%;
   padding: 12px 12px;
-  border-radius: 12px;
+  border-radius: v.$radius-md;
 
   background: rgba(10, 14, 25, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(240, 255, 252, 0.92);
+  border: 1px solid v.$border;
+  color: v.$text-main;
 }
-.input::placeholder { color: rgba(220, 235, 255, 0.35); }
-
 
 .input::placeholder {
-  color: rgba(220, 235, 255, 0.35);
+  color: rgba(v.$text-main, 0.35);       // audit: 0.35
 }
 
 .input:focus {
-  border-color: rgba(120, 255, 234, 0.55);
-  box-shadow:
-    0 0 0 4px rgba(120, 255, 234, 0.12),
-    0 10px 20px rgba(0, 0, 0, 0.25);
+  border-color: rgba(v.$glow-strong, 0.55);
+  box-shadow: v.$shadow-focus;
   background: rgba(10, 14, 25, 0.7);
 }
 
 .error {
   margin-top: 4px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: v.$radius-md;
 
-  background: rgba(255, 70, 90, 0.10);
-  border: 1px solid rgba(255, 70, 90, 0.25);
-  color: rgba(255, 180, 190, 0.95);
+  background: v.$danger-bg;
+  border: 1px solid v.$danger-bg-strong;
+  color: v.$text-main;
 
   font-size: 13px;
 }
@@ -115,25 +114,22 @@
 .button {
   margin-top: 6px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: v.$radius-md;
   border: none;
 
   cursor: pointer;
   font-weight: 700;
   letter-spacing: 0.2px;
 
-  color: rgba(6, 20, 24, 0.95);
+  color: v.$text-dark;
   background: linear-gradient(
     135deg,
-    rgba(120, 255, 234, 0.95),
+    v.$glow-strong,
     rgba(120, 200, 255, 0.90)
   );
 
-  box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-
-  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+  box-shadow: v.$shadow-card;
+  transition: transform v.$tr-fast, filter v.$tr-fast, opacity v.$tr-fast;
 }
 
 .button:hover {
@@ -154,19 +150,19 @@
 .footer {
   margin-top: 14px;
   font-size: 14px;
-  color: rgba(220, 235, 255, 0.60);
+  color: v.$text-muted;
   text-align: center;
 }
 
 .link {
-  color: rgba(120, 255, 234, 0.95);
+  color: v.$glow-strong;
   text-decoration: none;
-  border-bottom: 1px solid rgba(120, 255, 234, 0.35);
+  border-bottom: 1px solid v.$glow;
   padding-bottom: 2px;
-  transition: border-color 0.12s ease, color 0.12s ease;
+  transition: border-color v.$tr-fast, color v.$tr-fast;
 }
 
 .link:hover {
-  color: rgba(180, 255, 245, 0.95);
-  border-bottom-color: rgba(180, 255, 245, 0.55);
+  color: v.$glow-strong;
+  border-bottom-color: rgba(v.$glow-strong, 0.55);
 }

@@ -78,3 +78,23 @@ This file defines how Codex should work in this repository.
 - Explain what changed and why, referencing the affected files.
 - If behavior may change, call it out and suggest how to verify.
 - Do not run networked commands or install packages without approval.
+
+## Styling system (SCSS modules)
+- SCSS Modules are the default styling approach. Keep styles local by default.
+- Allowed shared styles live only in:
+  - `src/styles/_variables.scss` (design tokens: colors, spacing, radius, shadows, transitions)
+  - `src/styles/_mixins.scss` (mixins/helpers only; no component-specific styles)
+- Prefer `@use` over `@import`.
+- When refactoring styles:
+  1) Scan `*.module.scss` to find repeated raw values.
+  2) Propose a small token/mixin set (minimal, reusable).
+  3) Apply changes to 1–2 modules per step (PR-like).
+  4) Do not change class names or layout behavior unless requested.
+- Do not introduce CSS variables or new dependencies unless explicitly requested.
+- Provide manual verification checklist (visual regression) for each style refactor.
+## Local persistence (temporary)
+- `localStorage` is allowed as a temporary persistence layer.
+- Treat it as an implementation detail, not a source of truth.
+- Prefer a thin abstraction (e.g. `storage/`) if touching persistence logic.
+- Do not tightly couple components to `localStorage` calls.
+- This logic will later be replaced by API-based persistence.

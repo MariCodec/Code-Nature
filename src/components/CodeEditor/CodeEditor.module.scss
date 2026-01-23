@@ -1,29 +1,19 @@
-@use "../../styles/variables" as *;
-// :global(.underline-error) {
-//   text-decoration: red wavy underline;
-// }
+@use "../../styles/variables" as v;
 
-// :global(.errorLine) {
-//   background-color: rgba(255, 0, 0, 0.2);
-// }
-// :global(.errorGlyph) {
-//   background-color: red;
-// }
-
+/* output */
 .output {
-  background: #ffffff;
+  background: v.$text-main;
   width: 100%;
-height: calc(100% - 45px);
+  height: calc(100% - 45px);
 }
 
 .browserWindow {
   position: relative;
   width: 50%;
-  // height: 100%;
-  border-radius: 10px;
+  border-radius: 10px; // поки лишаю як є (щоб не змінювався вигляд)
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  background: #f8f8f8;
+  box-shadow: 0 5px 15px v.$black-a30; // якщо немає — лиши rgba(0,0,0,0.3)
+  background: #f8f8f8; // це “макет браузера”, можна лишити literal
 }
 
 .addressBar {
@@ -46,59 +36,37 @@ height: calc(100% - 45px);
   outline: none;
 }
 
-// .tabs {
-//   display: flex;
-//  gap:10px;
-//   align-items: center;
-//   // background: #0F1A24;
-//   background: #1e1e2e;
-//   backdrop-filter: blur(10px);
-//   padding: 10px 20px;
-//   // border-radius: 10px;
-// }
-// .bottomBtn {
-//   margin: 5% 0px;
-//   display: flex;
-//   justify-content: space-evenly;
-// }
-
 .overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
   cursor: col-resize;
 }
+
 .resizer {
   width: 6px;
   cursor: col-resize;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-  transition: background 0.2s ease;
-  &:hover {
-    background: rgba(46,203,166,0.4);
-  }
-}
+  background: linear-gradient(180deg, v.$border, rgba(255, 255, 255, 0.02));
+  transition: background v.$tr-fast;
 
-:root {
-  --teal-1: #2ecba6;
-  --teal-2: #18b99f;
-  --danger: #ff4d5a;
-  --panel-bg: #0f1720;
-  --glass-border: rgba(255,255,255,0.06);
-  --text-light: #262c29;
+  &:hover {
+    background: rgba(v.$accent-secondary, 0.4);
+  }
 }
 
 /* Контейнер редактора */
 .editorContainer {
-width: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: linear-gradient(135deg, #1e1e2e, #282c34, #3a3f51);
-  // background: linear-gradient(180deg, var(--panel-bg), rgba(10, 14, 20, 0.922));
-  border: 1px solid var(--glass-border);
+
+  background: linear-gradient(135deg, v.$bg-surface, #282c34, #3a3f51);
+  border: 1px solid v.$border;
   box-shadow: 0 10px 35px rgba(2, 6, 12, 0.7);
+
   padding: 20px;
-  transition: all 0.3s ease;
+  transition: all v.$tr-base;
 }
 
 /* Верхня панель з вкладками */
@@ -106,30 +74,35 @@ width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
+
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 999px;
+  border-radius: v.$radius-round;
   padding: 6px 10px;
   backdrop-filter: blur(8px);
-    border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
 
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Кнопка для показу/приховування деталей */
 .toggleBtn {
-    border: 2px solid #2dc8a387;
-    color: #dce3ef;
-    background-color: transparent;
+  border: 2px solid rgba(v.$accent-secondary, 0.55);
+  color: v.$text-muted;
+  background-color: transparent;
+
   font-weight: 600;
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: v.$radius-round;
   cursor: pointer;
-    box-shadow: 0 0px 8px rgba(24, 185, 159, 0.35);
-  transition: all 0.25s ease;
+
+  box-shadow: 0 0px 8px rgba(v.$accent-secondary, 0.35);
+  transition: all v.$tr-base;
+
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0px 8px rgba(24, 185, 159, 0.35);
+    box-shadow: 0 0px 8px rgba(v.$accent-secondary, 0.35);
   }
+
   &:active {
     transform: scale(0.96);
   }
@@ -137,22 +110,25 @@ width: 100%;
 
 /* Вкладки (index.html / style.css) */
 .tabButtons {
-   font-size: 16px;
-padding: 10px 16px;
-  color: #B0B3C3;
+  font-size: 16px;
+  padding: 10px 16px;
+
+  color: #b0b3c3; // можна винести пізніше, зараз лишимо
   background: transparent;
   border: none;
   cursor: pointer;
-  &:hover {
-      color: #56C89D;
 
+  &:hover {
+    color: v.$accent-secondary;
   }
-&.active  {
-  color: #56C89D;
-  border-bottom: 2px solid #56C89D;
-      border-radius: 10px 20px 0 0;
-  background: #2A2A3A;
-}
+
+  &.active {
+    color: v.$accent-secondary;
+    border-bottom: 2px solid v.$accent-secondary;
+    border-radius: 10px 20px 0 0;
+    background: #2a2a3a; // можна винести пізніше
+  }
+
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -163,8 +139,7 @@ padding: 10px 16px;
 .container {
   display: flex;
   gap: 20px;
-  flex:1;
-  //  height: 100%;
+  flex: 1;
 }
 
 .editorView {
@@ -173,128 +148,11 @@ padding: 10px 16px;
   flex-direction: column;
   gap: 18px;
   width: 50%;
-
 }
 
 /* Monaco editor */
 .editor {
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-
+  border: 1px solid v.$border;
 }
-
-/* Нижня панель з кнопками */
-.bottomBtn {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  gap: 14px;
-}
-
-/* === Кнопки === */
-.btn {
-  padding: 12px 22px;
-  border-radius: 8px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  border: 2px solid transparent;
-  transition: all .18s ease;
-    color: $text-main;
-  cursor: pointer;
-}
-
-/* Run Code */
-.runBtn {
-  @extend .btn;
-  background: linear-gradient(90deg, rgba($accent-strong, 0.55), rgba($accent-alt, 0.15));
-    border: 2px solid rgba($accent-strong, 0.4);
-  box-shadow: 0 6px 22px rgba($accent-strong, 0.12);
-  &:hover {
-    transform: translateY(-1px);
-      box-shadow: 0 0 15px rgba($accent-strong, 0.45);
-
-  }
-}
-
-.runBtn {
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-
-.runBtnDisabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: translateY(0); 
-
-  &:active {
-    transform: translateY(0); 
-  }
-}
-
-/* Clear Code */
-.clearBtn {
-  @extend .btn;
-  background: transparent;
-  border-color: rgba(255,77,90,0.18);
-  box-shadow: 0 6px 18px rgba(255,77,90,0.08);
-  &:hover {
-    background: rgba(255,77,90,0.08);
-    border-color: rgba(255,77,90,0.25);
-  }
-}
-
-/* Format Code */
-.formatCodeBtn {
-  @extend .btn;
-
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.08);
-  &:hover {
-    background: rgba(255,255,255,0.08);
-    transform: translateY(-1px);
-  }
-}
-
-/* Повідомлення про помилки */
-
-
-// .errorMessage {
-//   position: absolute;
-//   z-index: 1;
-//   top: 10px;
-//   right: 12px;
-//   background: #f8d7da;
-//   color: #721c24;
-//   padding: 10px 15px;
-//   border-radius: 6px;
-//   border: 1px solid #f5c6cb;
-//   font-size: 14px;
-//   display: flex;
-//   align-items: center;
-//   gap: 8px;
-//   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-
-//   opacity: 1;
-//   transform: translateY(0);
-//   transition: opacity 0.3s ease, transform 0.3s ease;
-
-//   &.hidden {
-//     opacity: 0;
-//     transform: translateY(-10px);
-//   }
-
-//   button {
-//     background: transparent;
-//     border: none;
-//     color: #721c24;
-//     font-size: 16px;
-//     cursor: pointer;
-//     padding: 0;
-//     line-height: 1;
-
-//     &:hover {
-//       color: #000;
-//     }
-//   }
-// }
-// }

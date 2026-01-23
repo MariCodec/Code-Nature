@@ -27,6 +27,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, lessonId }) => {
             key={task.id}
             lessonId={lessonId}
             task={task}
+            number={index + 1}
             prevTaskId={index > 0 ? tasks[index - 1].id : null}
           />
         ))}

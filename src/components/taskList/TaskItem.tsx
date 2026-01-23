@@ -8,9 +8,10 @@ interface TaskItemProps {
   lessonId: string;
   task: { id: string; text: string };
   prevTaskId: string | null;
+  number: number;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId, number }) => {
   const isCompleted = useSelector(
     (state: RootState) =>
       state.progress.taskStatus[lessonId]?.[task.id] ?? false
@@ -29,7 +30,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId }) => {
         ${isActive ? styles.active : ""}`}
     >
       <div className={styles.left}>
-        <span className={styles.index}>{1}</span>
+        <span className={styles.index}>{number}</span>
       </div>
       <div className={styles.text}>{task.text}</div>
       <div className={styles.controls}>

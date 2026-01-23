@@ -1,51 +1,67 @@
-
-// === Backgrounds ===
-$bg-100: #141a24;          // головний темний фон
-$bg-200: #1e1e2e;          // варіант для header / editor
-$bg-300: #282c34;          // глибший фон для секцій
-$panel: rgba(255, 255, 255, 0.04); // напівпрозорі панелі
-
-// === Accent Colors ===
-$accent-main: #9bfdff;     // головний блакитний (CTA, hover)
-$accent-alt: #56c89d;      // другий бірюзовий
-$accent-strong: #2dc8a3;   // насичений акцент (editor, кнопки)
-$accent-glow: rgba(155, 253, 255, 0.18); // підсвічування
-
-// === Text ===
+// ==============================
+// Backgrounds & surfaces
+// ==============================
+$bg-main: #0b1020;                 // основний фон
+$bg-surface: #1e1e2e;              // картки, панелі, editor
+$panel: rgba(255, 255, 255, 0.04); // напівпрозорі блоки
+$border: rgba(255, 255, 255, 0.08);
+$black-a30: rgba(0, 0, 0, 0.3);
+// Background glow (soft)
+$glow-soft: rgba(120, 255, 234, 0.10);
+$blue-soft: rgba(120, 170, 255, 0.10);
+$bg-deep: #070a12;
+$bg-300: #2c2f3e;
+// ==============================
+// Text
+// ==============================
 $text-main: #ffffff;
-$text-muted: rgba(255, 255, 255, 0.78);
-$text-dark: #262c29;       // для світлих блоків (наприклад output браузера)
+$text-muted: rgba(255, 255, 255, 0.65);
+$text-dark: #262c29;               // для світлих областей (iframe/output)
 
-// === States ===
-$danger: #ff4d5a;          // помилки
+// ==============================
+// Accent colors
+// ==============================
+$accent-primary: #7fe6ff;           // основний блакитний (CTA, hover)
+$accent-secondary: #1f9d72;         // бірюзовий / success-подібний
+
+// Glow / focus
+$glow: rgba(120, 255, 234, 0.35);
+$glow-strong: rgba(120, 255, 234, 0.95);
+
+// ==============================
+// States
+// ==============================
+$danger: #ff4d5a;
+$danger-bg: rgba(255, 70, 90, 0.10);
+$danger-bg-strong: rgba(255, 70, 90, 0.25);
+
 $success: #37c784;
 
-// === Shadows ===
+// ==============================
+// Shadows
+// ==============================
 $shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.5);
-$shadow-accent: 0 0 25px rgba(155, 253, 255, 0.3);
+$shadow-card: 0 14px 30px rgba(0, 0, 0, 0.35),
+              0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+$shadow-focus: 0 0 0 4px rgba(120, 255, 234, 0.12),
+               0 10px 20px rgba(0, 0, 0, 0.25);
 
-// === Radii ===
-$radius-sm: 5px;
-$radius-md: 8px;
-$radius-lg: 12px;
+// ==============================
+// Radii
+// ==============================
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
 $radius-round: 999px;
 
-// === Fonts ===
+// ==============================
+// Fonts
+// ==============================
 $font-main: "Inter", sans-serif;
 $font-code: "Fira Code", monospace;
 
-// === Transitions ===
-$transition-base: all 0.25s ease;
-
-// === Optional CSS Variables (для тем/JS) ===
-:root {
-  --accent-main: #9bfdff;
-  --accent-alt: #56c89d;
-  --accent-strong: #2dc8a3;
-  --danger: #ff4d5a;
-  --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.78);
-  --bg-100: #141a24;
-  --bg-200: #1e1e2e;
-  --bg-300: #282c34;
-}
+// ==============================
+// Transitions
+// ==============================
+$tr-fast: 0.12s ease;
+$tr-base: 0.25s ease;
