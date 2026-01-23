@@ -1,16 +1,15 @@
-// utils/checkLesson.ts
 import { AppDispatch } from "../store";
 import {
-  markTaskAsCompleted,
   markLessonAsCompleted,
+  markTaskAsCompleted,
 } from "../store/slices/progressSlice";
-import { LessonItem } from "../types/lessonTypes";
+import type { LessonContent } from "../types/lessonTypes";
 import { validateHtmlCss } from "./validateHtmlCss";
 
 interface CheckLessonProps {
-  lesson: LessonItem;
-  userHtml: string; // явна назва
-  userCss: string; // явна назва
+  lesson: LessonContent;
+  userHtml: string;
+  userCss: string;
   dispatch: AppDispatch;
 }
 
@@ -26,40 +25,38 @@ export const checkLesson = ({
   iframe.style.display = "none";
   document.body.appendChild(iframe);
 
-  const doc = iframe.contentDocument;
-  if (!doc) return;
+  try {
+    const doc = iframe.contentDocument;
+    if (!doc) return;
 
-  doc.documentElement.innerHTML = `
-    <html>
-      <head><style>${userCss}</style></head>
-      <body>${userHtml}</body>
-    </html>
-  `;
+    doc.documentElement.innerHTML = `
+      <html>
+        <head><style>${userCss}</style></head>
+        <body>${userHtml}</body>
+      </html>
+    `;
 
-  const completedTaskIds: string[] = [];
+    const completedTaskIds: string[] = [];
 
-  lesson.tasks.forEach((task) => {
-    const success = validateHtmlCss(userHtml, doc, {
-      htmlSelectors: task.htmlSelectors ?? [],
-      cssChecks: task.cssChecks,
-    });
+    for (const task of lesson.tasks) {
+      const success = validateHtmlCss(userHtml, doc, {
+        htmlSelectors: task.rules?.htmlSelectors ?? [],
+        cssChecks: task.rules?.cssChecks ?? [],
+        requireTextContains: task.rules?.requireTextContains ?? [],
+      });
 
-    if (success) {
-      completedTaskIds.push(task.id);
+      if (success) completedTaskIds.push(task.id);
     }
-  });
 
-  completedTaskIds.forEach((taskId) => {
-    dispatch(markTaskAsCompleted({ lessonId: lesson.id, taskId }));
-  });
+    for (const taskId of completedTaskIds) {
+      dispatch(markTaskAsCompleted({ lessonId: lesson.id, taskId }));
+    }
 
-  const allTasksCompleted = lesson.tasks.every((t) =>
-    completedTaskIds.includes(t.id)
-  );
-
-  if (allTasksCompleted) {
-    dispatch(markLessonAsCompleted(lesson.id));
+    const allTasksCompleted = lesson.tasks.every((t) =>
+      completedTaskIds.includes(t.id),
+    );
+    if (allTasksCompleted) dispatch(markLessonAsCompleted(lesson.id));
+  } finally {
+    document.body.removeChild(iframe);
   }
-
-  document.body.removeChild(iframe);
 };

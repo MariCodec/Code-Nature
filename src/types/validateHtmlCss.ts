@@ -5,11 +5,12 @@ export interface HtmlSelectorCheck {
 
 export interface CssCheck {
   selector: string;
-  property: keyof CSSStyleDeclaration;
+  property: string;
   value: string;
 }
 
 export interface HtmlCssCheck {
   htmlSelectors: HtmlSelectorCheck[];
   cssChecks?: CssCheck[];
+  requireTextContains?: { selector: string; text: string }[];
 }

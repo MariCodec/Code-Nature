@@ -21,17 +21,15 @@ import {
 
 import styles from "./CodeEditor.module.scss";
 import { resetTasksForLesson } from "../../store/slices/progressSlice";
-import { LessonItem } from "../../types/lessonTypes";
+import { LessonContent } from "../../types/lessonTypes";
 import { checkLesson } from "../../utils/checkLesson";
 import { setupMonaco } from "../../utils/monacoSetup";
 import { saveUserData } from "../../store/thunks/syncThunks";
 
 interface CodeEditorProps {
-  lesson: LessonItem;
+  lesson: LessonContent;
   toggleBtn: () => void;
   isVisible: boolean;
- 
- 
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
