@@ -1,5 +1,14 @@
+import type { StudentSavedFileDTO } from "../types/content";
+
 export type UserDataDTO = {
-  code: Record<string, { html: string; css: string }>;
+  code: Record<
+    string,
+    {
+      html: string;
+      css: string;
+      savedFiles?: StudentSavedFileDTO[];
+    }
+  >;
   progress: {
     completedLessons: string[];
     currentLessonId: string | null;

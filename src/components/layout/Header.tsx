@@ -5,7 +5,7 @@ const Header = () => {
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
-        <Link to='/'>
+        <Link to="/home">
           <svg
             width="37"
             height="50"
@@ -56,7 +56,7 @@ const Header = () => {
         </div>
       </div>
       <nav className={styles.navLinks}>
-        <Link className={styles.navLink} to="/">
+        <Link className={styles.navLink} to="/home">
           Home
         </Link>
         <Link className={styles.navLink} to="/html">

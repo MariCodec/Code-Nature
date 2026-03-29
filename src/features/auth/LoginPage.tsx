@@ -5,6 +5,7 @@ import type { AppDispatch } from "../../store";
 import { login } from "../../store/thunks/authThunks";
 import {
   selectAuthError,
+  selectAuthRole,
   selectAuthStatus,
   selectIsAuthenticated,
 } from "../../store/slices/authSlice";
@@ -15,19 +16,22 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const isAuth = useSelector(selectIsAuthenticated);
+  const role = useSelector(selectAuthRole);
   const status = useSelector(selectAuthStatus);
   const error = useSelector(selectAuthError);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"student" | "teacher">("student");
 
-  if (isAuth) return <Navigate to="/" replace />;
+  if (isAuth) return <Navigate to={role === "teacher" ? "/teacher" : "/student"} replace />;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await dispatch(login({ email, password }));
+    const res = await dispatch(login({ email, password, role: selectedRole }));
     if (login.fulfilled.match(res)) {
-      navigate("/", { replace: true });
+      const nextRole = res.payload.user.role;
+      navigate(nextRole === "teacher" ? "/teacher" : "/student", { replace: true });
     }
   };
 
@@ -54,6 +58,15 @@ export default function LoginPage() {
           placeholder="Password"
           required
         />
+
+        <select
+          className={styles.input}
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value as "student" | "teacher")}
+        >
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
 
         {error && <div className={styles.error}>{error}</div>}
 

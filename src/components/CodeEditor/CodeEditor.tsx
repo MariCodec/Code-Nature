@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
-import { FileNames } from "../../types";
 import Output from "./Output";
 import LessonNavigation from "../lessonNavigation/LessonNavigation";
 import { useResizable } from "../../hooks/useResizable";
@@ -22,18 +21,31 @@ import {
 import styles from "./CodeEditor.module.scss";
 import { resetTasksForLesson } from "../../store/slices/progressSlice";
 import { LessonContent } from "../../types/lessonTypes";
+import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
 import { setupMonaco } from "../../utils/monacoSetup";
 import { saveUserData } from "../../store/thunks/syncThunks";
+import {
+  getInitialCssFromLessonFiles,
+  getInitialHtmlFromLessonFiles,
+} from "../../utils/contentAdapters";
+import {
+  buildSavedFiles,
+  getCssFromSavedFiles,
+  getHtmlFromSavedFiles,
+  getSavedFileContent,
+} from "../../utils/codeFiles";
 
 interface CodeEditorProps {
   lesson: LessonContent;
+  lessonDto?: LessonDTO | null;
   toggleBtn: () => void;
   isVisible: boolean;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
 
+  lessonDto,
   toggleBtn,
   isVisible,
   lesson,
@@ -43,16 +55,42 @@ const dispatch = useDispatch<AppDispatch>();
 const lessonCode = useSelector((state: RootState) =>
   selectLessonCode(state, lesson.id)
 );
+  const fallbackHtml = lessonDto ? getInitialHtmlFromLessonFiles(lessonDto.files) : lesson.initialHtml;
+  const fallbackCss = lessonDto ? getInitialCssFromLessonFiles(lessonDto.files) : lesson.initialCss;
+  const effectiveSavedFiles =
+    lessonCode.savedFiles.length > 0
+      ? lessonCode.savedFiles
+      : buildSavedFiles(fallbackHtml, fallbackCss);
+  const currentHtml = getHtmlFromSavedFiles(effectiveSavedFiles) || fallbackHtml;
+  const currentCss = getCssFromSavedFiles(effectiveSavedFiles) || fallbackCss;
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monaco = useMonaco();
 const validateTimerRef = useRef<number | null>(null);
 
-  const [fileName, setFileName] = useState<FileNames>(FileNames.HTML);
+  const supportedFiles = (lessonDto?.files ?? buildSavedFiles(fallbackHtml, fallbackCss).map((file, index) => ({
+    id: `${lesson.id}_fallback_${index + 1}`,
+    name: file.name,
+    language: file.language,
+    initialContent: file.content,
+    orderIndex: index + 1,
+    isEditable: true,
+  }))).filter(
+    (file) => file.name === "index.html" || file.name === "style.css",
+  ).sort((a, b) => a.orderIndex - b.orderIndex);
+
+  const currentFiles = supportedFiles.map((file) => ({
+    ...file,
+    content: getSavedFileContent(effectiveSavedFiles, file.name) || file.initialContent,
+  }));
+
+  const [fileName, setFileName] = useState<string>(() => supportedFiles[0]?.name ?? "index.html");
   const [output, setOutput] = useState({
-    html: lessonCode.html || lesson.initialHtml,
-    css: lessonCode.css || lesson.initialCss,
+    html: currentHtml,
+    css: currentCss,
   });
 const [htmlError, setHtmlError] = useState<string | null>(null);
+  const activeFile =
+    currentFiles.find((file) => file.name === fileName) ?? currentFiles[0] ?? null;
 
   const { containerRef, dividerPosition, startResizing, isOverlayVisible } =
     useResizable();
@@ -98,15 +136,26 @@ const focusFirstHtmlError = (): boolean => {
   useEffect(() => {
     // Обновлюємо output при зміні уроку
     setOutput({
-      html: lessonCode.html || lesson.initialHtml,
-      css: lessonCode.css || lesson.initialCss,
+      html: currentHtml,
+      css: currentCss,
     });
-  }, [lessonCode.html, lessonCode.css, lesson.initialHtml, lesson.initialCss]);
+  }, [currentHtml, currentCss]);
+
+  useEffect(() => {
+    if (!activeFile && supportedFiles[0]) {
+      setFileName(supportedFiles[0].name);
+      return;
+    }
+
+    if (activeFile && !currentFiles.some((file) => file.name === activeFile.name) && supportedFiles[0]) {
+      setFileName(supportedFiles[0].name);
+    }
+  }, [activeFile, currentFiles, supportedFiles]);
 
 const handleChange = (newValue: string | undefined) => {
   const value = newValue || "";
 
-  if (fileName === FileNames.HTML) {
+  if (activeFile?.name === "index.html") {
     dispatch(updateHtml({ lessonId: lesson.id, html: value }));
 
     if (monaco && editorRef.current) {
@@ -124,7 +173,7 @@ const handleChange = (newValue: string | undefined) => {
     }
   }
 
-  if (fileName === FileNames.STYLE) {
+  if (activeFile?.name === "style.css") {
     dispatch(updateCss({ lessonId: lesson.id, css: value }));
   }
 };
@@ -132,8 +181,8 @@ const handleChange = (newValue: string | undefined) => {
 
   const handleRunCode = () => {
     setOutput({
-      html: lessonCode.html || lesson.initialHtml,
-      css: lessonCode.css || lesson.initialCss,
+      html: currentHtml,
+      css: currentCss,
     });
   if (htmlError) {
     focusFirstHtmlError();
@@ -141,16 +190,16 @@ const handleChange = (newValue: string | undefined) => {
   }
     checkLesson({
       lesson,
-      userHtml: lessonCode.html || lesson.initialHtml,
-      userCss: lessonCode.css || lesson.initialCss,
+      userHtml: currentHtml,
+      userCss: currentCss,
       dispatch,
     });
     // Зберігаємо код у Redux як "збережений"
     dispatch(
       setLessonCode({
         lessonId: lesson.id,
-        html: lessonCode.html || lesson.initialHtml,
-        css: lessonCode.css || lesson.initialCss,
+        html: currentHtml,
+        css: currentCss,
       })
     );
 dispatch(saveUserData());
@@ -164,11 +213,11 @@ dispatch(saveUserData());
     dispatch(
       setLessonCode({
         lessonId: lesson.id,
-        html: lesson.initialHtml,
-        css: lesson.initialCss,
+        html: fallbackHtml,
+        css: fallbackCss,
       })
     );
-    setOutput({ html: lesson.initialHtml, css: lesson.initialCss });
+    setOutput({ html: fallbackHtml, css: fallbackCss });
    setHtmlError(null);
 
    if (monaco && editorRef.current) {
@@ -202,25 +251,18 @@ dispatch(saveUserData());
           {isVisible ? "Приховати деталі уроку" : "Деталі уроку"}
         </button>
 
-        <button
-          className={`${styles.tabButtons} ${
-            fileName === FileNames.STYLE ? styles.active : ""
-          }`}
-          disabled={fileName === FileNames.STYLE}
-          onClick={() => setFileName(FileNames.STYLE)}
-        >
-          style.css
-        </button>
-
-        <button
-          className={`${styles.tabButtons} ${
-            fileName === FileNames.HTML ? styles.active : ""
-          }`}
-          disabled={fileName === FileNames.HTML}
-          onClick={() => setFileName(FileNames.HTML)}
-        >
-          index.html
-        </button>
+        {currentFiles.map((file) => (
+          <button
+            key={file.id}
+            className={`${styles.tabButtons} ${
+              fileName === file.name ? styles.active : ""
+            }`}
+            disabled={fileName === file.name}
+            onClick={() => setFileName(file.name)}
+          >
+            {file.name}
+          </button>
+        ))}
 
         <LessonNavigation currentLessonId={lesson.id} />
       </div>
@@ -232,12 +274,8 @@ dispatch(saveUserData());
         >
           <Editor
             theme="myCustomTheme"
-            language={fileName === FileNames.HTML ? "html" : "css"}
-            value={
-              fileName === FileNames.HTML
-                ? lessonCode.html || lesson.initialHtml
-                : lessonCode.css || lesson.initialCss
-            }
+            language={activeFile?.language ?? "html"}
+            value={activeFile?.content ?? ""}
             onChange={handleChange}
             beforeMount={handleBeforeMount}
             onMount={onMount}

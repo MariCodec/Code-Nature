@@ -39,7 +39,7 @@ export const checkLesson = ({
     const completedTaskIds: string[] = [];
 
     for (const task of lesson.tasks) {
-      const success = validateHtmlCss(userHtml, doc, {
+      const success = validateHtmlCss(doc, {
         htmlSelectors: task.rules?.htmlSelectors ?? [],
         cssChecks: task.rules?.cssChecks ?? [],
         requireTextContains: task.rules?.requireTextContains ?? [],

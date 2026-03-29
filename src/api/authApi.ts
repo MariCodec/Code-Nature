@@ -1,16 +1,21 @@
 export type LoginPayload = {
   email: string;
   password: string;
+  role: "student" | "teacher";
 };
 
 export type RegisterPayload = {
+  name: string;
   email: string;
   password: string;
+  role: "student" | "teacher";
 };
 
 export type AuthUserDTO = {
   id: string;
+  name: string;
   email: string;
+  role: "student" | "teacher";
 };
 
 export type AuthTokensDTO = {
@@ -62,9 +67,17 @@ export const authApi = {
     if (!payload.password || payload.password.length < 4) {
       throw new Error("Password too short");
     }
+    if (!payload.name.trim()) {
+      throw new Error("Name required");
+    }
 
     const session: AuthSessionDTO = {
-      user: { id: makeUserIdFromEmail(email), email },
+      user: {
+        id: makeUserIdFromEmail(email),
+        name: payload.name.trim(),
+        email,
+        role: payload.role,
+      },
       tokens: { accessToken: randomToken(), refreshToken: randomToken() },
     };
 
@@ -84,7 +97,12 @@ export const authApi = {
 
     // Мок: “логінимо” будь-кого
     const session: AuthSessionDTO = {
-      user: { id: makeUserIdFromEmail(email), email },
+      user: {
+        id: makeUserIdFromEmail(email),
+        name: email.split("@")[0],
+        email,
+        role: payload.role,
+      },
       tokens: { accessToken: randomToken(), refreshToken: randomToken() },
     };
 

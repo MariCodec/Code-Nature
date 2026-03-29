@@ -1,37 +1,74 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-// import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { lessons } from "../../data/lessonData";
 import type { LessonCategory } from "../../types/lessonTypes";
+import { AppDispatch, RootState } from "../../store";
 
 import CodeEditor from "../../components/CodeEditor/CodeEditor";
 import TaskList from "../../components/taskList/TasksList";
 import LessonHeader from "../../components/lessonHeader/LessonHeader";
 
 import styles from "./LessonPage.module.scss";
-// import { RootState } from "../../store";
-// import { selectLessonCode } from "../../store/slices/userCodeSlice";
+import {
+  fetchCourseLessons,
+  fetchCoursesByTrack,
+  fetchLessonById,
+  selectContentError,
+  selectCoursesByTrack,
+  selectLessonById,
+  selectLessonStatus,
+} from "../../store/slices/contentSlice";
+import {
+  adaptLessonToLegacyContent,
+  findCourseByLegacyCategory,
+} from "../../utils/contentAdapters";
 
 const LessonPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);
   const { category, id } = useParams<{
     category?: LessonCategory;
     id?: string;
   }>();
+  const frontendCourses = useSelector((state: RootState) =>
+    selectCoursesByTrack(state, "frontend"),
+  );
+  const selectedCourse = category
+    ? findCourseByLegacyCategory(frontendCourses, category)
+    : null;
+  const lessonDto = useSelector((state: RootState) =>
+    id ? selectLessonById(state, id) : null,
+  );
+  const lessonStatus = useSelector((state: RootState) =>
+    id ? selectLessonStatus(state, id) : "idle",
+  );
+  const contentError = useSelector(selectContentError);
 
-  const lesson =
-    category && id ? lessons[category]?.find((l) => l.id === id) : undefined;
+  useEffect(() => {
+    void dispatch(fetchCoursesByTrack("frontend"));
+  }, [dispatch]);
 
-  if (!lesson) return <h2>Урок не знайдено</h2>;
+  useEffect(() => {
+    if (!selectedCourse) return;
+    void dispatch(fetchCourseLessons(selectedCourse.id));
+  }, [dispatch, selectedCourse]);
+
+  useEffect(() => {
+    if (!id) return;
+    void dispatch(fetchLessonById(id));
+  }, [dispatch, id]);
+
+  const lesson = useMemo(() => {
+    if (!category || !lessonDto) return null;
+    return adaptLessonToLegacyContent(lessonDto, category);
+  }, [category, lessonDto]);
+
+  if (contentError) return <h2>{contentError}</h2>;
+  if (lessonStatus === "loading" || (id && !lessonDto)) return <h2>Завантаження уроку...</h2>;
+  if (!lessonDto || !lesson) return <h2>Урок не знайдено</h2>;
 
   const toggleBtn = () => setIsLessonInfoVisible((prev) => !prev);
-
-  // const lessonCode = useSelector((state: RootState) =>
-  //   selectLessonCode(state, lesson.id),
-  // );
-
-  // console.log(lessonCode);
 
   return (
     <div className={styles.wrapper}>
@@ -39,14 +76,21 @@ const LessonPage = () => {
         className={`${styles.lessonInfo} ${isLessonInfoVisible ? styles.show : ""}`}
       >
         <div className={styles.sidebarCard}>
-          <LessonHeader title={lesson.title} description={lesson.description} />
-          <TaskList lessonId={lesson.id} tasks={lesson.tasks} />
+          <LessonHeader title={lessonDto.title} description={lessonDto.description} />
+          <TaskList
+            lessonId={lessonDto.id}
+            tasks={lessonDto.tasks.map((task) => ({
+              id: task.id,
+              text: task.description,
+            }))}
+          />
         </div>
       </div>
 
       <CodeEditor
         key={lesson.id}
         lesson={lesson}
+        lessonDto={lessonDto}
         toggleBtn={toggleBtn}
         isVisible={isLessonInfoVisible}
       />

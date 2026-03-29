@@ -3,7 +3,9 @@ import type { RootState } from "../index";
 
 export type AuthUser = {
   id: string;
+  name: string;
   email: string;
+  role: "student" | "teacher";
 };
 
 export type AuthTokens = {
@@ -68,3 +70,4 @@ export const selectAuthTokens = (state: RootState) => state.auth.tokens;
 export const selectIsAuthenticated = (state: RootState) => Boolean(state.auth.user);
 export const selectAuthStatus = (state: RootState) => state.auth.status;
 export const selectAuthError = (state: RootState) => state.auth.error;
+export const selectAuthRole = (state: RootState) => state.auth.user?.role ?? null;
