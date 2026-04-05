@@ -3,23 +3,25 @@ import {
   markLessonAsCompleted,
   markTaskAsCompleted,
 } from "../store/slices/progressSlice";
-import type { LessonContent } from "../types/lessonTypes";
+import type { LessonTaskDTO } from "../types/content";
 import { validateHtmlCss } from "./validateHtmlCss";
 
 interface CheckLessonProps {
-  lesson: LessonContent;
+  lessonId: string;
+  tasks: LessonTaskDTO[];
   userHtml: string;
   userCss: string;
   dispatch: AppDispatch;
 }
 
 export const checkLesson = ({
-  lesson,
+  lessonId,
+  tasks,
   userHtml,
   userCss,
   dispatch,
 }: CheckLessonProps) => {
-  if (!lesson.tasks.length) return;
+  if (!tasks.length) return;
 
   const iframe = document.createElement("iframe");
   iframe.style.display = "none";
@@ -38,7 +40,7 @@ export const checkLesson = ({
 
     const completedTaskIds: string[] = [];
 
-    for (const task of lesson.tasks) {
+    for (const task of tasks) {
       const success = validateHtmlCss(doc, {
         htmlSelectors: task.rules?.htmlSelectors ?? [],
         cssChecks: task.rules?.cssChecks ?? [],
@@ -49,13 +51,13 @@ export const checkLesson = ({
     }
 
     for (const taskId of completedTaskIds) {
-      dispatch(markTaskAsCompleted({ lessonId: lesson.id, taskId }));
+      dispatch(markTaskAsCompleted({ lessonId, taskId }));
     }
 
-    const allTasksCompleted = lesson.tasks.every((t) =>
+    const allTasksCompleted = tasks.every((t) =>
       completedTaskIds.includes(t.id),
     );
-    if (allTasksCompleted) dispatch(markLessonAsCompleted(lesson.id));
+    if (allTasksCompleted) dispatch(markLessonAsCompleted(lessonId));
   } finally {
     document.body.removeChild(iframe);
   }

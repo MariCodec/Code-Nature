@@ -68,7 +68,6 @@ export const {
   resetProgress,
   resetTasksForLesson,
 } = progressSlice.actions;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const selectTaskStatus = (state: RootState, lessonId: string) =>
   state.progress.taskStatus[lessonId] || {};
 export default progressSlice.reducer;

@@ -11,7 +11,7 @@ import {
   selectCourseLessons,
   selectCoursesByTrack,
 } from "../../store/slices/contentSlice";
-import { findCourseByLegacyCategory } from "../../utils/contentAdapters";
+import { findCourseByLegacyCategory } from "../../utils/courseMapping";
 
 const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   currentLessonId,

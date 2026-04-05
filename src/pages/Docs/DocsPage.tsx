@@ -1,44 +1,146 @@
+import { useEffect, useMemo } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import styles from "./DocsPage.module.scss";
-import { lessons } from "../../data/lessonData";
+import type { AppDispatch, RootState } from "../../store";
+import type { LessonTheoryBlockDTO } from "../../types/content";
+import type { LessonCategory } from "../../types/lessonTypes";
+import {
+  fetchCourseLessons,
+  fetchCoursesByTrack,
+  fetchLessonById,
+  selectContentError,
+  selectCourseLessons,
+  selectCourseLessonsStatus,
+  selectCoursesByTrack,
+  selectLessonById,
+  selectLessonStatus,
+} from "../../store/slices/contentSlice";
+import { findCourseByLegacyCategory } from "../../utils/courseMapping";
 
-type TheoryBlock =
-  | { type: "text"; content: string }
-  | { type: "list"; items: string[] }
-  | { type: "code"; lang: "html" | "css"; content: string };
+const DOC_CATEGORIES: LessonCategory[] = ["html", "css"];
 
-type LessonWithTheory = {
-  id: string;
-  title: string;
-  description: string;
-  theory?: {
-    title?: string;
-    blocks?: TheoryBlock[];
-  };
+const getCategoryLabel = (category: LessonCategory) => category.toUpperCase();
+
+const renderTheoryBlock = (
+  block: LessonTheoryBlockDTO,
+  index: number,
+  classNames: typeof styles,
+) => {
+  switch (block.blockType) {
+    case "text":
+      return (
+        <p key={block.id ?? index} className={classNames.p}>
+          {block.content.text}
+        </p>
+      );
+
+    case "list":
+      return (
+        <ul key={block.id ?? index} className={classNames.ul}>
+          {block.content.items.map((item, itemIndex) => (
+            <li key={`${block.id}_${itemIndex}`}>{item}</li>
+          ))}
+        </ul>
+      );
+
+    case "code":
+      return (
+        <div key={block.id ?? index} className={classNames.codeBlock}>
+          <div className={classNames.codeLabel}>{block.content.lang.toUpperCase()}</div>
+          <pre className={classNames.pre}>
+            <code>{block.content.code}</code>
+          </pre>
+        </div>
+      );
+
+    case "note":
+      return (
+        <p key={block.id ?? index} className={classNames.p}>
+          {block.content.text}
+        </p>
+      );
+  }
 };
 
-type LessonsMap = Record<string, LessonWithTheory[]>;
+const isLessonCategory = (value: string | undefined): value is LessonCategory =>
+  value === "html" || value === "css";
 
 export default function DocsPage() {
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { category, id } = useParams<{ category?: string; id?: string }>();
+  const safeCategory: LessonCategory = isLessonCategory(category) ? category : "html";
 
-  const lessonsMap = lessons as unknown as LessonsMap;
-  const categories = Object.keys(lessonsMap);
+  const frontendCourses = useSelector((state: RootState) =>
+    selectCoursesByTrack(state, "frontend"),
+  );
+  const selectedCourse = useMemo(
+    () => findCourseByLegacyCategory(frontendCourses, safeCategory),
+    [frontendCourses, safeCategory],
+  );
+  const lessons = useSelector((state: RootState) =>
+    selectedCourse ? selectCourseLessons(state, selectedCourse.id) : [],
+  );
+  const lessonsStatus = useSelector((state: RootState) =>
+    selectedCourse ? selectCourseLessonsStatus(state, selectedCourse.id) : "idle",
+  );
+  const lessonDto = useSelector((state: RootState) =>
+    id ? selectLessonById(state, id) : null,
+  );
+  const lessonStatus = useSelector((state: RootState) =>
+    id ? selectLessonStatus(state, id) : "idle",
+  );
+  const contentError = useSelector(selectContentError);
 
-  const safeCategory =
-    category && lessonsMap[category] ? category : categories[0];
-  const list = lessonsMap[safeCategory] ?? [];
-  const safeLesson = id ? list.find((l) => l.id === id) : list[0];
+  useEffect(() => {
+    void dispatch(fetchCoursesByTrack("frontend"));
+  }, [dispatch]);
 
-  // якщо /docs відкрили без параметрів — перекидаємо на перший урок
-  if (!category || !id) {
-    if (safeCategory && list[0]) {
-      queueMicrotask(() =>
-        navigate(`/docs/${safeCategory}/${list[0].id}`, { replace: true }),
-      );
+  useEffect(() => {
+    if (!selectedCourse) return;
+    void dispatch(fetchCourseLessons(selectedCourse.id));
+  }, [dispatch, selectedCourse]);
+
+  useEffect(() => {
+    if (!selectedCourse || lessons.length === 0) return;
+
+    const targetLessonId = id ?? lessons[0]?.id;
+    if (!targetLessonId) return;
+
+    void dispatch(fetchLessonById(targetLessonId));
+  }, [dispatch, id, lessons, selectedCourse]);
+
+  useEffect(() => {
+    if (!selectedCourse || lessons.length === 0) return;
+
+    if (!isLessonCategory(category) || !id) {
+      navigate(`/docs/${safeCategory}/${lessons[0].id}`, { replace: true });
+      return;
     }
+
+    const lessonExists = lessons.some((lesson) => lesson.id === id);
+    if (!lessonExists) {
+      navigate(`/docs/${safeCategory}/${lessons[0].id}`, { replace: true });
+    }
+  }, [category, id, lessons, navigate, safeCategory, selectedCourse]);
+
+  if (contentError) {
+    return <h2>{contentError}</h2>;
   }
+
+  if (!selectedCourse) {
+    return <h2>Категорія не знайдена</h2>;
+  }
+
+  if (lessonsStatus === "loading" && lessons.length === 0) {
+    return <h2>Завантаження документації...</h2>;
+  }
+
+  const activeLesson = lessons.find((lesson) => lesson.id === id) ?? lessons[0] ?? null;
+  const isCurrentLessonLoading =
+    !!activeLesson &&
+    (!lessonDto || lessonDto.id !== activeLesson.id || lessonStatus === "loading");
 
   return (
     <div className={styles.page}>
@@ -51,93 +153,69 @@ export default function DocsPage() {
 
           <div className={styles.sectionTitle}>Категорії</div>
           <div className={styles.categories}>
-            {categories.map((c) => (
+            {DOC_CATEGORIES.map((item) => (
               <button
-                key={c}
-                className={`${styles.categoryBtn} ${c === safeCategory ? styles.active : ""}`}
-                onClick={() => {
-                  const first = lessonsMap[c]?.[0];
-                  if (first) navigate(`/docs/${c}/${first.id}`);
-                }}
+                key={item}
+                className={`${styles.categoryBtn} ${
+                  item === safeCategory ? styles.active : ""
+                }`}
+                onClick={() => navigate(`/docs/${item}`)}
               >
-                {c.toUpperCase()}
+                {getCategoryLabel(item)}
               </button>
             ))}
           </div>
 
           <div className={styles.sectionTitle}>Уроки</div>
           <nav className={styles.lessonNav}>
-            {list.map((l) => (
+            {lessons.map((lesson) => (
               <NavLink
-                key={l.id}
-                to={`/docs/${safeCategory}/${l.id}`}
+                key={lesson.id}
+                to={`/docs/${safeCategory}/${lesson.id}`}
                 className={({ isActive }) =>
                   `${styles.lessonLink} ${isActive ? styles.lessonLinkActive : ""}`
                 }
               >
-                <div className={styles.lessonLinkTitle}>{l.title}</div>
-                <div className={styles.lessonLinkDesc}>{l.description}</div>
+                <div className={styles.lessonLinkTitle}>{lesson.title}</div>
+                <div className={styles.lessonLinkDesc}>{lesson.description}</div>
               </NavLink>
             ))}
           </nav>
         </aside>
 
         <main className={styles.content}>
-          {!safeLesson ? (
+          {!activeLesson ? (
             <div className={styles.empty}>
               <h2>Немає уроків у цій категорії</h2>
-              <p>Додай хоча б один урок у lessonData.ts</p>
+              <p>Курс ще не містить доступних уроків.</p>
+            </div>
+          ) : isCurrentLessonLoading ? (
+            <div className={styles.empty}>
+              <h2>Завантаження уроку...</h2>
+            </div>
+          ) : !lessonDto ? (
+            <div className={styles.empty}>
+              <h2>Урок не знайдено</h2>
             </div>
           ) : (
             <>
               <header className={styles.contentHeader}>
-                <h1 className={styles.h1}>
-                  {safeLesson.theory?.title ?? safeLesson.title}
-                </h1>
-                <p className={styles.lead}>{safeLesson.description}</p>
+                <h1 className={styles.h1}>{lessonDto.title}</h1>
+                <p className={styles.lead}>{lessonDto.description}</p>
               </header>
 
               <section className={styles.card}>
-                {safeLesson.theory?.blocks?.length ? (
+                {lessonDto.theoryBlocks.length ? (
                   <div className={styles.blocks}>
-                    {safeLesson.theory.blocks.map((b, idx) => {
-                      if (b.type === "text")
-                        return (
-                          <p key={idx} className={styles.p}>
-                            {b.content}
-                          </p>
-                        );
-                      if (b.type === "list")
-                        return (
-                          <ul key={idx} className={styles.ul}>
-                            {b.items.map((it, i) => (
-                              <li key={i}>{it}</li>
-                            ))}
-                          </ul>
-                        );
-                      if (b.type === "code")
-                        return (
-                          <div key={idx} className={styles.codeBlock}>
-                            <div className={styles.codeLabel}>
-                              {b.lang.toUpperCase()}
-                            </div>
-                            <pre className={styles.pre}>
-                              <code>{b.content}</code>
-                            </pre>
-                          </div>
-                        );
-                      return null;
-                    })}
+                    {lessonDto.theoryBlocks.map((block, index) =>
+                      renderTheoryBlock(block, index, styles),
+                    )}
                   </div>
                 ) : (
                   <div className={styles.placeholder}>
-                    <div className={styles.placeholderTitle}>
-                      Теорія ще не додана
-                    </div>
+                    <div className={styles.placeholderTitle}>Теорія ще не додана</div>
                     <div className={styles.placeholderText}>
-                      Додай поле <code>theory</code> до уроку в{" "}
-                      <code>lessonData.ts</code>. Я можу дати шаблон для кожного
-                      уроку.
+                      Для цього уроку поки немає теоретичного блоку.
                     </div>
                   </div>
                 )}

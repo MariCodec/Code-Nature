@@ -20,7 +20,6 @@ import {
 
 import styles from "./CodeEditor.module.scss";
 import { resetTasksForLesson } from "../../store/slices/progressSlice";
-import { LessonContent } from "../../types/lessonTypes";
 import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
 import { setupMonaco } from "../../utils/monacoSetup";
@@ -28,7 +27,7 @@ import { saveUserData } from "../../store/thunks/syncThunks";
 import {
   getInitialCssFromLessonFiles,
   getInitialHtmlFromLessonFiles,
-} from "../../utils/contentAdapters";
+} from "../../utils/lessonFiles";
 import {
   buildSavedFiles,
   getCssFromSavedFiles,
@@ -37,26 +36,22 @@ import {
 } from "../../utils/codeFiles";
 
 interface CodeEditorProps {
-  lesson: LessonContent;
-  lessonDto?: LessonDTO | null;
+  lessonDto: LessonDTO;
   toggleBtn: () => void;
   isVisible: boolean;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
-
   lessonDto,
   toggleBtn,
   isVisible,
-  lesson,
 }) => {
- 
-const dispatch = useDispatch<AppDispatch>();
-const lessonCode = useSelector((state: RootState) =>
-  selectLessonCode(state, lesson.id)
-);
-  const fallbackHtml = lessonDto ? getInitialHtmlFromLessonFiles(lessonDto.files) : lesson.initialHtml;
-  const fallbackCss = lessonDto ? getInitialCssFromLessonFiles(lessonDto.files) : lesson.initialCss;
+  const dispatch = useDispatch<AppDispatch>();
+  const lessonCode = useSelector((state: RootState) =>
+    selectLessonCode(state, lessonDto.id),
+  );
+  const fallbackHtml = getInitialHtmlFromLessonFiles(lessonDto.files);
+  const fallbackCss = getInitialCssFromLessonFiles(lessonDto.files);
   const effectiveSavedFiles =
     lessonCode.savedFiles.length > 0
       ? lessonCode.savedFiles
@@ -67,16 +62,11 @@ const lessonCode = useSelector((state: RootState) =>
   const monaco = useMonaco();
 const validateTimerRef = useRef<number | null>(null);
 
-  const supportedFiles = (lessonDto?.files ?? buildSavedFiles(fallbackHtml, fallbackCss).map((file, index) => ({
-    id: `${lesson.id}_fallback_${index + 1}`,
-    name: file.name,
-    language: file.language,
-    initialContent: file.content,
-    orderIndex: index + 1,
-    isEditable: true,
-  }))).filter(
+  const supportedFiles = lessonDto.files
+    .filter(
     (file) => file.name === "index.html" || file.name === "style.css",
-  ).sort((a, b) => a.orderIndex - b.orderIndex);
+    )
+    .sort((a, b) => a.orderIndex - b.orderIndex);
 
   const currentFiles = supportedFiles.map((file) => ({
     ...file,
@@ -156,7 +146,7 @@ const handleChange = (newValue: string | undefined) => {
   const value = newValue || "";
 
   if (activeFile?.name === "index.html") {
-    dispatch(updateHtml({ lessonId: lesson.id, html: value }));
+    dispatch(updateHtml({ lessonId: lessonDto.id, html: value }));
 
     if (monaco && editorRef.current) {
       const model = editorRef.current.getModel();
@@ -174,7 +164,7 @@ const handleChange = (newValue: string | undefined) => {
   }
 
   if (activeFile?.name === "style.css") {
-    dispatch(updateCss({ lessonId: lesson.id, css: value }));
+    dispatch(updateCss({ lessonId: lessonDto.id, css: value }));
   }
 };
 
@@ -189,7 +179,8 @@ const handleChange = (newValue: string | undefined) => {
     return;
   }
     checkLesson({
-      lesson,
+      lessonId: lessonDto.id,
+      tasks: lessonDto.tasks,
       userHtml: currentHtml,
       userCss: currentCss,
       dispatch,
@@ -197,7 +188,7 @@ const handleChange = (newValue: string | undefined) => {
     // Зберігаємо код у Redux як "збережений"
     dispatch(
       setLessonCode({
-        lessonId: lesson.id,
+        lessonId: lessonDto.id,
         html: currentHtml,
         css: currentCss,
       })
@@ -212,7 +203,7 @@ dispatch(saveUserData());
   const clearCode = () => {
     dispatch(
       setLessonCode({
-        lessonId: lesson.id,
+        lessonId: lessonDto.id,
         html: fallbackHtml,
         css: fallbackCss,
       })
@@ -227,8 +218,8 @@ dispatch(saveUserData());
 
     dispatch(
       resetTasksForLesson({
-        lessonId: lesson.id,
-        taskIds:  lesson.tasks.map((t) => t.id),
+        lessonId: lessonDto.id,
+        taskIds: lessonDto.tasks.map((task) => task.id),
       })
     );
     
@@ -264,7 +255,7 @@ dispatch(saveUserData());
           </button>
         ))}
 
-        <LessonNavigation currentLessonId={lesson.id} />
+        <LessonNavigation currentLessonId={lessonDto.id} />
       </div>
 
       <div className={styles.container}>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -19,10 +19,7 @@ import {
   selectLessonById,
   selectLessonStatus,
 } from "../../store/slices/contentSlice";
-import {
-  adaptLessonToLegacyContent,
-  findCourseByLegacyCategory,
-} from "../../utils/contentAdapters";
+import { findCourseByLegacyCategory } from "../../utils/courseMapping";
 
 const LessonPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -59,14 +56,9 @@ const LessonPage = () => {
     void dispatch(fetchLessonById(id));
   }, [dispatch, id]);
 
-  const lesson = useMemo(() => {
-    if (!category || !lessonDto) return null;
-    return adaptLessonToLegacyContent(lessonDto, category);
-  }, [category, lessonDto]);
-
   if (contentError) return <h2>{contentError}</h2>;
   if (lessonStatus === "loading" || (id && !lessonDto)) return <h2>Завантаження уроку...</h2>;
-  if (!lessonDto || !lesson) return <h2>Урок не знайдено</h2>;
+  if (!category || !lessonDto) return <h2>Урок не знайдено</h2>;
 
   const toggleBtn = () => setIsLessonInfoVisible((prev) => !prev);
 
@@ -88,8 +80,7 @@ const LessonPage = () => {
       </div>
 
       <CodeEditor
-        key={lesson.id}
-        lesson={lesson}
+        key={lessonDto.id}
         lessonDto={lessonDto}
         toggleBtn={toggleBtn}
         isVisible={isLessonInfoVisible}

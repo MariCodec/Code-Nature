@@ -195,8 +195,13 @@ Current progress inside this phase:
 - content loading already goes through `contentApi` + `contentSlice`
 - route structure for public/student/teacher is already in place
 - student persistence has started moving to a dedicated `studentApi`
+- code persistence already stores `savedFiles`-only data
+- progress persistence already stores DTO-like lesson/task progress data
 - lesson navigation is already detached from static `lessonData.ts`
-- lesson page partially consumes `LessonDTO` directly
+- lesson page already consumes `LessonDTO` directly
+- lesson validation no longer depends on legacy lesson adapters
+- docs already use the same content flow as lessons
+- the temporary compatibility adapter layer has been removed
 
 Tasks:
 
@@ -232,7 +237,12 @@ Deliverables:
 - working student lesson flow
 - stable persistence
 - working auth + progress + code integration
-- reduced legacy adapter usage inside lesson/editor pages
+- completed migration away from the temporary lesson compatibility adapter
+
+Status note:
+
+- this phase is now close to a logical checkpoint on the frontend side
+- the next implementation block can move on to teacher flow or another new area rather than more lesson/content migration cleanup
 
 ### Phase 5. Teacher Flow MVP
 

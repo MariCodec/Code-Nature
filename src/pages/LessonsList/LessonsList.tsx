@@ -13,7 +13,7 @@ import {
   selectCourseLessonsStatus,
   selectCoursesByTrack,
 } from "../../store/slices/contentSlice";
-import { findCourseByLegacyCategory } from "../../utils/contentAdapters";
+import { findCourseByLegacyCategory } from "../../utils/courseMapping";
 
 const LessonsList = () => {
   const dispatch = useDispatch<AppDispatch>();

@@ -41,11 +41,40 @@ const saveSession = (session: AuthSessionDTO) => {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 };
 
+const isValidRole = (role: unknown): role is AuthUserDTO["role"] =>
+  role === "student" || role === "teacher";
+
+const isValidSession = (value: unknown): value is AuthSessionDTO => {
+  if (!value || typeof value !== "object") return false;
+
+  const session = value as Partial<AuthSessionDTO>;
+  const user = session.user as Partial<AuthUserDTO> | undefined;
+  const tokens = session.tokens as Partial<AuthTokensDTO> | undefined;
+
+  return Boolean(
+    user &&
+      typeof user.id === "string" &&
+      typeof user.name === "string" &&
+      typeof user.email === "string" &&
+      isValidRole(user.role) &&
+      tokens &&
+      typeof tokens.accessToken === "string" &&
+      typeof tokens.refreshToken === "string",
+  );
+};
+
 const readSession = (): AuthSessionDTO | null => {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AuthSessionDTO;
+    const parsed = JSON.parse(raw);
+
+    if (!isValidSession(parsed)) {
+      clearSession();
+      return null;
+    }
+
+    return parsed;
   } catch {
     return null;
   }

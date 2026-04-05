@@ -43,7 +43,6 @@ Already implemented:
 - mock `contentApi`
 - Redux `contentSlice`
 - lesson pages connected to the new content flow
-- temporary compatibility adapter between new lesson DTOs and legacy components
 - role-aware auth foundation
 - route separation for public / student / teacher areas
 - `savedFiles`-ready student code state
@@ -51,13 +50,19 @@ Already implemented:
 - user-scoped `studentApi` for code and progress persistence
 - lesson navigation connected to `contentSlice` instead of static lesson data
 - `LessonPage` partially switched to direct `lessonDto` usage for header and tasks
+- `checkLesson` now works from DTO-based task data instead of legacy lesson content
+- `DocsPage` now uses the same content flow as lesson pages
+- the temporary compatibility adapter layer has already been removed
+- code persistence now stores `savedFiles`-only data
+- progress persistence now stores DTO-like lesson/task progress data and maps it back into the current Redux UI state
 
 This means:
 
 - the frontend is no longer purely static-lesson-driven
 - the migration is already in progress
-- student persistence has already started moving to API-shaped flows
-- the next major frontend priority is reducing the remaining legacy adapter usage inside the lesson/editor flow
+- student persistence has already moved to API-shaped flows in a practical way
+- the current frontend block has reached a solid intermediate completion point
+- the next frontend priority can shift to the next feature block instead of more persistence cleanup
 
 ## Current Technical Reality
 

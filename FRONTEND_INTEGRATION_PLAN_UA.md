@@ -145,26 +145,26 @@
 
 - список уроків і сторінка уроку вже ближчі до майбутньої API-архітектури
 
-### 5. Додано `contentAdapters.ts`
+### 5. Було використано тимчасовий compatibility layer, а потім прибрано
 
 Що зроблено:
 
-- створено adapter між новим `LessonDTO` і старим `LessonContent`
+- на проміжному етапі був використаний adapter між новим `LessonDTO` і старим `LessonContent`
+- після переведення `LessonPage`, `CodeEditor` і `checkLesson` на новіший data flow цей adapter був видалений
+- замість нього залишились вузькі helper-и:
+  - `courseMapping.ts`
+  - `lessonFiles.ts`
 
 Для чого:
 
-- щоб не переписувати весь UI за один крок
-- щоб старі компоненти могли ще працювати, поки нова модель уже впроваджується
+- щоб пройти міграцію поступово, без одного великого risky рефакторингу
+- а потім повернути код до чистішої структури без зайвого compatibility-файлу
 
 Що це дало:
 
-- перехід на нову архітектуру відбувається поступово
-- `CodeEditor`, `TaskList` та інші legacy-компоненти не довелося ламати одразу
-
-Примітка:
-
-- це тимчасовий шар сумісності
-- його треба буде видалити після завершення міграції редактора і lesson-логіки
+- compatibility stage уже пройдений
+- фронтенд менше залежить від legacy-структур
+- поточний код чистіший і простіший для наступних змін
 
 ### 6. Реалізовано базовий auth foundation
 
@@ -264,6 +264,15 @@
 - student persistence уже має правильний напрямок
 - замінити mock/local persistence на реальний бекенд буде значно простіше
 
+Додатково завершено:
+
+- code persistence тепер зберігається як `savedFiles`-only формат
+- progress persistence тепер зберігається у DTO-подібному форматі:
+  - `lessonProgress`
+  - `taskProgress`
+  - `currentLessonId`
+- при завантаженні дані нормалізуються назад у поточний Redux shape без зламу UI
+
 ### 11. `LessonNavigation` переведено на новий content flow
 
 Що зроблено:
@@ -297,7 +306,60 @@
 Що це дало:
 
 - сторінка уроку вже частково працює від нового DTO-напрямку
-- наступні кроки по видаленню `contentAdapters.ts` стали простішими
+- це підготувало повне видалення compatibility adapter-а
+
+### 13. `checkLesson` і `CodeEditor` переведено з legacy lesson-shape
+
+Що зроблено:
+
+- `checkLesson` більше не працює через старий `LessonContent`
+- `CodeEditor` передає в `checkLesson` мінімальний validation-shape на основі `lessonDto.tasks`
+- стара lesson-модель більше не потрібна в editor validation flow
+
+Для чого:
+
+- щоб прибрати ще один великий шматок legacy-залежності
+- щоб validation flow теж став ближчим до backend-ready lesson DTO
+
+Що це дало:
+
+- lesson validation більше не залежить від старого формату уроку
+- editor flow став послідовнішим відносно нової content-моделі
+
+### 14. `DocsPage` переведено на `contentSlice`
+
+Що зроблено:
+
+- docs більше не читають теорію напряму з `lessonData.ts`
+- `DocsPage` тепер завантажує список уроків і конкретний урок через `contentSlice`
+- теорія рендериться з `lessonDto.theoryBlocks`
+
+Для чого:
+
+- щоб docs теж жили в тій самій content-архітектурі, що й lessons
+- щоб не тримати окремий legacy-шлях для контенту
+
+Що це дало:
+
+- ще один великий legacy-вузол фронту закритий
+- docs стали backend-ready на рівні data flow
+
+### 15. `contentAdapters.ts` повністю прибрано
+
+Що зроблено:
+
+- старий `contentAdapters.ts` видалений
+- mapping категорій і helper-и для lesson files винесені в окремі вузькі утиліти
+
+Для чого:
+
+- щоб завершити cleanup після міграції
+- щоб не залишати "тимчасовий файл", який уже не виконує свою попередню роль
+
+Що це дало:
+
+- код став чистішим
+- поточний фронтенд уже не має окремого compatibility adapter layer
 
 ### Підсумок Поточного Стану
 
@@ -306,18 +368,19 @@
 - content layer
 - route foundation
 - auth foundation
-- перехідний compatibility layer
 - `savedFiles`-ready editor state
 - user-scoped student persistence
 - навігація уроків через `contentSlice`
-- часткова відмова від legacy-формату на `LessonPage`
+- `LessonPage` уже працює від нового DTO flow
+- `DocsPage` працює від нового content flow
+- compatibility adapter layer уже прибраний
 
 Що це означає:
 
 - фронтенд уже рухається по правильній архітектурі
 - але ще не підключений до реального бекенду
-- головні наступні фронтенд-кроки: далі зменшувати legacy в `CodeEditor` і доводити `student persistence` до backend-ready DTO flow
-- наступні кроки мають бути спрямовані на:
+- блок `student persistence + content-flow migration` можна вважати логічно завершеним проміжним етапом
+- наступний фронтенд-крок уже має бути новим блоком, а не продовженням цього cleanup
   - student persistence через API-shaped layer
   - поступове прибирання legacy-шарів
 

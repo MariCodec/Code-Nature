@@ -28,7 +28,6 @@
 - додано mock `contentApi`
 - додано `contentSlice`
 - список уроків і сторінка уроку переведені на новий content flow
-- додано тимчасовий compatibility layer через adapter
 - реалізовано базовий auth foundation
 - маршрути розділені на public / student / teacher
 - `userCode` підготовлено до `savedFiles`
@@ -37,13 +36,20 @@
 - `syncThunks` переведено на `studentApi`
 - `LessonNavigation` переведено на `contentSlice`
 - `LessonPage` частково переведено на прямий `lessonDto`
+- `checkLesson` переведено з legacy lesson-shape на DTO-based tasks
+- `DocsPage` переведено на новий content flow
+- тимчасовий compatibility adapter уже видалено
+- code persistence переведено на `savedFiles`-only формат
+- progress persistence переведено на DTO-подібний persisted shape
 
 Що це означає:
 
 - ми вже не на етапі "тільки планування"
 - фронтенд-міграція вже почалась
-- student persistence уже почав переходити на нову модель
-- наступний основний фокус має бути на подальшому прибиранні legacy-залежностей у lesson/editor flow
+- student persistence уже доведено до значно більш backend-ready моделі
+- основний legacy-cleanup по content flow уже пройдений
+- блок student flow на рівні content + persistence доведений до хорошої проміжної точки
+- наступний основний фокус має бути на новому frontend-блоці, а не на продовженні цього migration-cleanup
 
 ## Загальний Принцип Реалізації
 

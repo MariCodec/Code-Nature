@@ -62,16 +62,16 @@ function App() {
           <Route path="/css" element={<Navigate to="/student/css" replace />} />
           <Route path="/:category/:id" element={<LegacyLessonRedirect />} />
 
-          <Route element={<AuthGuard allowedRoles={["student"]} />}>
-            <Route path="/student" element={<Layout />}>
+          <Route path="/student" element={<AuthGuard allowedRoles={["student"]} />}>
+            <Route element={<Layout />}>
               <Route index element={<StudentHomeRedirect />} />
               <Route path=":category" element={<LessonsList />} />
               <Route path=":category/:id" element={<LessonPage />} />
             </Route>
           </Route>
 
-          <Route element={<AuthGuard allowedRoles={["teacher"]} />}>
-            <Route path="/teacher" element={<Layout />}>
+          <Route path="/teacher" element={<AuthGuard allowedRoles={["teacher"]} />}>
+            <Route element={<Layout />}>
               <Route index element={<TeacherHomePlaceholder />} />
             </Route>
           </Route>
