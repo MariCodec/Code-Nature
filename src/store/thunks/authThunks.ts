@@ -10,6 +10,9 @@ import {
   setAuthStatus,
   setSession,
 } from "../slices/authSlice";
+import { loadUserData } from "./syncThunks";
+import { resetProgress } from "../slices/progressSlice";
+import { resetUserCode } from "../slices/userCodeSlice";
 
 export const register = createAsyncThunk(
   "auth/register",
@@ -20,6 +23,7 @@ export const register = createAsyncThunk(
 
       const session = await authApi.register(payload);
       dispatch(setSession(session));
+      await dispatch(loadUserData());
 
       return session;
     } catch (e) {
@@ -40,6 +44,7 @@ export const login = createAsyncThunk(
 
       const session = await authApi.login(payload);
       dispatch(setSession(session));
+      await dispatch(loadUserData());
 
       return session;
     } catch (e) {
@@ -75,5 +80,7 @@ export const logout = createAsyncThunk(
   async (_, { dispatch }) => {
     await authApi.logout();
     dispatch(clearSession());
+    dispatch(resetProgress());
+    dispatch(resetUserCode());
   },
 );

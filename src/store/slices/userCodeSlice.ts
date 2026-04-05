@@ -96,6 +96,9 @@ const userCodeSlice = createSlice({
     resetLessonCode: (state, action: PayloadAction<{ lessonId: string }>) => {
       state[action.payload.lessonId] = createLessonCode("", "");
     },
+    resetUserCode: () => {
+      return initialState;
+    },
     hydrateUserCode: (
       _state,
       action: PayloadAction<Record<string, HydratableLessonCode>>,
@@ -117,6 +120,7 @@ const userCodeSlice = createSlice({
     updateHtml,
     updateCss,
     resetLessonCode,
+    resetUserCode,
   } = userCodeSlice.actions;
 
 export const selectLessonCode = createSelector(

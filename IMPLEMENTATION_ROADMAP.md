@@ -248,6 +248,25 @@ Status note:
 
 Goal: provide minimum teacher visibility over students.
 
+Recommended execution order inside this phase:
+
+1. add `teacherApi` mock layer
+2. add `teacherSlice` and async thunks
+3. replace teacher placeholder with a teacher shell
+4. build `/teacher/students`
+5. build `/teacher/students/:studentId`
+6. optionally show saved code per lesson after progress view is stable
+
+Current progress inside this phase:
+
+- `teacherApi` is implemented
+- `teacherSlice` is implemented
+- teacher shell is implemented
+- teacher students list page is implemented
+- teacher student details page is implemented
+- teacher details already include task progress and code snapshots
+- role-aware header and logout flow are implemented, so switching between student and teacher sessions is now practical
+
 Tasks:
 
 - create teacher dashboard shell
@@ -270,7 +289,38 @@ Deliverables:
 - student details page
 - progress monitoring interface
 
-### Phase 6. Content Expansion
+Status note:
+
+- this phase has reached a good frontend MVP checkpoint
+- further work here would mostly be deeper analytics or polish, not missing foundation
+
+### Phase 6. Student Progress UX
+
+Goal: make the student area feel like a complete learning path, not only a lesson runner.
+
+Tasks:
+
+- implement `/student/progress`
+- show completed lessons summary
+- show current lesson summary
+- show task completion summary
+- add a clear `continue learning` entry point
+- connect student navigation and header UX cleanly to the progress view
+
+Why this phase is the most rational next step:
+
+- student persistence is already strong enough to support it
+- student lesson pages already work
+- teacher MVP already exists
+- this fills a visible product gap without requiring another infrastructure-heavy refactor
+
+Deliverables:
+
+- student progress page
+- progress summary UI
+- clearer continuity between lesson work and overall learning path
+
+### Phase 7. Content Expansion
 
 Goal: only after architecture and flows are stable, expand learning content.
 
@@ -322,4 +372,5 @@ The next practical implementation step should be:
 4. auth and role routing
 5. student persistence
 6. teacher dashboard MVP
-7. content expansion
+7. student progress UX
+8. content expansion

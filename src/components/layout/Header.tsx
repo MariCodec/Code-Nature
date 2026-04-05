@@ -1,7 +1,30 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import styles from "./Layout.module.scss";
+import type { AppDispatch } from "../../store";
+import {
+  selectAuthRole,
+  selectAuthUser,
+  selectIsAuthenticated,
+} from "../../store/slices/authSlice";
+import { logout } from "../../store/thunks/authThunks";
 // import logo from "../../assets/logo.png"
 const Header = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectAuthUser);
+  const role = useSelector(selectAuthRole);
+
+  const roleLabel = role === "teacher" ? "Викладач" : "Учень";
+  const dashboardPath = role === "teacher" ? "/teacher" : "/student";
+  const showStudentLessonsLinks = !isAuthenticated || role === "student";
+
+  const handleLogout = async () => {
+    await dispatch(logout());
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
@@ -59,17 +82,58 @@ const Header = () => {
         <Link className={styles.navLink} to="/home">
           Home
         </Link>
-        <Link className={styles.navLink} to="/html">
-          HTML{" "}
-        </Link>
-        <Link className={styles.navLink} to="/css">
-          CSS{" "}
-        </Link>
+        {showStudentLessonsLinks && (
+          <>
+            <Link className={styles.navLink} to="/html">
+              HTML
+            </Link>
+            <Link className={styles.navLink} to="/css">
+              CSS
+            </Link>
+          </>
+        )}
+        {role === "teacher" && (
+          <Link className={styles.navLink} to="/teacher/students">
+            Учні
+          </Link>
+        )}
         {/* <Link to="/js">JavaScript Lessons</Link> */}
         <Link className={styles.navLink} to="/docs">
           Docs
         </Link>
       </nav>
+
+      <div className={styles.authControls}>
+        {isAuthenticated && user ? (
+          <>
+            <div className={styles.userInfo}>
+              <span className={styles.userName}>{user.name}</span>
+              <span className={styles.roleBadge}>{roleLabel}</span>
+            </div>
+
+            <Link className={styles.dashboardLink} to={dashboardPath}>
+              Мій кабінет
+            </Link>
+
+            <button
+              type="button"
+              className={styles.logoutButton}
+              onClick={handleLogout}
+            >
+              Вийти
+            </button>
+          </>
+        ) : (
+          <>
+            <Link className={styles.dashboardLink} to="/login">
+              Увійти
+            </Link>
+            <Link className={styles.secondaryLink} to="/register">
+              Реєстрація
+            </Link>
+          </>
+        )}
+      </div>
     </header>
   );
 };

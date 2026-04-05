@@ -55,6 +55,13 @@ Already implemented:
 - the temporary compatibility adapter layer has already been removed
 - code persistence now stores `savedFiles`-only data
 - progress persistence now stores DTO-like lesson/task progress data and maps it back into the current Redux UI state
+- role-aware header now shows:
+  - user name
+  - role badge
+  - dashboard link
+  - logout action
+- auth flow now reloads user data after login/register
+- logout now clears student code and progress state in Redux
 
 This means:
 
@@ -63,6 +70,17 @@ This means:
 - student persistence has already moved to API-shaped flows in a practical way
 - the current frontend block has reached a solid intermediate completion point
 - the next frontend priority can shift to the next feature block instead of more persistence cleanup
+
+Recommended next frontend block:
+
+- `Student Progress UX`
+
+Reason:
+
+- `/student/progress` is already part of the intended page map
+- student persistence is already strong enough to support a useful progress page
+- teacher MVP is already sufficient for the current frontend checkpoint
+- this improves the actual product experience without requiring a deeper infrastructure rewrite first
 
 ## Current Technical Reality
 
@@ -293,7 +311,8 @@ These decisions should be preserved across future chats unless product requireme
 3. implement auth foundation
 4. stabilize student flow
 5. implement teacher flow
-6. expand lesson content and docs
+6. implement student progress UX
+7. expand lesson content and docs
 
 ## Guidance For Future Chats
 

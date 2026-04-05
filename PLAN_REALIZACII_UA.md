@@ -41,6 +41,17 @@
 - тимчасовий compatibility adapter уже видалено
 - code persistence переведено на `savedFiles`-only формат
 - progress persistence переведено на DTO-подібний persisted shape
+- teacher block уже реалізований на базовому MVP-рівні:
+  - `teacherApi`
+  - `teacherSlice`
+  - teacher home
+  - teacher students list
+  - teacher student details
+- додано role-aware header:
+  - `Мій кабінет`
+  - `Вийти`
+  - badge ролі
+  - окрему teacher-навігацію
 
 Що це означає:
 
@@ -49,7 +60,40 @@
 - student persistence уже доведено до значно більш backend-ready моделі
 - основний legacy-cleanup по content flow уже пройдений
 - блок student flow на рівні content + persistence доведений до хорошої проміжної точки
+- teacher block уже теж дійшов до хорошого MVP-checkpoint
 - наступний основний фокус має бути на новому frontend-блоці, а не на продовженні цього migration-cleanup
+
+## Наступний Блок Реалізації
+
+Після завершення student-блоку і базового teacher MVP найкращий наступний блок:
+
+- `Student Progress UX`
+
+Чому саме він:
+
+- student persistence уже підготовлений
+- student content flow уже стабілізований
+- teacher area вже має базовий MVP
+- `/student/progress` від початку входив у map сторінок, але як окремий UX-блок ще не доведений
+
+Тобто тепер є сенс перейти до наступної видимої продуктової функціональності для student area.
+
+### Порядок реалізації нового блоку
+
+1. Реалізувати `/student/progress`.
+2. Показати зведення по уроках і курсу.
+3. Додати:
+   - completed lessons
+   - current lesson
+   - task completion summary
+   - останню активність
+4. Додати явний блок `Продовжити навчання`.
+5. Уніфікувати переходи з header і student area.
+
+Поточний статус:
+
+- teacher block уже має базовий frontend MVP
+- наступний акцент логічніше змістити на student-facing UX, а не ще сильніше розширювати teacher view
 
 ## Загальний Принцип Реалізації
 

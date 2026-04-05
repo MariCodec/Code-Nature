@@ -361,6 +361,34 @@
 - код став чистішим
 - поточний фронтенд уже не має окремого compatibility adapter layer
 
+### 16. Додано role-aware header і завершено базовий auth UX
+
+Що зроблено:
+
+- шапка тепер поводиться по-різному для:
+  - guest
+  - student
+  - teacher
+- auth user бачить:
+  - ім'я
+  - badge ролі
+  - `Мій кабінет`
+  - `Вийти`
+- після `login/register` автоматично підвантажуються user data
+- при `logout` очищаються Redux state для student code і progress
+- teacher у шапці бачить `Учні` замість student-навігації `HTML/CSS`
+
+Для чого:
+
+- щоб role-based UX був завершений не тільки в роутингу, а й у навігації
+- щоб можна було коректно вийти зі student-акаунта і зайти під teacher
+
+Що це дало:
+
+- з'явився нормальний вхід у teacher area через загальний shell
+- перемикання між ролями стало передбачуваним
+- базовий auth UX став продуктово завершенішим
+
 ### Підсумок Поточного Стану
 
 Що вже підготовлено:
@@ -381,6 +409,153 @@
 - але ще не підключений до реального бекенду
 - блок `student persistence + content-flow migration` можна вважати логічно завершеним проміжним етапом
 - наступний фронтенд-крок уже має бути новим блоком, а не продовженням цього cleanup
+
+---
+
+## Наступний Блок: Teacher Flow MVP
+
+Це найраціональніший наступний функціональний блок після завершення student flow migration.
+
+Мета:
+
+- дати викладачу окрему робочу зону
+- показати список учнів
+- показати прогрес конкретного учня
+- використати вже підготовлені role-based routes і backend-ready persistence-підхід
+
+### Крок 1. Додати `teacherApi` як mock API-шар
+
+Що зробити:
+
+- створити `src/api/teacherApi.ts`
+- додати mock методи:
+  - `getStudents()`
+  - `getStudentById(studentId)`
+  - `getStudentProgress(studentId)`
+  - `getStudentCode(studentId, lessonId)` або `getStudentCodeByLesson(studentId)`
+
+Для чого:
+
+- щоб teacher pages теж будувались не напряму на mock-даних у компонентах
+- щоб потім цей шар легко замінити на реальний бекенд
+
+### Крок 2. Додати `teacherSlice`
+
+Що зробити:
+
+- створити Redux slice для teacher area
+- додати thunk-и для:
+  - списку учнів
+  - деталей учня
+  - прогресу учня
+
+Для чого:
+
+- щоб teacher state жив окремо від student state
+- щоб teacher pages не тягнули дані локально у компонентах
+
+### Крок 3. Зробити teacher shell і маршрути
+
+Що зробити:
+
+- залишити `/teacher` як вхід у teacher area
+- додати:
+  - `/teacher/students`
+  - `/teacher/students/:studentId`
+- замінити current placeholder на реальну базову навігацію викладача
+
+Для чого:
+
+- щоб teacher area перестала бути заглушкою
+- щоб з’явився стабільний каркас для наступних сторінок
+
+### Крок 4. Реалізувати список учнів
+
+Що зробити:
+
+- окрему сторінку зі списком учнів
+- показувати:
+  - ім’я
+  - email
+  - кількість завершених уроків
+  - поточний урок або останню активність
+
+Для чого:
+
+- це головна точка входу для викладача
+- це мінімальна корисна цінність teacher role
+
+### Крок 5. Реалізувати сторінку конкретного учня
+
+Що зробити:
+
+- сторінку деталей учня
+- показувати:
+  - список уроків
+  - completed / in progress / not started
+  - виконані задачі
+  - опційно останній збережений код по уроку
+
+Для чого:
+
+- саме тут teacher flow починає реально використовувати student progress data
+
+### Крок 6. Після Teacher MVP
+
+Після завершення цього блоку вже можна вирішувати, що робити далі:
+
+- teacher code review view
+- student progress page
+- teacher dashboard polish
+- наповнення контентом
+
+### Поточний статус teacher block
+
+Вже реалізовано:
+
+- `teacherApi`
+- `teacherSlice`
+- teacher shell
+- `/teacher/students`
+- `/teacher/students/:studentId`
+- lesson progress у teacher details
+- task progress у teacher details
+- code snapshots у teacher details
+
+Це означає:
+
+- teacher block уже не є заглушкою
+- базовий Teacher MVP по фронту вже реально працює
+- наступні кроки тут — це не foundation, а поглиблення або polish
+
+---
+
+## Наступний Блок: Student Progress UX
+
+Після завершення базового Teacher MVP найраціональніше не заглиблювати teacher block ще сильніше, а закрити наступний видимий продуктовий пробіл у student area.
+
+Мета:
+
+- зробити student experience повнішим, а не лише набором lesson pages
+- дати учню окрему сторінку загального прогресу
+- використати вже готовий persistence без нового інфраструктурного рефакторингу
+
+Що зробити:
+
+- реалізувати `/student/progress`
+- показати:
+  - completed lessons
+  - current lesson
+  - task completion summary
+  - останню активність
+- додати явний блок `Продовжити навчання`
+- уніфікувати переходи з header і student area до цієї сторінки
+
+Для чого:
+
+- student persistence уже достатньо зрілий для такого UI
+- teacher MVP уже існує
+- це дає реальну користь користувачу без стрибка в новий великий блок типу CMS або real backend auth
   - student persistence через API-shaped layer
   - поступове прибирання legacy-шарів
 

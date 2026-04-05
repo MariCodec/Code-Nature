@@ -12,18 +12,12 @@ import { AppInitializer } from "./AppInitializer";
 import DocsPage from "./pages/Docs/DocsPage";
 import { useSelector } from "react-redux";
 import { selectAuthRole } from "./store/slices/authSlice";
+import TeacherHomePage from "./pages/Teacher/TeacherHomePage";
+import TeacherStudentsPage from "./pages/Teacher/TeacherStudentsPage";
+import TeacherStudentPage from "./pages/Teacher/TeacherStudentPage";
 
 function StudentHomeRedirect() {
   return <Navigate to="/student/html" replace />;
-}
-
-function TeacherHomePlaceholder() {
-  return (
-    <div style={{ padding: "40px 20px" }}>
-      <h1>Teacher Area</h1>
-      <p>Кабінет викладача буде реалізований наступним етапом.</p>
-    </div>
-  );
 }
 
 function AppEntryRedirect() {
@@ -72,7 +66,9 @@ function App() {
 
           <Route path="/teacher" element={<AuthGuard allowedRoles={["teacher"]} />}>
             <Route element={<Layout />}>
-              <Route index element={<TeacherHomePlaceholder />} />
+              <Route index element={<TeacherHomePage />} />
+              <Route path="students" element={<TeacherStudentsPage />} />
+              <Route path="students/:studentId" element={<TeacherStudentPage />} />
             </Route>
           </Route>
         </Routes>

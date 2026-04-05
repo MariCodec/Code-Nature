@@ -4,12 +4,14 @@ import progressReducer from "./slices/progressSlice";
 import userCodeReducer from "./slices/userCodeSlice";
 import authReducer from "./slices/authSlice";
 import contentReducer from "./slices/contentSlice";
+import teacherReducer from "./slices/teacherSlice";
 // import lessonReducer from "./slices/lessonSlice";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     content: contentReducer,
+    teacher: teacherReducer,
     theme: themeReducer,
     progress: progressReducer,
     userCode: userCodeReducer,

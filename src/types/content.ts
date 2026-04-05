@@ -114,3 +114,30 @@ export type StudentTaskProgressDTO = {
   completedAt: string | null;
   updatedAt: string;
 };
+
+export type TeacherStudentListItemDTO = {
+  id: string;
+  name: string;
+  email: string;
+  completedLessonsCount: number;
+  currentLessonId: string | null;
+  lastActivityAt: string | null;
+};
+
+export type TeacherStudentCodeSnapshotDTO = {
+  lessonId: string;
+  savedFiles: StudentSavedFileDTO[];
+  updatedAt: string | null;
+};
+
+export type TeacherStudentDetailsDTO = {
+  id: string;
+  name: string;
+  email: string;
+  currentLessonId: string | null;
+  completedLessonsCount: number;
+  lastActivityAt: string | null;
+  lessonProgress: StudentLessonProgressDTO[];
+  taskProgress: StudentTaskProgressDTO[];
+  codeSnapshots: TeacherStudentCodeSnapshotDTO[];
+};

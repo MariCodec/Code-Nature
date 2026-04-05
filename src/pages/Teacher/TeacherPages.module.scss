@@ -1,0 +1,375 @@
+@use "../../styles/variables" as v;
+
+.page {
+  min-height: calc(100vh - 80px);
+  padding: 32px 20px 48px;
+  background:
+    radial-gradient(900px 500px at 20% 15%, rgba(120, 255, 234, 0.08), transparent 55%),
+    radial-gradient(700px 400px at 85% 10%, rgba(120, 170, 255, 0.08), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, #070a12);
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.hero {
+  padding: 28px;
+  border-radius: v.$radius-lg;
+  background: rgba(18, 24, 38, 0.72);
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: v.$text-muted;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 10px;
+  color: v.$text-main;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.lead {
+  margin: 0;
+  max-width: 720px;
+  color: v.$text-muted;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.primaryLink,
+.secondaryLink,
+.cardLink {
+  text-decoration: none;
+}
+
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: v.$radius-md;
+  font-weight: 700;
+  transition: transform v.$tr-fast, filter v.$tr-fast, border-color v.$tr-fast;
+}
+
+.primaryLink {
+  color: v.$text-dark;
+  background: linear-gradient(135deg, v.$glow-strong, rgba(120, 200, 255, 0.92));
+  box-shadow: v.$shadow-card;
+}
+
+.secondaryLink {
+  color: v.$text-main;
+  border: 1px solid rgba(v.$glow-strong, 0.45);
+  background: rgba(10, 14, 25, 0.45);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.card,
+.panel {
+  border-radius: v.$radius-lg;
+  background: rgba(18, 24, 38, 0.72);
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+}
+
+.card {
+  padding: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 22px;
+}
+
+.cardText {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  padding: 16px;
+  border-radius: v.$radius-md;
+  background: rgba(10, 14, 25, 0.42);
+  border: 1px solid rgba(v.$glow, 0.2);
+}
+
+.statLabel {
+  margin: 0 0 8px;
+  color: v.$text-muted;
+  font-size: 13px;
+}
+
+.statValue {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panelTitle {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 24px;
+}
+
+.panelText {
+  margin: 0;
+  color: v.$text-muted;
+}
+
+.studentsList {
+  display: grid;
+  gap: 12px;
+}
+
+.studentCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: v.$radius-md;
+  border: 1px solid rgba(v.$glow, 0.18);
+  background: rgba(10, 14, 25, 0.45);
+}
+
+.studentTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.studentName {
+  margin: 0 0 6px;
+  color: v.$text-main;
+  font-size: 20px;
+}
+
+.studentMeta {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+.studentBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: v.$radius-round;
+  background: rgba(v.$glow-strong, 0.12);
+  border: 1px solid rgba(v.$glow, 0.24);
+  color: v.$text-main;
+  font-size: 13px;
+}
+
+.studentActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.detailsGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.progressList {
+  display: grid;
+  gap: 10px;
+}
+
+.subPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.progressRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid rgba(v.$glow, 0.18);
+  background: rgba(10, 14, 25, 0.42);
+}
+
+.progressLesson {
+  margin: 0;
+  color: v.$text-main;
+  font-weight: 600;
+}
+
+.progressMeta {
+  margin: 4px 0 0;
+  color: v.$text-muted;
+  font-size: 14px;
+}
+
+.taskList {
+  display: grid;
+  gap: 10px;
+}
+
+.taskRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid rgba(v.$glow, 0.18);
+  background: rgba(10, 14, 25, 0.42);
+}
+
+.taskMeta {
+  margin: 4px 0 0;
+  color: v.$text-muted;
+  font-size: 14px;
+}
+
+.codeSnapshots {
+  display: grid;
+  gap: 12px;
+}
+
+.codeCard {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid rgba(v.$glow, 0.18);
+  background: rgba(10, 14, 25, 0.42);
+}
+
+.codeTitle {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 18px;
+}
+
+.fileList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fileBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: v.$radius-round;
+  background: rgba(120, 170, 255, 0.14);
+  border: 1px solid rgba(120, 170, 255, 0.24);
+  color: v.$text-main;
+  font-size: 13px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: v.$radius-round;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(v.$glow-strong, 0.12);
+  color: v.$text-main;
+}
+
+.statusCompleted {
+  background: rgba(86, 200, 157, 0.15);
+  color: #9df0ca;
+}
+
+.statusProgress {
+  background: rgba(120, 170, 255, 0.16);
+  color: #b2d2ff;
+}
+
+.statusIdle {
+  background: rgba(255, 255, 255, 0.08);
+  color: v.$text-muted;
+}
+
+.empty {
+  padding: 32px 20px;
+  border-radius: v.$radius-lg;
+  border: 1px dashed rgba(v.$glow, 0.25);
+  color: v.$text-muted;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 24px 16px 40px;
+  }
+
+  .hero,
+  .panel {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .studentTop,
+  .progressRow,
+  .panelHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
