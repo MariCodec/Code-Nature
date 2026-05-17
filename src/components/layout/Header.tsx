@@ -17,8 +17,9 @@ const Header = () => {
   const role = useSelector(selectAuthRole);
 
   const roleLabel = role === "teacher" ? "Викладач" : "Учень";
-  const dashboardPath = role === "teacher" ? "/teacher" : "/student";
-  const showStudentLessonsLinks = !isAuthenticated || role === "student";
+  const dashboardPath = role === "teacher" ? "/teacher" : "/student/progress";
+  const dashboardLabel = role === "teacher" ? "Мій кабінет" : "Мій прогрес";
+  const showStudentLearningLink = !isAuthenticated || role === "student";
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -82,13 +83,13 @@ const Header = () => {
         <Link className={styles.navLink} to="/home">
           Home
         </Link>
-        {showStudentLessonsLinks && (
+        {showStudentLearningLink && (
           <>
-            <Link className={styles.navLink} to="/html">
-              HTML
+            <Link className={styles.navLink} to="/student/learning">
+              Навчання
             </Link>
-            <Link className={styles.navLink} to="/css">
-              CSS
+            <Link className={styles.navLink} to="/student/tech-checks">
+              Техчеки
             </Link>
           </>
         )}
@@ -112,7 +113,7 @@ const Header = () => {
             </div>
 
             <Link className={styles.dashboardLink} to={dashboardPath}>
-              Мій кабінет
+              {dashboardLabel}
             </Link>
 
             <button

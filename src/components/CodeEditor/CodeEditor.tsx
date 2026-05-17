@@ -19,7 +19,7 @@ import {
 } from "../../store/slices/userCodeSlice";
 
 import styles from "./CodeEditor.module.scss";
-import { resetTasksForLesson } from "../../store/slices/progressSlice";
+import { resetTasksForLesson, touchProgress } from "../../store/slices/progressSlice";
 import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
 import { setupMonaco } from "../../utils/monacoSetup";
@@ -178,6 +178,7 @@ const handleChange = (newValue: string | undefined) => {
     focusFirstHtmlError();
     return;
   }
+    dispatch(touchProgress());
     checkLesson({
       lessonId: lessonDto.id,
       tasks: lessonDto.tasks,

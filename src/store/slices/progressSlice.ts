@@ -3,6 +3,7 @@ import { RootState } from "..";
 interface ProgressState {
   completedLessons: string[];
   currentLessonId: string | null;
+  lastActivityAt: string | null;
   taskStatus: {
     [lessonId: string]: {
       [taskId: string]: boolean;
@@ -13,19 +14,27 @@ interface ProgressState {
 const initialState: ProgressState = {
   completedLessons: [],
   currentLessonId: null,
+  lastActivityAt: null,
   taskStatus: {}, // { "lesson-1": { "task-1": true, "task-2": false }, ... }
 };
+
+const touchProgressState = (state: ProgressState) => {
+  state.lastActivityAt = new Date().toISOString();
+};
+
 const progressSlice = createSlice({
   name: "progress",
   initialState,
   reducers: {
     setCurrentLesson: (state, action: PayloadAction<string>) => {
       state.currentLessonId = action.payload;
+      touchProgressState(state);
     },
     markLessonAsCompleted: (state, action: PayloadAction<string>) => {
       if (!state.completedLessons.includes(action.payload)) {
         state.completedLessons.push(action.payload);
       }
+      touchProgressState(state);
     },
     markTaskAsCompleted: (
       state,
@@ -38,6 +47,7 @@ const progressSlice = createSlice({
       }
 
       state.taskStatus[lessonId][taskId] = true;
+      touchProgressState(state);
     },
     resetTasksForLesson: (
       state,
@@ -48,10 +58,15 @@ const progressSlice = createSlice({
       taskIds.forEach((id) => {
         state.taskStatus[lessonId][id] = false;
       });
+      touchProgressState(state);
+    },
+    touchProgress: (state) => {
+      touchProgressState(state);
     },
     resetProgress: (state) => {
       state.completedLessons = [];
       state.currentLessonId = null;
+      state.lastActivityAt = null;
       state.taskStatus = {};
     },
     hydrateProgress: (_state, action: PayloadAction<ProgressState>) => {
@@ -67,6 +82,7 @@ export const {
   markTaskAsCompleted,
   resetProgress,
   resetTasksForLesson,
+  touchProgress,
 } = progressSlice.actions;
 export const selectTaskStatus = (state: RootState, lessonId: string) =>
   state.progress.taskStatus[lessonId] || {};

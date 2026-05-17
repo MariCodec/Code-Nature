@@ -1,0 +1,334 @@
+@use "../../styles/variables" as v;
+
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 28px 16px 44px;
+  background:
+    radial-gradient(920px 540px at 10% 8%, rgba(120, 255, 234, 0.1), transparent 60%),
+    radial-gradient(820px 520px at 92% 12%, rgba(120, 170, 255, 0.1), transparent 56%),
+    linear-gradient(180deg, v.$bg-main, #070a12);
+}
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.hero,
+.courseBlock,
+.emptyState {
+  border: 1px solid v.$border;
+  border-radius: v.$radius-lg;
+  background: v.$panel;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(12px);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding: 24px;
+  text-align: left;
+}
+
+.kicker,
+.levelLabel {
+  margin: 0;
+  color: rgba(v.$accent-primary, 0.78);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.courseBlock h2,
+.moduleBlock h3,
+.lessonRow h4,
+.emptyState h1 {
+  color: v.$text-main;
+}
+
+.hero h1 {
+  margin: 8px 0 0;
+  font-size: 2.25rem;
+  line-height: 1.08;
+}
+
+.lead {
+  max-width: 640px;
+  margin: 12px 0 0;
+  color: v.$text-muted;
+  line-height: 1.6;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.heroStats span,
+.statusBadge,
+.moduleHeader span,
+.lessonMeta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(v.$glow-strong, 0.22);
+  border-radius: v.$radius-round;
+  background: rgba(10, 14, 25, 0.44);
+  color: v.$text-main;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.learningMap {
+  display: grid;
+  gap: 18px;
+}
+
+.courseBlock {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  text-align: left;
+  background:
+    radial-gradient(700px 260px at 0% 0%, rgba(120, 255, 234, 0.07), transparent 72%),
+    v.$panel;
+}
+
+.courseHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.courseBlock h2 {
+  margin: 8px 0 0;
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+
+.courseDescription,
+.moduleHeader p,
+.lessonCopy p,
+.emptyState p {
+  color: v.$text-muted;
+  line-height: 1.55;
+}
+
+.courseDescription {
+  max-width: 680px;
+  margin: 8px 0 0;
+}
+
+.courseActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.courseAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(v.$glow-strong, 0.28);
+  border-radius: v.$radius-md;
+  color: v.$text-main;
+  background: rgba(10, 14, 25, 0.48);
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform v.$tr-fast, border-color v.$tr-fast, filter v.$tr-fast;
+}
+
+.courseAction:hover {
+  transform: translateY(-1px);
+  border-color: rgba(v.$accent-primary, 0.52);
+  filter: brightness(1.04);
+}
+
+.progressTrack {
+  height: 10px;
+  overflow: hidden;
+  border-radius: v.$radius-round;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, v.$accent-secondary, v.$accent-primary);
+}
+
+.moduleList {
+  display: grid;
+  gap: 14px;
+}
+
+.moduleBlock {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(v.$glow-strong, 0.22);
+  border-radius: v.$radius-md;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.moduleHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.moduleHeader h3 {
+  margin: 5px 0 0;
+  font-size: 1.16rem;
+}
+
+.moduleHeader p {
+  margin: 6px 0 0;
+}
+
+.lessonList {
+  display: grid;
+  gap: 8px;
+}
+
+.lessonRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: v.$radius-md;
+  background: rgba(8, 11, 20, 0.36);
+  text-decoration: none;
+  transition: transform v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
+}
+
+.techCheckRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(v.$accent-primary, 0.32);
+  border-radius: v.$radius-md;
+  background:
+    linear-gradient(135deg, rgba(v.$accent-primary, 0.11), rgba(120, 170, 255, 0.06)),
+    rgba(8, 11, 20, 0.4);
+  text-decoration: none;
+  transition: transform v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
+}
+
+.techCheckRow:hover {
+  transform: translateY(-1px);
+  border-color: rgba(v.$accent-primary, 0.48);
+  background: rgba(12, 18, 30, 0.58);
+}
+
+.techCheckCopy h4 {
+  margin: 3px 0 0;
+  color: v.$text-main;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.techCheckCopy p {
+  margin: 4px 0 0;
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+.techCheckRow strong {
+  color: v.$text-main;
+  white-space: nowrap;
+}
+
+.lessonRow:hover {
+  transform: translateY(-1px);
+  border-color: rgba(v.$accent-primary, 0.36);
+  background: rgba(12, 18, 30, 0.54);
+}
+
+.lessonIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(v.$glow-strong, 0.24);
+  color: v.$text-main;
+  background: rgba(10, 14, 25, 0.62);
+  font-weight: 800;
+}
+
+.lessonCopy h4 {
+  margin: 3px 0 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.lessonCopy p {
+  margin: 4px 0 0;
+}
+
+.lessonMeta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.lessonMeta strong {
+  color: v.$text-muted;
+  font-size: 0.9rem;
+}
+
+.lessonPlaceholder {
+  padding: 12px;
+  border-radius: v.$radius-md;
+  color: v.$text-muted;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.emptyState {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 26px;
+  text-align: left;
+}
+
+@media (max-width: 820px) {
+  .hero,
+  .courseHeader,
+  .moduleHeader,
+  .lessonRow {
+    grid-template-columns: 1fr;
+  }
+
+  .heroStats,
+  .courseActions {
+    justify-content: flex-start;
+  }
+
+  .lessonMeta {
+    justify-items: start;
+  }
+
+  .techCheckRow {
+    grid-template-columns: 1fr;
+  }
+}

@@ -132,8 +132,10 @@ type UserDTO = {
 ```ts
 type AuthSessionDTO = {
   user: UserDTO;
-  accessToken: string;
-  refreshToken?: string;
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
 };
 ```
 
@@ -162,6 +164,20 @@ type CourseDTO = {
 };
 ```
 
+### CourseModuleDTO
+
+```ts
+type CourseModuleDTO = {
+  id: string;
+  courseId: string;
+  slug: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+  isPublished: boolean;
+};
+```
+
 ### LessonFileDTO
 
 ```ts
@@ -186,6 +202,25 @@ type LessonTheoryBlockDTO = {
 };
 ```
 
+### LessonVideoDTO
+
+```ts
+type LessonVideoDTO = {
+  id: string;
+  provider: "upload" | "youtube" | "vimeo" | "mux" | "external";
+  sourceUrl: string | null;
+  assetId: string | null;
+  title: string;
+  description: string;
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  transcript: string | null;
+  captionsUrl: string | null;
+  orderIndex: number;
+  isRequired: boolean;
+};
+```
+
 ### LessonTaskDTO
 
 ```ts
@@ -204,6 +239,8 @@ type LessonTaskDTO = {
 type LessonDTO = {
   id: string;
   courseId: string;
+  moduleId: string;
+  lessonKind: "lesson" | "tech_check";
   slug: string;
   title: string;
   description: string;
@@ -213,6 +250,7 @@ type LessonDTO = {
   isPublished: boolean;
   files: LessonFileDTO[];
   theoryBlocks: LessonTheoryBlockDTO[];
+  videos: LessonVideoDTO[];
   tasks: LessonTaskDTO[];
 };
 ```
@@ -272,7 +310,7 @@ type TeacherStudentListItemDTO = {
   name: string;
   email: string;
   completedLessonsCount: number;
-  assignedCoursesCount: number;
+  currentLessonId: string | null;
   lastActivityAt: string | null;
 };
 ```
@@ -281,10 +319,25 @@ type TeacherStudentListItemDTO = {
 
 ```ts
 type TeacherStudentDetailsDTO = {
-  student: UserDTO;
-  assignedCourses: CourseDTO[];
+  id: string;
+  name: string;
+  email: string;
+  currentLessonId: string | null;
+  completedLessonsCount: number;
+  lastActivityAt: string | null;
   lessonProgress: StudentLessonProgressDTO[];
   taskProgress: StudentTaskProgressDTO[];
+  codeSnapshots: TeacherStudentCodeSnapshotDTO[];
+};
+```
+
+### TeacherStudentCodeSnapshotDTO
+
+```ts
+type TeacherStudentCodeSnapshotDTO = {
+  lessonId: string;
+  savedFiles: StudentSavedFileDTO[];
+  updatedAt: string | null;
 };
 ```
 
@@ -464,11 +517,36 @@ Response:
 }
 ```
 
-### `GET /courses/:courseId/lessons`
+### `GET /courses/:courseId/modules`
 
 Призначення:
 
-- повернути список уроків курсу
+- повернути список модулів курсу
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "module_html_basic",
+      "courseId": "course_html_basic",
+      "slug": "html-basic",
+      "title": "HTML Basic",
+      "description": "Структура HTML-документа, базові теги та семантика.",
+      "orderIndex": 1,
+      "isPublished": true
+    }
+  ]
+}
+```
+
+### `GET /modules/:moduleId/lessons`
+
+Призначення:
+
+- повернути список уроків конкретного модуля
+- якщо модуль має техчек, він повертається в цьому ж списку як item з `lessonKind: "tech_check"`
 
 Response:
 
@@ -478,6 +556,8 @@ Response:
     {
       "id": "lesson_intro_html",
       "courseId": "course_html_basic",
+      "moduleId": "module_html_basic",
+      "lessonKind": "lesson",
       "slug": "intro-html",
       "title": "Основи HTML",
       "description": "Перші HTML-теги",
@@ -503,6 +583,8 @@ Response:
   "data": {
     "id": "lesson_intro_html",
     "courseId": "course_html_basic",
+    "moduleId": "module_html_basic",
+    "lessonKind": "lesson",
     "slug": "intro-html",
     "title": "Основи HTML",
     "description": "Перші HTML-теги",
@@ -538,6 +620,7 @@ Response:
         "orderIndex": 1
       }
     ],
+    "videos": [],
     "tasks": [
       {
         "id": "task_1",
@@ -891,17 +974,156 @@ Response:
 
 ---
 
-## Що Не Входить У Перший MVP API
+## Наступні API Модулі, Які Треба Зафіксувати
 
-Поки не обов’язково реалізовувати:
+Нижче не обов’язково реалізовувати все в першому backend sprint, але ці модулі вже є частиною цільового контракту.
+Їх потрібно враховувати в БД, DTO і frontend integration plan.
 
-- CRUD для створення/редагування курсів
-- CRUD для створення/редагування уроків
-- teacher comments
-- code version history
-- groups/classes
-- submissions/review workflow
-- admin panel API
+### Course CRUD / Admin
+
+- `POST /admin/courses`
+- `PATCH /admin/courses/:courseId`
+- `DELETE /admin/courses/:courseId`
+- `POST /admin/courses/:courseId/publish`
+- `POST /admin/courses/:courseId/unpublish`
+- `POST /admin/courses/:courseId/modules`
+- `PATCH /admin/modules/:moduleId`
+- `DELETE /admin/modules/:moduleId`
+
+Призначення:
+
+- створення і редагування курсів
+- керування модулями
+- publish/unpublish для student-facing content
+
+### Lesson CRUD / Admin
+
+- `POST /admin/modules/:moduleId/lessons`
+- `PATCH /admin/lessons/:lessonId`
+- `DELETE /admin/lessons/:lessonId`
+- `POST /admin/lessons/:lessonId/files`
+- `PATCH /admin/lesson-files/:fileId`
+- `DELETE /admin/lesson-files/:fileId`
+- `POST /admin/lessons/:lessonId/theory-blocks`
+- `PATCH /admin/lesson-theory-blocks/:blockId`
+- `DELETE /admin/lesson-theory-blocks/:blockId`
+- `POST /admin/lessons/:lessonId/videos`
+- `PATCH /admin/lesson-videos/:videoId`
+- `DELETE /admin/lesson-videos/:videoId`
+- `POST /admin/lessons/:lessonId/tasks`
+- `PATCH /admin/lesson-tasks/:taskId`
+- `DELETE /admin/lesson-tasks/:taskId`
+
+Призначення:
+
+- створення і редагування уроків
+- редагування файлів, теорії, відео і завдань
+- підтримка звичайних уроків, техчеків і відеоуроків через один lesson contract
+
+### Video Lessons
+
+Відеоуроки мають працювати через `LessonDTO.videos`.
+
+Для відео-first уроку:
+
+- `runtimeType = "video"`
+- `validationType = "none"` або `manual-check`
+- `files` може бути порожнім масивом
+- `tasks` може бути порожнім масивом або містити follow-up завдання
+
+Для практичного уроку з відео:
+
+- `runtimeType = "html-css-preview"`
+- `videos` містить інструкційне відео
+- `files` і `tasks` працюють як у поточному editor flow
+
+### Groups / Classes
+
+- `GET /teacher/groups`
+- `POST /teacher/groups`
+- `PATCH /teacher/groups/:groupId`
+- `DELETE /teacher/groups/:groupId`
+- `GET /teacher/groups/:groupId/students`
+- `POST /teacher/groups/:groupId/students`
+- `DELETE /teacher/groups/:groupId/students/:studentId`
+- `POST /teacher/groups/:groupId/courses/:courseId/assign`
+
+Призначення:
+
+- групувати учнів у класи
+- призначати курси групам
+- давати teacher dashboard реальну структуру замість простого списку всіх учнів
+
+### Submissions / Review Workflow
+
+- `POST /student/me/lessons/:lessonId/submissions`
+- `GET /student/me/submissions`
+- `GET /student/me/submissions/:submissionId`
+- `GET /teacher/submissions`
+- `GET /teacher/submissions/:submissionId`
+- `PATCH /teacher/submissions/:submissionId/status`
+- `POST /teacher/submissions/:submissionId/reviews`
+
+Статуси:
+
+- `draft`
+- `submitted`
+- `in_review`
+- `changes_requested`
+- `approved`
+- `rejected`
+
+Призначення:
+
+- учень відправляє snapshot роботи
+- викладач перевіряє submission
+- manual-check уроки можуть завершуватись через review
+
+### Teacher Comments
+
+- `GET /teacher/submissions/:submissionId/comments`
+- `POST /teacher/submissions/:submissionId/comments`
+- `PATCH /teacher/comments/:commentId`
+- `DELETE /teacher/comments/:commentId`
+- `POST /teacher/comments/:commentId/resolve`
+- `POST /teacher/comments/:commentId/unresolve`
+
+Коментар може бути:
+
+- загальним до submission
+- прив’язаним до конкретного файлу
+- прив’язаним до конкретного рядка
+
+### Code Version History
+
+- `GET /student/me/code/:lessonId/versions`
+- `POST /student/me/code/:lessonId/versions`
+- `GET /teacher/students/:studentId/code/:lessonId/versions`
+
+Призначення:
+
+- `student_code` зберігає останній стан
+- `code_versions` зберігає історію
+- submission створює окрему версію коду
+
+### Admin Panel API
+
+Namespace-и:
+
+- `/admin/users`
+- `/admin/tracks`
+- `/admin/courses`
+- `/admin/modules`
+- `/admin/lessons`
+- `/admin/groups`
+- `/admin/audit-log`
+
+Призначення:
+
+- керування користувачами
+- керування контентом
+- керування групами
+- аудит змін
 
 ---
 

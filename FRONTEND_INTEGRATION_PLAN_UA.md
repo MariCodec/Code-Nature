@@ -1,982 +1,340 @@
 # FRONTEND_INTEGRATION_PLAN_UA
 
-## Що Це За Документ
+## Як Читати Документи
 
-Цей файл описує, як перевести поточний фронтенд із локального HTML/CSS-first прототипу до архітектури, яка працює з:
+У проєкті вже є кілька `.md`, але для frontend-роботи головним файлом має бути цей документ.
 
-- backend API
-- ролями `student` і `teacher`
-- уроками, що приходять з БД
-- збереженням прогресу і коду для конкретного користувача
+| Файл | Для чого читати |
+| --- | --- |
+| `FRONTEND_INTEGRATION_PLAN_UA.md` | Головний frontend-план: що вже зроблено, де це в коді, що робити далі |
+| `CURRENT_IMPLEMENTATION_UA.md` | Повна карта поточної реалізації по всьому проєкту |
+| `BACKEND_FRONTEND_CONTRACT_UA.md` | Узгодження з бекендом для майбутніх API і DTO |
+| `API_SPEC_UA.md` | Детальні endpoint-и і DTO |
+| `SCHEMA_BD_UA.md` | Концептуальна схема бази даних |
+| `IMPLEMENTATION_ROADMAP.md` | Загальний roadmap продукту |
+| `PLAN_REALIZACII_UA.md` | Старший загальний план українською, можна читати як background |
 
-Це не план бекенду.
-Це план змін саме у поточному React/Redux фронтенді.
+Практично:
 
----
-
-## Поточний Стан Фронтенду
-
-Зараз у проєкті вже є:
-
-- сторінки уроків
-- редактор коду на Monaco
-- client-side validation
-- перевірка завдань через iframe
-- Redux state для:
-  - коду
-  - прогресу
-  - auth
-- шар `storage/`
-- моковий `authApi`
-
-Основні поточні обмеження:
-
-- уроки беруться зі статичного `src/data/lessonData.ts`
-- auth ще не інтегрований у справжній app flow
-- прогрес і код ще не прив’язані до реального backend API
-- teacher flow ще відсутній
+1. Для frontend-задач починати з цього файлу.
+2. Якщо треба API - дивитись `API_SPEC_UA.md`.
+3. Якщо треба БД - дивитись `SCHEMA_BD_UA.md`.
+4. Якщо треба зрозуміти всю систему - дивитись `CURRENT_IMPLEMENTATION_UA.md`.
 
 ---
 
-## Головний Принцип Інтеграції
+## Поточна Ідея Фронтенду
 
-Не робити один великий рефакторинг за раз.
+Фронтенд уже не є просто локальним HTML/CSS editor app.
+Він рухається до навчальної платформи з ролями:
 
-Правильний шлях:
+- `student`
+- `teacher`
 
-1. зберегти робочий student flow
-2. поступово заміняти локальні джерела даних на API
-3. не ламати client-side lesson validation
-4. не чіпати teacher flow, доки не стабілізований student flow
+Основна модель контенту:
+
+```text
+track -> course -> module -> lesson
+```
+
+Урок може містити:
+
+- metadata
+- theory blocks
+- videos
+- files для редактора
+- tasks
+- validation rules
+
+Поточний MVP залишається `HTML/CSS-first`, але frontend-модель уже не повинна бути `HTML/CSS-only`.
 
 ---
 
-## Порядок Робіт
+## Що Вже Реалізовано
 
-1. Підготувати frontend-моделі під API
-2. Реалізувати auth foundation
-3. Додати content API integration
-4. Перевести student code/progress на API
-5. Стабілізувати student routes
-6. Додати teacher flow
+| Блок | Що зроблено | Для чого | Основні файли |
+| --- | --- | --- | --- |
+| App routing | Розділено public, student і teacher routes | Щоб student/teacher flows не змішувались | `src/App.tsx` |
+| Auth guard | Додано role-based доступ | Щоб студент не заходив у teacher area і навпаки | `src/features/auth/AuthGuard.tsx` |
+| Mock auth API | Login/register/logout/session через localStorage | Тимчасова заміна backend auth | `src/api/authApi.ts`, `src/store/thunks/authThunks.ts`, `src/store/slices/authSlice.ts` |
+| App init | Session завантажується при старті | Щоб після refresh користувач не губився | `src/AppInitializer.tsx` |
+| Layout/header | Header показує роль, імʼя, dashboard link, logout | Щоб навігація залежала від ролі | `src/components/layout/Header.tsx` |
+| Content DTO | Додано типи track/course/module/lesson/files/tasks/videos | Щоб frontend працював у backend-ready моделі | `src/types/content.ts` |
+| Mock content API | Static `lessonData` обгорнуто в API-подібний шар | Щоб потім замінити mock на HTTP без переписування UI | `src/api/contentApi.ts`, `src/data/lessonData.ts` |
+| Content Redux | Додано `contentSlice` з thunk-и для tracks/courses/modules/lessons | Щоб контент жив у Redux, а не напряму в компонентах | `src/store/slices/contentSlice.ts` |
+| Course/module routes | Уроки відкриваються через canonical route з courseId/moduleId | Щоб routing відповідав моделі БД | `src/utils/courseMapping.ts`, `src/App.tsx` |
+| Student learning page | Є сторінка курсів, модулів, уроків і техчеків | Основний student entry point | `src/pages/Student/StudentLearningPage.tsx` |
+| Student tech checks page | Є окрема сторінка техчеків | Щоб контрольні перевірки були видимим flow | `src/pages/Student/StudentTechChecksPage.tsx` |
+| Student progress page | Є зведення прогресу, задач і continue learning | Щоб студент бачив свій шлях навчання | `src/pages/Student/StudentProgressPage.tsx` |
+| Lessons list | Список уроків курсу працює через content state | Щоб не читати `lessonData` напряму | `src/pages/LessonsList/LessonsList.tsx` |
+| Lesson page | Урок бере `LessonDTO` з `contentSlice` | Щоб сторінка уроку була API-ready | `src/pages/lessonPage/LessonPage.tsx` |
+| Lesson videos | `LessonDTO` має `videos`, урок може показувати відео | Щоб додавати відеоуроки або відео до практичних уроків | `src/types/content.ts`, `src/pages/lessonPage/LessonPage.tsx` |
+| Code editor | Monaco працює з lesson files і savedFiles | Щоб редактор не був привʼязаний тільки до hardcoded html/css | `src/components/CodeEditor/CodeEditor.tsx`, `src/utils/lessonFiles.ts`, `src/utils/codeFiles.ts` |
+| Preview | HTML/CSS рендериться в iframe | Поточний runtime для HTML/CSS уроків | `src/components/CodeEditor/Output.tsx` |
+| Client validation | Tasks перевіряються на фронті через iframe DOM/CSS checks | Не треба backend execution для HTML/CSS | `src/utils/checkLesson.ts`, `src/utils/validateHtmlCss.ts`, `src/utils/validateHtmlParse5.ts` |
+| Progress Redux | Є completed lessons, current lesson, task status | Щоб UI міг показувати прогрес | `src/store/slices/progressSlice.ts` |
+| User code Redux | Код зберігається як `savedFiles`, плюс html/css compatibility | Щоб перейти до multi-file backend contract | `src/store/slices/userCodeSlice.ts` |
+| Student mock API | Code/progress зберігаються per user у localStorage | Тимчасова заміна student backend API | `src/api/studentApi.ts`, `src/store/thunks/syncThunks.ts` |
+| Teacher mock API | Teacher бачить студентів з localStorage progress/code | Тимчасовий teacher dashboard без backend | `src/api/teacherApi.ts` |
+| Teacher Redux | Є teacher state для students/details/code snapshots | Щоб teacher pages працювали через store | `src/store/slices/teacherSlice.ts` |
+| Teacher pages | Є home, students list, student details | MVP teacher flow | `src/pages/Teacher/TeacherHomePage.tsx`, `src/pages/Teacher/TeacherStudentsPage.tsx`, `src/pages/Teacher/TeacherStudentPage.tsx` |
+| Docs page | Docs читає theory з content flow | Щоб docs теж були API-ready | `src/pages/Docs/DocsPage.tsx` |
 
 ---
 
-## Вже Реалізовано
-
-Нижче зафіксовано те, що вже реалізовано у фронтенді на поточний момент.
-
-### 1. Додано нову content-модель
-
-Що зроблено:
-
-- додані типи для:
-  - `Track`
-  - `Course`
-  - `Lesson`
-  - `LessonFile`
-  - `LessonTheoryBlock`
-  - `LessonTask`
-  - `StudentCodeDTO`
-  - `StudentProgressDTO`
-
-Для чого:
-
-- щоб фронтенд мислив у тій самій моделі, що і майбутній бекенд
-- щоб відійти від занадто вузької локальної моделі `html/css only`
-- щоб підготувати основу для `track -> course -> lesson`
-
-Що це дало:
-
-- новий data contract уже існує на рівні типів
-- далі можна переводити сторінки і state без повторного перегляду базових моделей
-
-### 2. Додано `contentApi` як mock API-шар
-
-Що зроблено:
-
-- створено `src/api/contentApi.ts`
-- поточний статичний `lessonData.ts` тепер обгорнутий у API-подібний шар
-
-Для чого:
-
-- щоб фронтенд уже працював ніби через бекенд
-- щоб потім заміна mock API на реальний бекенд не вимагала великого переписування сторінок
-
-Що це дало:
-
-- сторінки більше не повинні напряму залежати від `lessonData.ts`
-- з’явився правильний проміжний рівень між UI і даними
-
-### 3. Додано `contentSlice`
-
-Що зроблено:
-
-- створено Redux slice для контенту
-- додані thunk-и для:
-  - завантаження треків
-  - завантаження курсів
-  - завантаження уроків
-  - завантаження одного уроку
-
-Для чого:
-
-- щоб контентний state жив окремо від UI-компонентів
-- щоб сторінки могли працювати через Redux, а не через прямий імпорт статичних даних
-
-Що це дало:
-
-- фронтенд уже має окремий content layer
-- легше підключити реальний API пізніше
-
-### 4. Переведено `LessonsList` і `LessonPage` на новий content source
-
-Що зроблено:
-
-- `LessonsList.tsx` більше не читає уроки напряму з `lessonData.ts`
-- `LessonPage.tsx` також бере урок через `contentSlice`
-
-Для чого:
-
-- щоб student pages почали жити від нового content flow
-- щоб поступово прибрати прямі залежності від статичних локальних даних
-
-Що це дало:
-
-- список уроків і сторінка уроку вже ближчі до майбутньої API-архітектури
-
-### 5. Було використано тимчасовий compatibility layer, а потім прибрано
-
-Що зроблено:
-
-- на проміжному етапі був використаний adapter між новим `LessonDTO` і старим `LessonContent`
-- після переведення `LessonPage`, `CodeEditor` і `checkLesson` на новіший data flow цей adapter був видалений
-- замість нього залишились вузькі helper-и:
-  - `courseMapping.ts`
-  - `lessonFiles.ts`
-
-Для чого:
-
-- щоб пройти міграцію поступово, без одного великого risky рефакторингу
-- а потім повернути код до чистішої структури без зайвого compatibility-файлу
-
-Що це дало:
-
-- compatibility stage уже пройдений
-- фронтенд менше залежить від legacy-структур
-- поточний код чистіший і простіший для наступних змін
-
-### 6. Реалізовано базовий auth foundation
-
-Що зроблено:
-
-- увімкнено `/login` і `/register`
-- додано роль користувача в mock auth
-- додано role-based guard
-- розділено маршрути на:
-  - public
-  - student
-  - teacher
-- додано завантаження session при старті
-
-Для чого:
-
-- щоб фронтенд уже був готовий до role-based архітектури
-- щоб student і teacher flows надалі не змішувалися
-
-Що це дало:
-
-- з’явилась базова модель доступу по ролях
-- teacher area можна розвивати окремо від student area
-
-### 7. Виправлено маршрути student area і legacy redirects
-
-Що зроблено:
-
-- картки уроків тепер ведуть у `/student/...`
-- lesson navigation теж працює через `/student/...`
-- старі шляхи типу `/html/:id` редіректять у новий формат
-- публічна home-сторінка знову доступна окремо
-
-Для чого:
-
-- щоб перехід на нову структуру маршрутів не ламав поточну навігацію
-
-Що це дало:
-
-- student area стала стабільною після зміни роутингу
-- старі посилання не перестали працювати повністю
-
-### 8. `userCode` підготовлено до `savedFiles`
-
-Що зроблено:
-
-- у `userCodeSlice` додано `savedFiles`
-- `storage/types.ts` оновлено під новий формат
-- додані helper-и для перетворення між:
-  - `html/css`
-  - `savedFiles`
-
-Для чого:
-
-- щоб state уже був сумісний з майбутнім API
-- щоб потім не робити ще один великий рефакторинг сховища коду
-
-Що це дало:
-
-- локальний student code state уже ближчий до backend-моделі
-
-### 9. `CodeEditor` переведено ближче до lesson files і `savedFiles`
-
-Що зроблено:
-
-- редактор почав брати fallback значення з `lessonDto.files`
-- вкладки будуються з lesson files, а не з двох жорстко зашитих кнопок
-- значення редактора тепер беруться з `savedFiles` як із основного джерела
-
-Для чого:
-
-- щоб редактор перестав бути жорстко прив’язаним до legacy-структури
-- щоб підготувати його до майбутнього multi-file / API-based flow
-
-Що це дало:
-
-- редактор уже значно ближчий до нової lesson-моделі
-- при цьому поточний HTML/CSS student flow не зламано
-
-### 10. Додано `studentApi` і user-scoped persistence
-
-Що зроблено:
-
-- створено `src/api/studentApi.ts`
-- збереження коду і прогресу винесено в окремий API-подібний шар
-- дані тепер зберігаються окремо для кожного `userId`
-- `syncThunks` переведено зі старого загального `storage` на `studentApi`
-
-Для чого:
-
-- щоб persistence був ближчим до майбутнього бекенду
-- щоб код і прогрес перестали бути "глобальними для всіх"
-- щоб підготувати правильний контракт для майбутніх HTTP-запитів
-
-Що це дало:
-
-- student persistence уже має правильний напрямок
-- замінити mock/local persistence на реальний бекенд буде значно простіше
-
-Додатково завершено:
-
-- code persistence тепер зберігається як `savedFiles`-only формат
-- progress persistence тепер зберігається у DTO-подібному форматі:
-  - `lessonProgress`
-  - `taskProgress`
-  - `currentLessonId`
-- при завантаженні дані нормалізуються назад у поточний Redux shape без зламу UI
-
-### 11. `LessonNavigation` переведено на новий content flow
-
-Що зроблено:
-
-- `LessonNavigation.tsx` більше не читає уроки напряму з `lessonData.ts`
-- попередній і наступний урок тепер рахуються через `contentSlice`
-
-Для чого:
-
-- щоб навігація між уроками теж жила в новій архітектурі
-- щоб прибирати legacy-залежності не тільки зі сторінок, а й з допоміжних компонентів
-
-Що це дало:
-
-- ще один важливий шмат student flow відв’язаний від старого джерела даних
-- навігація тепер узгоджена з моделлю `track -> course -> lesson`
-
-### 12. `LessonPage` частково відв’язано від legacy-адаптера
-
-Що зроблено:
-
-- `LessonHeader` тепер отримує `title` і `description` напряму з `lessonDto`
-- `TaskList` отримує задачі напряму з `lessonDto.tasks`
-- legacy adapter залишився тільки там, де він ще реально потрібен, насамперед у `CodeEditor`
-
-Для чого:
-
-- щоб поступово прибирати `LessonContent` як проміжну модель
-- щоб не тримати всю сторінку уроку на compatibility layer довше, ніж потрібно
-
-Що це дало:
-
-- сторінка уроку вже частково працює від нового DTO-напрямку
-- це підготувало повне видалення compatibility adapter-а
-
-### 13. `checkLesson` і `CodeEditor` переведено з legacy lesson-shape
-
-Що зроблено:
-
-- `checkLesson` більше не працює через старий `LessonContent`
-- `CodeEditor` передає в `checkLesson` мінімальний validation-shape на основі `lessonDto.tasks`
-- стара lesson-модель більше не потрібна в editor validation flow
-
-Для чого:
-
-- щоб прибрати ще один великий шматок legacy-залежності
-- щоб validation flow теж став ближчим до backend-ready lesson DTO
-
-Що це дало:
-
-- lesson validation більше не залежить від старого формату уроку
-- editor flow став послідовнішим відносно нової content-моделі
-
-### 14. `DocsPage` переведено на `contentSlice`
-
-Що зроблено:
-
-- docs більше не читають теорію напряму з `lessonData.ts`
-- `DocsPage` тепер завантажує список уроків і конкретний урок через `contentSlice`
-- теорія рендериться з `lessonDto.theoryBlocks`
-
-Для чого:
-
-- щоб docs теж жили в тій самій content-архітектурі, що й lessons
-- щоб не тримати окремий legacy-шлях для контенту
-
-Що це дало:
-
-- ще один великий legacy-вузол фронту закритий
-- docs стали backend-ready на рівні data flow
-
-### 15. `contentAdapters.ts` повністю прибрано
-
-Що зроблено:
-
-- старий `contentAdapters.ts` видалений
-- mapping категорій і helper-и для lesson files винесені в окремі вузькі утиліти
-
-Для чого:
-
-- щоб завершити cleanup після міграції
-- щоб не залишати "тимчасовий файл", який уже не виконує свою попередню роль
-
-Що це дало:
-
-- код став чистішим
-- поточний фронтенд уже не має окремого compatibility adapter layer
-
-### 16. Додано role-aware header і завершено базовий auth UX
-
-Що зроблено:
-
-- шапка тепер поводиться по-різному для:
-  - guest
-  - student
-  - teacher
-- auth user бачить:
-  - ім'я
-  - badge ролі
-  - `Мій кабінет`
-  - `Вийти`
-- після `login/register` автоматично підвантажуються user data
-- при `logout` очищаються Redux state для student code і progress
-- teacher у шапці бачить `Учні` замість student-навігації `HTML/CSS`
-
-Для чого:
-
-- щоб role-based UX був завершений не тільки в роутингу, а й у навігації
-- щоб можна було коректно вийти зі student-акаунта і зайти під teacher
-
-Що це дало:
-
-- з'явився нормальний вхід у teacher area через загальний shell
-- перемикання між ролями стало передбачуваним
-- базовий auth UX став продуктово завершенішим
-
-### Підсумок Поточного Стану
-
-Що вже підготовлено:
-
-- content layer
-- route foundation
-- auth foundation
-- `savedFiles`-ready editor state
-- user-scoped student persistence
-- навігація уроків через `contentSlice`
-- `LessonPage` уже працює від нового DTO flow
-- `DocsPage` працює від нового content flow
-- compatibility adapter layer уже прибраний
-
-Що це означає:
-
-- фронтенд уже рухається по правильній архітектурі
-- але ще не підключений до реального бекенду
-- блок `student persistence + content-flow migration` можна вважати логічно завершеним проміжним етапом
-- наступний фронтенд-крок уже має бути новим блоком, а не продовженням цього cleanup
+## Поточні Обмеження
+
+| Обмеження | Що це означає |
+| --- | --- |
+| Немає реального backend API | `authApi`, `contentApi`, `studentApi`, `teacherApi` поки mock/localStorage |
+| Контент ще з `lessonData.ts` | UI вже не читає його напряму, але джерело даних ще статичне |
+| Video support базовий | DTO і рендер є, але немає admin UI для додавання відео |
+| Editor практично HTML/CSS | `savedFiles` уже є, але UI повноцінно підтримує тільки `index.html` і `style.css` |
+| Teacher flow без реальних groups | Список учнів зараз формується з localStorage, не з `teacher_students` / `groups` |
+| Немає submissions/review | Teacher ще не може робити повний review workflow |
+| Немає admin panel | Курси/уроки/відео поки не створюються через UI |
 
 ---
 
-## Наступний Блок: Teacher Flow MVP
+## Який Frontend-Файл За Що Відповідає
 
-Це найраціональніший наступний функціональний блок після завершення student flow migration.
+| Зона | Файли |
+| --- | --- |
+| Routes | `src/App.tsx` |
+| App init | `src/AppInitializer.tsx` |
+| Auth API | `src/api/authApi.ts` |
+| Auth state | `src/store/slices/authSlice.ts`, `src/store/thunks/authThunks.ts` |
+| Content API | `src/api/contentApi.ts` |
+| Content state | `src/store/slices/contentSlice.ts` |
+| Content DTO | `src/types/content.ts` |
+| Legacy lesson source | `src/data/lessonData.ts`, `src/types/lessonTypes.ts` |
+| Student persistence | `src/api/studentApi.ts`, `src/store/thunks/syncThunks.ts` |
+| Student code state | `src/store/slices/userCodeSlice.ts` |
+| Student progress state | `src/store/slices/progressSlice.ts` |
+| Teacher API/state | `src/api/teacherApi.ts`, `src/store/slices/teacherSlice.ts` |
+| Student pages | `src/pages/Student/*` |
+| Teacher pages | `src/pages/Teacher/*` |
+| Lesson page | `src/pages/lessonPage/LessonPage.tsx` |
+| Editor | `src/components/CodeEditor/*` |
+| Lesson validation | `src/utils/checkLesson.ts`, `src/utils/validateHtmlCss.ts`, `src/utils/validateHtmlParse5.ts` |
+| Layout/navigation | `src/components/layout/*`, `src/components/lessonNavigation/*` |
 
-Мета:
+---
 
-- дати викладачу окрему робочу зону
-- показати список учнів
-- показати прогрес конкретного учня
-- використати вже підготовлені role-based routes і backend-ready persistence-підхід
+## Наступний Frontend Roadmap
 
-### Крок 1. Додати `teacherApi` як mock API-шар
+### 1. Stabilize Video Lessons UI
+
+Пріоритет: високий.
 
 Що зробити:
 
-- створити `src/api/teacherApi.ts`
-- додати mock методи:
-  - `getStudents()`
-  - `getStudentById(studentId)`
-  - `getStudentProgress(studentId)`
-  - `getStudentCode(studentId, lessonId)` або `getStudentCodeByLesson(studentId)`
+- додати тестові video records у `contentApi.ts` для 1-2 уроків
+- перевірити YouTube/Vimeo/upload сценарії
+- зробити відеоблок зручнішим у sidebar або над редактором
+- вирішити фінальний UX:
+  - відео в деталях уроку
+  - відео над редактором
+  - video-only lesson page
 
-Для чого:
+Файли:
 
-- щоб teacher pages теж будувались не напряму на mock-даних у компонентах
-- щоб потім цей шар легко замінити на реальний бекенд
+- `src/types/content.ts`
+- `src/api/contentApi.ts`
+- `src/pages/lessonPage/LessonPage.tsx`
+- `src/pages/lessonPage/LessonPage.module.scss`
 
-### Крок 2. Додати `teacherSlice`
+Результат:
 
-Що зробити:
-
-- створити Redux slice для teacher area
-- додати thunk-и для:
-  - списку учнів
-  - деталей учня
-  - прогресу учня
-
-Для чого:
-
-- щоб teacher state жив окремо від student state
-- щоб teacher pages не тягнули дані локально у компонентах
-
-### Крок 3. Зробити teacher shell і маршрути
-
-Що зробити:
-
-- залишити `/teacher` як вхід у teacher area
-- додати:
-  - `/teacher/students`
-  - `/teacher/students/:studentId`
-- замінити current placeholder на реальну базову навігацію викладача
-
-Для чого:
-
-- щоб teacher area перестала бути заглушкою
-- щоб з’явився стабільний каркас для наступних сторінок
-
-### Крок 4. Реалізувати список учнів
-
-Що зробити:
-
-- окрему сторінку зі списком учнів
-- показувати:
-  - ім’я
-  - email
-  - кількість завершених уроків
-  - поточний урок або останню активність
-
-Для чого:
-
-- це головна точка входу для викладача
-- це мінімальна корисна цінність teacher role
-
-### Крок 5. Реалізувати сторінку конкретного учня
-
-Що зробити:
-
-- сторінку деталей учня
-- показувати:
-  - список уроків
-  - completed / in progress / not started
-  - виконані задачі
-  - опційно останній збережений код по уроку
-
-Для чого:
-
-- саме тут teacher flow починає реально використовувати student progress data
-
-### Крок 6. Після Teacher MVP
-
-Після завершення цього блоку вже можна вирішувати, що робити далі:
-
-- teacher code review view
-- student progress page
-- teacher dashboard polish
-- наповнення контентом
-
-### Поточний статус teacher block
-
-Вже реалізовано:
-
-- `teacherApi`
-- `teacherSlice`
-- teacher shell
-- `/teacher/students`
-- `/teacher/students/:studentId`
-- lesson progress у teacher details
-- task progress у teacher details
-- code snapshots у teacher details
-
-Це означає:
-
-- teacher block уже не є заглушкою
-- базовий Teacher MVP по фронту вже реально працює
-- наступні кроки тут — це не foundation, а поглиблення або polish
+- можна додати відео до будь-якого уроку без зміни логіки редактора.
 
 ---
 
-## Наступний Блок: Student Progress UX
+### 2. Replace Mock API Boundaries With HTTP Client
 
-Після завершення базового Teacher MVP найраціональніше не заглиблювати teacher block ще сильніше, а закрити наступний видимий продуктовий пробіл у student area.
-
-Мета:
-
-- зробити student experience повнішим, а не лише набором lesson pages
-- дати учню окрему сторінку загального прогресу
-- використати вже готовий persistence без нового інфраструктурного рефакторингу
+Пріоритет: високий, коли backend готовий.
 
 Що зробити:
 
-- реалізувати `/student/progress`
-- показати:
-  - completed lessons
-  - current lesson
-  - task completion summary
-  - останню активність
-- додати явний блок `Продовжити навчання`
-- уніфікувати переходи з header і student area до цієї сторінки
+- створити базовий HTTP client
+- замінити internals у `authApi`, `contentApi`, `studentApi`, `teacherApi`
+- залишити ті самі DTO і thunk-и
+- додати error handling для API errors
 
-Для чого:
-
-- student persistence уже достатньо зрілий для такого UI
-- teacher MVP уже існує
-- це дає реальну користь користувачу без стрибка в новий великий блок типу CMS або real backend auth
-  - student persistence через API-shaped layer
-  - поступове прибирання legacy-шарів
-
----
-
-## Етап 1. Підготувати Frontend-Моделі Під API
-
-### Ціль
-
-Зробити так, щоб фронтенд уже мислив сутностями:
-
-- `track`
-- `course`
-- `lesson`
-- `savedFiles`
-- `lesson progress`
-- `task progress`
-
-### Що треба змінити
-
-#### 1. Оновити або додати типи
-
-Поточні файли:
-
-- `src/types/lessonTypes.ts`
-- `src/types/editor.ts`
-
-Що зробити:
-
-- додати типи для:
-  - `Track`
-  - `Course`
-  - `Lesson`
-  - `LessonFile`
-  - `LessonTask`
-  - `LessonTheoryBlock`
-  - `StudentCodeDTO`
-  - `StudentProgressDTO`
-- поступово відходити від жорсткої прив’язки до:
-  - `initialHtml`
-  - `initialCss`
-
-### Що важливо
-
-На цьому етапі ще не потрібно одразу ламати весь редактор.
-Потрібно спочатку створити правильні типи і узгодити модель із API.
-
-### Результат
-
-Фронтенд має типи, які відповідають новому `API_SPEC_UA.md`.
-
----
-
-## Етап 2. Реалізувати Auth Foundation
-
-### Ціль
-
-Зробити справжній базовий auth flow у фронтенді.
-
-### Які файли зараз важливі
+Файли:
 
 - `src/api/authApi.ts`
-- `src/store/slices/authSlice.ts`
-- `src/store/thunks/authThunks.ts`
-- `src/features/auth/LoginPage.tsx`
-- `src/features/auth/RegisterPage.tsx`
-- `src/features/auth/AuthGuard.tsx`
-- `src/App.tsx`
-- `src/AppInitializer.tsx`
-
-### Що треба зробити
-
-#### 1. Увімкнути auth routes
-
-У `src/App.tsx`:
-
-- повернути routes для:
-  - `/login`
-  - `/register`
-- розділити маршрути:
-  - public
-  - student
-  - teacher
-
-#### 2. Завантаження session при старті
-
-У `src/AppInitializer.tsx`:
-
-- спочатку вантажити поточного користувача
-- тільки після цього вантажити user data
-
-#### 3. Role-aware auth state
-
-У `authSlice`:
-
-- user already exists
-- переконатися, що `role` є обов’язковим полем у користувача
-
-#### 4. Role-based guards
-
-Потрібно додати окремі guard-и:
-
-- `StudentGuard`
-- `TeacherGuard`
-
-Або один універсальний guard із required role.
-
-### Результат
-
-- користувач логіниться
-- фронтенд знає його роль
-- роль визначає доступні маршрути
-
----
-
-## Етап 3. Підключити Content API
-
-### Ціль
-
-Прибрати залежність від статичного `lessonData.ts` як головного джерела уроків.
-
-### Які файли зараз важливі
-
-- `src/data/lessonData.ts`
-- `src/pages/LessonsList/LessonsList.tsx`
-- `src/pages/lessonPage/LessonPage.tsx`
-- `src/pages/Docs/DocsPage.tsx`
-
-### Що треба зробити
-
-#### 1. Додати content API client
-
-Нові або оновлені модулі:
-
 - `src/api/contentApi.ts`
-
-Методи:
-
-- `getTracks()`
-- `getCoursesByTrack(trackSlug)`
-- `getCourse(courseId)`
-- `getCourseLessons(courseId)`
-- `getLesson(lessonId)`
-
-#### 2. Додати Redux slice або async state для контенту
-
-Рекомендація:
-
-- створити `contentSlice`
-
-У ньому тримати:
-
-- tracks
-- courses
-- lessons
-- currentLesson
-- loading / error states
-
-#### 3. Поступово прибрати прямі залежності від `lessonData.ts`
-
-Що замінити:
-
-- `LessonsList` має брати список уроків із API/Redux
-- `LessonPage` має брати конкретний урок із API/Redux
-- `DocsPage` має брати теорію з lesson data, яка прийшла з API
-
-### Що можна зробити тимчасово
-
-Для перехідного етапу можна:
-
-- лишити `lessonData.ts` як fallback/mock source
-- але нову логіку вже писати через `contentApi`
-
-### Результат
-
-Контент більше не жорстко зашитий у фронті.
-
----
-
-## Етап 4. Перевести Student Progress і Code На API
-
-### Ціль
-
-Зробити так, щоб код і прогрес учня зберігалися через backend API, а не через локальний тимчасовий adapter.
-
-### Які файли зараз важливі
-
-- `src/storage/index.ts`
-- `src/storage/localStorageAdapter.ts`
-- `src/storage/apiAdapter.ts`
-- `src/storage/types.ts`
-- `src/store/thunks/syncThunks.ts`
-- `src/store/slices/userCodeSlice.ts`
-- `src/store/slices/progressSlice.ts`
-- `src/components/CodeEditor/CodeEditor.tsx`
-
-### Що треба зробити
-
-#### 1. Розширити storage layer
-
-Зараз `storage` занадто загальний і орієнтований на стару форму даних.
-
-Потрібно перейти до API-орієнтованої моделі:
-
-- load current student code
-- save lesson code
-- load current student progress
-- save lesson progress
-
-Можна:
-
-- або переробити `storage`
-- або винести окремі `studentApi` методи і не перевантажувати `storage`
-
-Рекомендація:
-
-- для auth і content не використовувати `storage`
-- `storage` або залишити як legacy abstraction, або прибрати пізніше
-
-#### 2. Оновити shape для student code
-
-Зараз:
-
-- `userCode[lessonId] = { html, css }`
-
-Має стати ближче до:
-
-- `userCode[lessonId] = { savedFiles: [...] }`
-
-Але через те, що поточний редактор HTML/CSS-first, можна зробити перехід у два кроки:
-
-1. внутрішньо все ще мати зручний adapter для `html/css`
-2. на рівні API зберігати `savedFiles`
-
-#### 3. Оновити shape для progress
-
-Зараз:
-
-- `completedLessons`
-- `taskStatus`
-
-Треба зробити так, щоб це відповідало бекендовим lesson/task progress DTO.
-
-#### 4. Оновити `CodeEditor`
-
-У `src/components/CodeEditor/CodeEditor.tsx`:
-
-- брати initial files із lesson API data
-- при `Run Code` або save відправляти `savedFiles`
-- progress update робити через API-backed thunk
-
-### Що важливо не зламати
-
-- iframe checking
-- parse5 validation
-- run code flow
-- task completion logic
-
-### Результат
-
-Student progress і student code вже реально працюють через API.
-
----
-
-## Етап 5. Оновити Student Routes і Navigation
-
-### Ціль
-
-Побудувати зрозумілий student area поверх нового content API.
-
-### Що треба зробити
-
-Рекомендована структура:
-
-- `/student`
-- `/student/tracks/:trackSlug/courses`
-- `/student/courses/:courseId`
-- `/student/lessons/:lessonId`
-- `/student/progress`
-
-### Які файли треба переглянути
-
-- `src/App.tsx`
-- `src/pages/LessonsList/LessonsList.tsx`
-- `src/pages/lessonPage/LessonPage.tsx`
-- `src/components/lessonNavigation/LessonNavigation.tsx`
-
-### Що треба змінити
-
-- навігація має працювати від course/lesson model
-- “next lesson” має шукатися в межах курсу
-- список уроків має відображати lesson status через API-backed progress
-
-### Результат
-
-Student area стає узгодженою з backend content model.
-
----
-
-## Етап 6. Адаптувати Docs Під Backend Content
-
-### Ціль
-
-Зробити `DocsPage` частиною тієї ж lesson/content моделі, а не окремим статичним розділом.
-
-### Які файли зараз важливі
-
-- `src/pages/Docs/DocsPage.tsx`
-
-### Що треба зробити
-
-- брати теорію з lesson content API
-- відображати docs як похідне представлення lesson theory
-- не дублювати контент у двох різних джерелах
-
-### Результат
-
-Docs більше не існує окремо від lesson content model.
-
----
-
-## Етап 7. Реалізувати Teacher Flow На Фронті
-
-### Ціль
-
-Додати окрему викладацьку частину після стабілізації student flow.
-
-### Нові сторінки
-
-- `src/pages/TeacherDashboard/TeacherDashboard.tsx`
-- `src/pages/TeacherStudents/TeacherStudents.tsx`
-- `src/pages/TeacherStudentDetails/TeacherStudentDetails.tsx`
-
-### Нові API-клієнти
-
+- `src/api/studentApi.ts`
 - `src/api/teacherApi.ts`
+- `src/store/thunks/*`
 
-Методи:
+Результат:
 
-- `getTeacherStudents()`
-- `getTeacherStudentDetails(studentId)`
-- `getTeacherStudentProgress(studentId)`
-- `getTeacherStudentCode(studentId, lessonId)`
-
-### Що показувати
-
-У списку учнів:
-
-- ім’я
-- email
-- скільки уроків завершено
-- скільки курсів призначено
-- остання активність
-
-На сторінці учня:
-
-- assigned courses
-- lesson progress
-- task progress
-- saved code по вибраному уроку
-
-### Результат
-
-Teacher flow існує окремо від student flow і не змішується з ним.
+- UI не переписується, міняється тільки API layer.
 
 ---
 
-## Етап 8. Поступова Чистка Legacy-Логіки
+### 3. Admin Content MVP
 
-### Ціль
+Пріоритет: середній, після базового backend content API.
 
-Після стабілізації нової архітектури прибрати тимчасові рішення.
+Що зробити першим:
 
-### Що саме зачепить
+- admin route guard для `admin` або teacher-with-permission
+- список курсів
+- створення/редагування курсу
+- список modules у курсі
+- створення/редагування module
+- список lessons у module
+- створення/редагування lesson metadata
 
-- `src/data/lessonData.ts`
-- legacy local storage logic
-- тимчасові mock API
-- старі route shape, якщо лишаться
+Що не робити одразу:
 
-### Що робити
+- складний visual CMS
+- drag-and-drop builder
+- повну аналітику
 
-- прибирати тільки після того, як новий потік уже стабільний
-- не видаляти fallback занадто рано
+Нові файли орієнтовно:
 
-### Результат
+- `src/pages/Admin/AdminCoursesPage.tsx`
+- `src/pages/Admin/AdminCourseEditorPage.tsx`
+- `src/pages/Admin/AdminLessonEditorPage.tsx`
+- `src/api/adminApi.ts`
+- `src/store/slices/adminSlice.ts`
 
-Проєкт більше не має дубльованих джерел істини.
+Результат:
 
----
-
-## Що Робити Першим Практично
-
-Якщо переходити від документації до реалізації, правильний перший набір фронтенд-задач такий:
-
-1. додати нові frontend types під API
-2. ввімкнути auth routes і role guards
-3. зробити `contentApi`
-4. зробити `contentSlice`
-5. перевести `LessonPage` і `LessonsList` на новий content source
-6. після цього переводити `CodeEditor` на `savedFiles` + API persistence
+- контент можна створювати без ручного редагування `lessonData.ts`.
 
 ---
 
-## Що Не Треба Робити Зараз
+### 4. Lesson Editor In Admin
 
-- не починати з teacher dashboard
-- не робити CMS для створення уроків
-- не переписувати весь редактор під multi-language одразу
-- не викидати стару логіку, поки нова не стабільна
+Пріоритет: середній.
+
+Що зробити:
+
+- редагування lesson files
+- редагування theory blocks
+- редагування videos
+- редагування tasks
+- JSON/rule editor для validation rules
+- preview lesson before publish
+
+Файли:
+
+- нові admin lesson editor компоненти
+- `src/types/content.ts`
+- `src/api/adminApi.ts`
+
+Результат:
+
+- курс і урок можна повністю зібрати з frontend admin UI.
 
 ---
 
-## Рекомендований Порядок Реалізації У Коді
+### 5. Groups / Classes UI
 
-1. `types`
-2. `auth`
-3. `content api`
-4. `content state`
-5. `student content pages`
-6. `student persistence`
-7. `docs`
-8. `teacher pages`
-9. `cleanup`
+Пріоритет: середній після real teacher API.
+
+Що зробити:
+
+- сторінка groups list
+- group details
+- додавання/видалення студентів у групі
+- призначення курсів групі
+- фільтр teacher students by group
+
+Файли:
+
+- `src/pages/Teacher/*`
+- `src/api/teacherApi.ts`
+- `src/store/slices/teacherSlice.ts`
+
+Результат:
+
+- teacher dashboard перестає бути просто списком усіх студентів.
+
+---
+
+### 6. Submissions And Review Workflow
+
+Пріоритет: середній/низький, після groups і стабільного student API.
+
+Що зробити:
+
+- student кнопка `Submit for review`
+- submissions list для teacher
+- submission details
+- status update: submitted / in_review / changes_requested / approved
+- показ submitted code snapshot
+
+Файли:
+
+- `src/api/studentApi.ts`
+- `src/api/teacherApi.ts`
+- `src/store/slices/teacherSlice.ts`
+- нові сторінки teacher review
+
+Результат:
+
+- викладач може перевіряти роботи не тільки за auto-progress.
+
+---
+
+### 7. Teacher Comments
+
+Пріоритет: після submissions.
+
+Що зробити:
+
+- список коментарів до submission
+- додавання загального коментаря
+- resolved/unresolved state
+- пізніше inline comments по файлах/рядках
+
+Результат:
+
+- teacher feedback стає частиною навчального workflow.
+
+---
+
+### 8. Code Version History
+
+Пріоритет: після submissions/comments.
+
+Що зробити:
+
+- список versions для lesson code
+- перегляд snapshot
+- порівняння версій пізніше
+
+Результат:
+
+- можна бачити, як змінювалась робота учня.
+
+---
+
+## Рекомендований Порядок Найближчих Дій
+
+Якщо робити прагматично, порядок такий:
+
+1. Довести video lesson UI до зручного стану.
+2. Підготувати backend HTTP API layer без зміни UI.
+3. Підключити real auth/content/student APIs.
+4. Зробити мінімальну admin page для курсів і уроків.
+5. Додати редагування відео в admin lesson editor.
+6. Після цього переходити до groups/classes.
+7. Потім submissions/review.
+8. Потім teacher comments і code version history.
+
+---
+
+## Що Не Варто Робити Зараз
+
+- Не будувати велику адмінку до появи стабільного backend API.
+- Не ускладнювати video progress, поки достатньо просто показувати відео.
+- Не робити submissions до того, як буде реальна модель student/group/course assignment.
+- Не повертатися до старої моделі `category -> lesson` як основної.
+- Не вводити `htmlCode` / `cssCode` як backend contract; залишати `savedFiles`.

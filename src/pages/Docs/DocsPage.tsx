@@ -6,12 +6,15 @@ import type { AppDispatch, RootState } from "../../store";
 import type { LessonTheoryBlockDTO } from "../../types/content";
 import type { LessonCategory } from "../../types/lessonTypes";
 import {
-  fetchCourseLessons,
+  fetchCourseModules,
   fetchCoursesByTrack,
   fetchLessonById,
+  fetchModuleLessons,
   selectContentError,
   selectCourseLessons,
   selectCourseLessonsStatus,
+  selectCourseModules,
+  selectCourseModulesStatus,
   selectCoursesByTrack,
   selectLessonById,
   selectLessonStatus,
@@ -79,8 +82,14 @@ export default function DocsPage() {
     () => findCourseByLegacyCategory(frontendCourses, safeCategory),
     [frontendCourses, safeCategory],
   );
+  const courseModules = useSelector((state: RootState) =>
+    selectedCourse ? selectCourseModules(state, selectedCourse.id) : [],
+  );
   const lessons = useSelector((state: RootState) =>
     selectedCourse ? selectCourseLessons(state, selectedCourse.id) : [],
+  );
+  const modulesStatus = useSelector((state: RootState) =>
+    selectedCourse ? selectCourseModulesStatus(state, selectedCourse.id) : "idle",
   );
   const lessonsStatus = useSelector((state: RootState) =>
     selectedCourse ? selectCourseLessonsStatus(state, selectedCourse.id) : "idle",
@@ -99,8 +108,14 @@ export default function DocsPage() {
 
   useEffect(() => {
     if (!selectedCourse) return;
-    void dispatch(fetchCourseLessons(selectedCourse.id));
+    void dispatch(fetchCourseModules(selectedCourse.id));
   }, [dispatch, selectedCourse]);
+
+  useEffect(() => {
+    courseModules.forEach((module) => {
+      void dispatch(fetchModuleLessons(module.id));
+    });
+  }, [courseModules, dispatch]);
 
   useEffect(() => {
     if (!selectedCourse || lessons.length === 0) return;
@@ -133,7 +148,7 @@ export default function DocsPage() {
     return <h2>Категорія не знайдена</h2>;
   }
 
-  if (lessonsStatus === "loading" && lessons.length === 0) {
+  if ((modulesStatus === "loading" || lessonsStatus === "loading") && lessons.length === 0) {
     return <h2>Завантаження документації...</h2>;
   }
 

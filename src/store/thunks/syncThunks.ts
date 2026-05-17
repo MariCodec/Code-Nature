@@ -13,7 +13,7 @@ const buildLessonCourseMap = (state: RootState): Record<string, string> => {
     return acc;
   }, {});
 
-  const fromLessonLists = Object.values(state.content.lessonsByCourse).reduce<
+  const fromModuleLessonLists = Object.values(state.content.lessonsByModule).reduce<
     Record<string, string>
   >((acc, lessons) => {
     lessons.forEach((lesson) => {
@@ -23,7 +23,7 @@ const buildLessonCourseMap = (state: RootState): Record<string, string> => {
   }, {});
 
   return {
-    ...fromLessonLists,
+    ...fromModuleLessonLists,
     ...fromLessonDetails,
   };
 };
@@ -46,18 +46,33 @@ const toHydratedProgressState = (progress: StudentProgressRecord) => {
     },
     {},
   );
+  const lastActivityCandidates = [
+    ...progress.lessonProgress.flatMap((lesson) => [
+      lesson.startedAt,
+      lesson.completedAt,
+      lesson.updatedAt,
+    ]),
+    ...progress.taskProgress.flatMap((task) => [task.completedAt, task.updatedAt]),
+  ].filter((value): value is string => typeof value === "string");
+  const lastActivityAt =
+    lastActivityCandidates.length > 0
+      ? lastActivityCandidates.reduce((latest, value) =>
+          value > latest ? value : latest,
+        )
+      : null;
 
   return {
     completedLessons,
     currentLessonId: progress.currentLessonId,
+    lastActivityAt,
     taskStatus,
   };
 };
 
 const toPersistedProgressRecord = (state: RootState): StudentProgressRecord => {
-  const now = new Date().toISOString();
-  const courseByLessonId = buildLessonCourseMap(state);
   const progress = state.progress;
+  const now = progress.lastActivityAt ?? new Date().toISOString();
+  const courseByLessonId = buildLessonCourseMap(state);
 
   const lessonIds = new Set<string>([
     ...progress.completedLessons,

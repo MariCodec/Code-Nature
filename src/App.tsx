@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "./App.scss";
 import LessonPage from "./pages/lessonPage/LessonPage";
 import Layout from "./components/layout/Layout";
@@ -15,24 +15,17 @@ import { selectAuthRole } from "./store/slices/authSlice";
 import TeacherHomePage from "./pages/Teacher/TeacherHomePage";
 import TeacherStudentsPage from "./pages/Teacher/TeacherStudentsPage";
 import TeacherStudentPage from "./pages/Teacher/TeacherStudentPage";
+import StudentProgressPage from "./pages/Student/StudentProgressPage";
+import StudentLearningPage from "./pages/Student/StudentLearningPage";
+import StudentTechChecksPage from "./pages/Student/StudentTechChecksPage";
 
 function StudentHomeRedirect() {
-  return <Navigate to="/student/html" replace />;
+  return <Navigate to="/student/learning" replace />;
 }
 
 function AppEntryRedirect() {
   const role = useSelector(selectAuthRole);
   return <Navigate to={role === "teacher" ? "/teacher" : "/student"} replace />;
-}
-
-function LegacyLessonRedirect() {
-  const { category, id } = useParams<{ category?: string; id?: string }>();
-
-  if (!category || !id) {
-    return <Navigate to="/home" replace />;
-  }
-
-  return <Navigate to={`/student/${category}/${id}`} replace />;
 }
 
 function App() {
@@ -52,15 +45,22 @@ function App() {
           </Route>
 
           <Route path="/app" element={<AppEntryRedirect />} />
-          <Route path="/html" element={<Navigate to="/student/html" replace />} />
-          <Route path="/css" element={<Navigate to="/student/css" replace />} />
-          <Route path="/:category/:id" element={<LegacyLessonRedirect />} />
 
           <Route path="/student" element={<AuthGuard allowedRoles={["student"]} />}>
             <Route element={<Layout />}>
               <Route index element={<StudentHomeRedirect />} />
-              <Route path=":category" element={<LessonsList />} />
-              <Route path=":category/:id" element={<LessonPage />} />
+              <Route path="learning" element={<StudentLearningPage />} />
+              <Route path="tech-checks" element={<StudentTechChecksPage />} />
+              <Route path="progress" element={<StudentProgressPage />} />
+              <Route path="courses/:courseId" element={<LessonsList />} />
+              <Route
+                path="courses/:courseId/modules/:moduleId/lessons/:id"
+                element={<LessonPage />}
+              />
+              <Route
+                path="courses/:courseId/modules/:moduleId/tech-checks/:id"
+                element={<LessonPage />}
+              />
             </Route>
           </Route>
 

@@ -4,14 +4,18 @@ import { useNavigate, useParams } from "react-router-dom";
 import styles from "./LessonNavigation.module.scss";
 import { AppDispatch, RootState } from "../../store";
 // import { markLessonAsCompleted } from "../../store/slices/progressSlice";
-import { LessonCategory } from "../../types/lessonTypes";
 import {
-  fetchCourseLessons,
+  fetchCourseModules,
   fetchCoursesByTrack,
+  fetchModuleLessons,
   selectCourseLessons,
+  selectCourseModules,
   selectCoursesByTrack,
 } from "../../store/slices/contentSlice";
-import { findCourseByLegacyCategory } from "../../utils/courseMapping";
+import {
+  buildStudentLessonPath,
+  buildStudentTechCheckPath,
+} from "../../utils/courseMapping";
 
 const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   currentLessonId,
@@ -19,18 +23,24 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   // const dispatch = useDispatch();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { category } = useParams<{ category: LessonCategory }>();
+  const { courseId, moduleId } = useParams<{ courseId?: string; moduleId?: string }>();
   const completedLessons = useSelector(
     (state: RootState) => state.progress.completedLessons,
   );
   const frontendCourses = useSelector((state: RootState) =>
     selectCoursesByTrack(state, "frontend"),
   );
-  const selectedCourse = category
-    ? findCourseByLegacyCategory(frontendCourses, category)
+  const selectedCourse = courseId
+    ? frontendCourses.find((course) => course.id === courseId) ?? null
     : null;
+  const courseModules = useSelector((state: RootState) =>
+    selectedCourse ? selectCourseModules(state, selectedCourse.id) : [],
+  );
   const categoryLessons = useSelector((state: RootState) =>
     selectedCourse ? selectCourseLessons(state, selectedCourse.id) : [],
+  );
+  const orderedModuleItems = categoryLessons.filter(
+    (lesson) => lesson.moduleId === moduleId,
   );
 
   useEffect(() => {
@@ -39,24 +49,30 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
 
   useEffect(() => {
     if (!selectedCourse) return;
-    void dispatch(fetchCourseLessons(selectedCourse.id));
+    void dispatch(fetchCourseModules(selectedCourse.id));
   }, [dispatch, selectedCourse]);
 
-  if (!category) {
-    return <h2>Категорія не знайдена</h2>;
+  useEffect(() => {
+    courseModules.forEach((module) => {
+      void dispatch(fetchModuleLessons(module.id));
+    });
+  }, [courseModules, dispatch]);
+
+  if (!courseId || !moduleId) {
+    return <h2>Урок не знайдено</h2>;
   }
 
   // Знаходимо індекс поточного уроку
-  const currentIndex = categoryLessons.findIndex(
+  const currentIndex = orderedModuleItems.findIndex(
     (lesson) => lesson.id === currentLessonId,
   );
 
   // Наступний і попередній уроки
   const prevLesson =
-    currentIndex > 0 ? categoryLessons[currentIndex - 1] : null;
+    currentIndex > 0 ? orderedModuleItems[currentIndex - 1] : null;
   const nextLesson =
-    currentIndex < categoryLessons.length - 1
-      ? categoryLessons[currentIndex + 1]
+    currentIndex < orderedModuleItems.length - 1
+      ? orderedModuleItems[currentIndex + 1]
       : null;
 
   // Завершити урок
@@ -70,7 +86,20 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
     <div className={styles.navigationContainer}>
       <button
         onClick={() =>
-          prevLesson && navigate(`/student/${category}/${prevLesson.id}`)
+          prevLesson &&
+          navigate(
+            prevLesson.lessonKind === "tech_check"
+              ? buildStudentTechCheckPath(
+                  prevLesson.courseId,
+                  prevLesson.moduleId,
+                  prevLesson.id,
+                )
+              : buildStudentLessonPath(
+                  prevLesson.courseId,
+                  prevLesson.moduleId,
+                  prevLesson.id,
+                ),
+          )
         }
         disabled={!prevLesson}
         className={styles.navButton}
@@ -80,7 +109,20 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
 
       <button
         onClick={() =>
-          nextLesson && navigate(`/student/${category}/${nextLesson.id}`)
+          nextLesson &&
+          navigate(
+            nextLesson.lessonKind === "tech_check"
+              ? buildStudentTechCheckPath(
+                  nextLesson.courseId,
+                  nextLesson.moduleId,
+                  nextLesson.id,
+                )
+              : buildStudentLessonPath(
+                  nextLesson.courseId,
+                  nextLesson.moduleId,
+                  nextLesson.id,
+                ),
+          )
         }
         disabled={!nextLesson || !completedLessons.includes(currentLessonId)}
         className={styles.navButton}

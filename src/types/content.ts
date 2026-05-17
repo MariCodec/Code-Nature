@@ -19,9 +19,30 @@ export type CourseDTO = {
   isPublished: boolean;
 };
 
-export type LessonRuntimeType = "html-css-preview" | "js-dom" | "code-output" | "theory-only";
+export type CourseModuleDTO = {
+  id: string;
+  courseId: string;
+  slug: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+  isPublished: boolean;
+};
 
-export type LessonValidationType = "dom-check" | "output-check" | "manual-check";
+export type LessonRuntimeType =
+  | "html-css-preview"
+  | "js-dom"
+  | "code-output"
+  | "theory-only"
+  | "video";
+
+export type LessonValidationType =
+  | "dom-check"
+  | "output-check"
+  | "manual-check"
+  | "none";
+
+export type LessonKind = "lesson" | "tech_check";
 
 export type LessonFileDTO = {
   id: string;
@@ -66,9 +87,33 @@ export type LessonTaskDTO = {
   rules: TaskRules;
 };
 
+export type LessonVideoProvider =
+  | "upload"
+  | "youtube"
+  | "vimeo"
+  | "mux"
+  | "external";
+
+export type LessonVideoDTO = {
+  id: string;
+  provider: LessonVideoProvider;
+  sourceUrl: string | null;
+  assetId: string | null;
+  title: string;
+  description: string;
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  transcript: string | null;
+  captionsUrl: string | null;
+  orderIndex: number;
+  isRequired: boolean;
+};
+
 export type LessonListItemDTO = {
   id: string;
   courseId: string;
+  moduleId: string;
+  lessonKind: LessonKind;
   slug: string;
   title: string;
   description: string;
@@ -81,6 +126,7 @@ export type LessonListItemDTO = {
 export type LessonDTO = LessonListItemDTO & {
   files: LessonFileDTO[];
   theoryBlocks: LessonTheoryBlockDTO[];
+  videos: LessonVideoDTO[];
   tasks: LessonTaskDTO[];
 };
 

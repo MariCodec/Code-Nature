@@ -1,78 +1,65 @@
 # SCHEMA_BD_UA
 
-## Що Це За Документ
+## Призначення
 
-Цей файл описує концептуальну схему бази даних для MVP навчальної платформи.
+Цей документ описує актуальну концептуальну схему БД для навчальної платформи.
+Він має бути спільною опорою для бекенду, фронтенду та майбутньої адмінки.
 
-Тут зафіксовано:
+Поточний фронтенд уже працює в напрямку цієї моделі через mock API:
 
-- які таблиці мають бути в БД
-- які поля мають бути в цих таблицях
-- як таблиці пов’язані між собою
-- що входить у MVP
-- що можна відкласти на пізніші етапи
+- `track -> course -> course_module -> lesson`
+- уроки мають `files`, `theoryBlocks`, `tasks`
+- техчеки є уроками з `lesson_kind = tech_check`
+- код учня зберігається як `savedFiles`, а не як окремі `html/css` поля
+- прогрес зберігається окремо по уроках і завданнях
+- є ролі `student` і `teacher`
+- є базовий teacher flow для перегляду учнів, прогресу та code snapshots
 
-Це не готова SQL-міграція, а технічна схема, на основі якої потім можна буде зробити:
+Схема нижче фіксує не тільки вже реалізовану MVP-модель, а й найближчі потрібні модулі:
 
-- SQL schema
-- Prisma schema
-- backend models
-- API contracts
-
----
-
-## Основна Ідея MVP
-
-На першому етапі:
-
-- уроки вже входять у модель БД
-- у БД зберігаються і контентні дані, і користувацькі дані
-
-Тобто в базу йдуть:
-
-- користувачі
-- ролі
-- зв’язки викладач-учень
-- треки
-- курси
-- уроки
-- файли уроку
-- блоки теорії
-- завдання уроку
-- призначення курсів учням
-- прогрес учнів
-- код учнів
-
-Що НЕ обов’язково входить у першу реалізацію:
-
-- UI для створення курсів
-- UI для створення уроків
-- повноцінна CMS / адмінка контенту
-- складна система груп
+- CRUD курсів
+- CRUD уроків
+- відеоуроки
+- teacher comments
+- code version history
+- groups/classes
+- submissions/review workflow
+- admin panel API
 
 ---
 
-## Загальна Логіка Даних
+## Основні Принципи
 
-Архітектурна модель платформи:
-
-- `track -> course -> lesson -> task`
-
-На MVP:
-
-- `track`, `course`, `lesson`, `task` вже закладаються в модель БД
-- прогрес і код учня зберігаються в БД
+- Усі `id` можна реалізувати як UUID або string ids.
+- Усі дати зберігаються як timestamp і віддаються в API як ISO string.
+- Контент уроків належить БД з першої бекенд-реалізації, навіть якщо перший імпорт буде з поточного `lessonData.ts`.
+- Поточний MVP є `HTML/CSS-first`, але не `HTML/CSS-only`.
+- Client-side validation лишається на фронтенді, але правила перевірки зберігаються в БД як JSON.
+- Відео є частиною lesson content model, а не окремою паралельною сутністю поза уроками.
+- Техчек не є окремою продуктовою моделлю: це `lesson` з `lesson_kind = tech_check`.
+- Submissions потрібні для review workflow і не мають заміняти автопрогрес. Це окремий шар перевірки.
 
 ---
 
-## Таблиці Для MVP
+## Enums
 
-### 1. `users`
+Рекомендовані значення для enum-like полів:
 
-Призначення:
+- `users.role`: `student | teacher | admin`
+- `lessons.lesson_kind`: `lesson | tech_check`
+- `lessons.runtime_type`: `html-css-preview | js-dom | code-output | theory-only | video`
+- `lessons.validation_type`: `dom-check | output-check | manual-check | none`
+- `lesson_theory_blocks.block_type`: `text | list | code | note | video`
+- `lesson_videos.provider`: `upload | youtube | vimeo | mux | external`
+- `student_lesson_progress.status`: `not_started | in_progress | completed`
+- `submissions.status`: `draft | submitted | in_review | changes_requested | approved | rejected`
+- `code_versions.source`: `autosave | manual_save | submission | teacher_review`
 
-- зберігає всіх користувачів платформи
-- визначає роль користувача
+---
+
+## 1. `users`
+
+Зберігає користувачів платформи.
 
 Поля:
 
@@ -84,25 +71,16 @@
 - `created_at`
 - `updated_at`
 
-Примітки:
+Обмеження:
 
-- `role` = `student | teacher`
-- `email` має бути унікальним
+- `email` унікальний
+- `role` на старті використовує `student | teacher`, але схема резервує `admin`
 
 ---
 
-### 2. `tracks`
+## 2. `tracks`
 
-Призначення:
-
-- верхній рівень навчального напряму
-- дозволяє не обмежуватися лише фронтендом у майбутньому
-
-Приклади:
-
-- `frontend`
-- `backend`
-- `data`
+Верхній рівень навчального напряму.
 
 Поля:
 
@@ -113,23 +91,19 @@
 - `created_at`
 - `updated_at`
 
-Примітки:
+Зв’язки:
 
-- для MVP можна мати один трек, наприклад `frontend`
+- один `track` має багато `courses`
+
+Приклад:
+
+- `frontend`
 
 ---
 
-### 3. `courses`
+## 3. `courses`
 
-Призначення:
-
-- курс, який належить до певного треку
-
-Приклади:
-
-- `HTML для початківців`
-- `CSS для початківців`
-- `Frontend Start`
+Курс у межах треку.
 
 Поля:
 
@@ -140,26 +114,28 @@
 - `description`
 - `level`
 - `is_published`
+- `created_by_user_id`
+- `updated_by_user_id`
 - `created_at`
 - `updated_at`
 
 Зв’язки:
 
 - `track_id -> tracks.id`
+- `created_by_user_id -> users.id`
+- `updated_by_user_id -> users.id`
 
 Примітки:
 
-- `level` може бути, наприклад: `beginner | intermediate | advanced`
-- на MVP достатньо кількох курсів у межах одного треку
+- це базова таблиця для майбутнього CRUD курсів
+- публічність курсу контролюється через `is_published`
+- призначення учням не зберігається тут, для цього є `student_course_assignments`
 
 ---
 
-### 4. `lessons`
+## 4. `course_modules`
 
-Призначення:
-
-- зберігає уроки курсу
-- визначає тип уроку і тип runtime
+Логічні розділи курсу.
 
 Поля:
 
@@ -168,8 +144,6 @@
 - `slug`
 - `title`
 - `description`
-- `runtime_type`
-- `validation_type`
 - `order_index`
 - `is_published`
 - `created_at`
@@ -179,19 +153,58 @@
 
 - `course_id -> courses.id`
 
-Примітки:
+Правила:
 
-- `runtime_type` для MVP може бути `html-css-preview`
-- далі можуть з’явитися інші типи, наприклад `js-dom`, `code-output`, `theory-only`
-- `validation_type` для MVP може бути `dom-check`
+- кожен курс має один або більше модулів
+- кожен урок належить конкретному модулю
+- навіть маленький курс має module, наприклад `Основи`
 
 ---
 
-### 5. `lesson_files`
+## 5. `lessons`
 
-Призначення:
+Основна таблиця уроків, техчеків і відеоуроків.
 
-- зберігає файли, які відкриваються в редакторі уроку
+Поля:
+
+- `id`
+- `course_id`
+- `module_id`
+- `slug`
+- `title`
+- `description`
+- `lesson_kind`
+- `runtime_type`
+- `validation_type`
+- `order_index`
+- `is_published`
+- `created_by_user_id`
+- `updated_by_user_id`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `course_id -> courses.id`
+- `module_id -> course_modules.id`
+- `created_by_user_id -> users.id`
+- `updated_by_user_id -> users.id`
+
+Правила:
+
+- `module_id` обов’язковий
+- module має належати тому самому course, що й lesson
+- звичайний урок: `lesson_kind = lesson`
+- техчек: `lesson_kind = tech_check`
+- відеоурок може бути:
+  - `runtime_type = video`, якщо це переважно відео без редактора
+  - або `runtime_type = html-css-preview` з додатковим відеоблоком, якщо відео супроводжує практику
+
+---
+
+## 6. `lesson_files`
+
+Файли, які відкриваються в редакторі уроку.
 
 Поля:
 
@@ -209,23 +222,17 @@
 
 - `lesson_id -> lessons.id`
 
-Примітки:
+Приклади:
 
-- для HTML/CSS уроку тут можуть бути:
-  - `index.html`
-  - `style.css`
-- у майбутньому ця таблиця дозволяє підтримати:
-  - `script.js`
-  - `main.py`
-  - інші файли
+- `index.html`
+- `style.css`
+- у майбутньому `script.js`, `main.py`, інші файли
 
 ---
 
-### 6. `lesson_theory_blocks`
+## 7. `lesson_theory_blocks`
 
-Призначення:
-
-- зберігає теоретичні блоки уроку
+Текстова/структурована теорія уроку.
 
 Поля:
 
@@ -243,22 +250,49 @@
 
 Примітки:
 
-- `block_type` може бути:
-  - `text`
-  - `list`
-  - `code`
-  - `note`
-- `content_json` дає достатню гнучкість без зайвої кількості полів
+- `content_json` залежить від `block_type`
+- для відео можна використовувати `block_type = video`, але для нормалізованих відеометаданих краще також створювати запис у `lesson_videos`
 
 ---
 
-### 7. `lesson_tasks`
+## 8. `lesson_videos`
 
-Призначення:
+Відео, пов’язані з уроком.
 
-- зберігає завдання уроку
-- визначає порядок завдань
-- зберігає правила перевірки
+Поля:
+
+- `id`
+- `lesson_id`
+- `provider`
+- `source_url`
+- `asset_id`
+- `title`
+- `description`
+- `duration_seconds`
+- `thumbnail_url`
+- `transcript`
+- `captions_url`
+- `order_index`
+- `is_required`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `lesson_id -> lessons.id`
+
+Примітки:
+
+- `source_url` підходить для YouTube/Vimeo/external
+- `asset_id` підходить для Mux/S3/internal upload
+- фронтенд має отримувати відео разом із `LessonDTO`
+- для MVP можна мати одне відео на урок, але схема дозволяє кілька
+
+---
+
+## 9. `lesson_tasks`
+
+Завдання уроку.
 
 Поля:
 
@@ -277,20 +311,64 @@
 
 Примітки:
 
-- `rules_json` підходить для поточної декларативної моделі перевірки
-- це дозволяє зберігати:
-  - html selectors
-  - css checks
-  - text contains rules
-  - майбутні validation presets
+- поточний фронтенд підтримує декларативні правила:
+  - `htmlSelectors`
+  - `cssChecks`
+  - `requireTextContains`
+- для `manual-check` rules можуть бути порожніми або містити rubric JSON
 
 ---
 
-### 8. `teacher_students`
+## 10. `groups`
 
-Призначення:
+Групи або класи учнів.
 
-- зв’язок між викладачем і учнем
+Поля:
+
+- `id`
+- `name`
+- `slug`
+- `description`
+- `teacher_id`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `teacher_id -> users.id`
+
+Примітки:
+
+- це потрібний шар для `groups/classes`
+- прямий зв’язок teacher-student можна залишити для простих кейсів, але групи мають стати основною моделлю організації класів
+
+---
+
+## 11. `group_students`
+
+Учасники груп.
+
+Поля:
+
+- `id`
+- `group_id`
+- `student_id`
+- `joined_at`
+
+Зв’язки:
+
+- `group_id -> groups.id`
+- `student_id -> users.id`
+
+Обмеження:
+
+- унікальна пара `group_id + student_id`
+
+---
+
+## 12. `teacher_students`
+
+Прямий зв’язок викладача й учня.
 
 Поля:
 
@@ -306,45 +384,40 @@
 
 Примітки:
 
-- для MVP беремо просту модель без груп
-- один викладач може мати багато учнів
-- один учень потенційно може бути пов’язаний із кількома викладачами, якщо це знадобиться
-- якщо захочеш простішу модель, можна на MVP тимчасово обмежити одного учня одним викладачем на рівні бізнес-логіки
+- потрібний для простого teacher flow і сумісності з поточним фронтендом
+- коли groups/classes стануть основною моделлю, цей зв’язок можна використовувати як derived/shortcut або залишити для індивідуального навчання
 
 ---
 
-### 9. `student_course_assignments`
+## 13. `student_course_assignments`
 
-Призначення:
-
-- зберігає, які курси призначені конкретному учню
+Призначення курсів учням.
 
 Поля:
 
 - `id`
 - `student_id`
 - `course_id`
-- `assigned_by_teacher_id`
+- `group_id`
+- `assigned_by_user_id`
 - `assigned_at`
 
 Зв’язки:
 
 - `student_id -> users.id`
 - `course_id -> courses.id`
-- `assigned_by_teacher_id -> users.id`
+- `group_id -> groups.id`
+- `assigned_by_user_id -> users.id`
 
 Примітки:
 
-- це важливо, щоб різні учні могли проходити різні курси
-- саме ця таблиця робить платформу гнучкою для різних програм навчання
+- `group_id` може бути `null`, якщо курс призначено індивідуально
 
 ---
 
-### 10. `student_lesson_progress`
+## 14. `student_lesson_progress`
 
-Призначення:
-
-- зберігає прогрес учня по конкретному уроку
+Прогрес учня по уроку.
 
 Поля:
 
@@ -363,18 +436,15 @@
 - `course_id -> courses.id`
 - `lesson_id -> lessons.id`
 
-Примітки:
+Обмеження:
 
-- `status` = `not_started | in_progress | completed`
-- `course_id` тут можна лишити для швидких вибірок по курсу
+- унікальна пара `student_id + lesson_id`
 
 ---
 
-### 11. `student_task_progress`
+## 15. `student_task_progress`
 
-Призначення:
-
-- зберігає прогрес учня по конкретних завданнях уроку
+Прогрес учня по завданнях уроку.
 
 Поля:
 
@@ -394,17 +464,15 @@
 - `lesson_id -> lessons.id`
 - `task_id -> lesson_tasks.id`
 
-Примітки:
+Обмеження:
 
-- `course_id` можна лишити для швидкої аналітики і зручних вибірок
+- унікальна пара `student_id + task_id`
 
 ---
 
-### 12. `student_code`
+## 16. `student_code`
 
-Призначення:
-
-- зберігає код учня для конкретного уроку
+Останній актуальний стан коду учня по уроку.
 
 Поля:
 
@@ -421,122 +489,289 @@
 - `course_id -> courses.id`
 - `lesson_id -> lessons.id`
 
-Примітки:
+Обмеження:
 
-- замість окремих `html_code` і `css_code` краще вже зараз зберігати універсальні дані
-- `saved_files_json` може містити масив або map файлів уроку
+- унікальна пара `student_id + lesson_id`
 
-Приклад структури:
+Приклад `saved_files_json`:
 
-- `index.html`
-- `style.css`
-- в майбутньому будь-які інші файли
-
----
-
-## Що Поки Не Обов’язково Додавати В Першу Реалізацію
-
-Ці речі можна відкласти на потім:
-
-- `groups`
-- `teacher_comments`
-- `submissions`
-- `manual_review_status`
-- адмінку для редагування контенту
-- версіонування уроків
-
-Причина:
-
-- контент уже варто закласти в БД
-- але не обов’язково одразу робити складні інструменти для керування ним
+```json
+[
+  {
+    "name": "index.html",
+    "language": "html",
+    "content": "<h1>Hello</h1>"
+  },
+  {
+    "name": "style.css",
+    "language": "css",
+    "content": "h1 { color: green; }"
+  }
+]
+```
 
 ---
 
-## Майбутнє Розширення Схеми
+## 17. `code_versions`
 
-Коли платформа виросте, логічно буде додати:
+Історія версій коду учня.
 
----
+Поля:
 
-## Основні Зв’язки Між Таблицями
-
-### Базові зв’язки
-
-- один `track` має багато `courses`
-- один `course` має багато `lessons`
-- один `lesson` має багато `lesson_files`
-- один `lesson` має багато `lesson_theory_blocks`
-- один `lesson` має багато `lesson_tasks`
-- один `teacher` має багато `students` через `teacher_students`
-- один `student` може мати багато призначених курсів через `student_course_assignments`
-- один `student` має багато записів прогресу по уроках
-- один `student` має багато записів прогресу по завданнях
-- один `student` має багато збережених кодів
-
----
-
-## Що Важливо Для Реалізації
-
-### 1. Не прив’язувати схему назавжди лише до HTML/CSS
-
-Так, зараз продукт HTML/CSS-first.
-
-Але архітектурно треба пам’ятати:
-
-- у майбутньому можуть бути інші мови
-- можуть бути інші типи runtime
-- можуть бути інші типи перевірки
-
-Тому:
-
-- курси і треки вже зараз треба закладати
-- `student_code` зараз може бути простим
-- але далі його краще зробити універсальнішим
-
-### 2. Не переносити весь контент у БД на старті
-
-Контент уже варто тримати в БД, якщо платформа мислиться довгостроково.
-
-Але не потрібно одразу робити:
-
-- складну CMS
-- редактор контенту
-- багаторівневу адмінку
-
-### 3. Дані мають бути user-scoped
-
-Усе, що стосується прогресу і коду, має бути прив’язане до:
-
+- `id`
 - `student_id`
 - `course_id`
 - `lesson_id`
+- `submission_id`
+- `saved_files_json`
+- `source`
+- `created_at`
+
+Зв’язки:
+
+- `student_id -> users.id`
+- `course_id -> courses.id`
+- `lesson_id -> lessons.id`
+- `submission_id -> submissions.id`
+
+Примітки:
+
+- `student_code` зберігає останній стан
+- `code_versions` зберігає історію
+- `submission_id` може бути `null`, якщо версія створена autosave/manual save
 
 ---
 
-## Мінімальний Набір Таблиць Для Першої Реалізації
+## 18. `submissions`
 
-Якщо брати найпрактичніший MVP-набір, то першими потрібні:
+Відправлення роботи учнем на перевірку.
 
-- `users`
-- `tracks`
-- `courses`
-- `lessons`
-- `lesson_files`
-- `lesson_theory_blocks`
-- `lesson_tasks`
-- `teacher_students`
-- `student_course_assignments`
-- `student_lesson_progress`
-- `student_task_progress`
-- `student_code`
+Поля:
+
+- `id`
+- `student_id`
+- `course_id`
+- `lesson_id`
+- `status`
+- `submitted_files_json`
+- `submitted_at`
+- `reviewed_by_user_id`
+- `reviewed_at`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `student_id -> users.id`
+- `course_id -> courses.id`
+- `lesson_id -> lessons.id`
+- `reviewed_by_user_id -> users.id`
+
+Примітки:
+
+- submission фіксує конкретний snapshot роботи
+- для auto-checked lessons submission може створюватися опційно
+- для `manual-check` submission є основним workflow
 
 ---
 
-## Що Робити Після Цього Документа
+## 19. `teacher_comments`
 
-Після затвердження цієї схеми правильний наступний крок:
+Коментарі викладача до submission, уроку або конкретного файлу.
 
-1. зробити `API_SPEC_UA.md`
-2. зафіксувати DTO
-3. підготувати план інтеграції фронтенду з бекендом
-4. після цього переходити до реалізації auth і student persistence
+Поля:
+
+- `id`
+- `teacher_id`
+- `student_id`
+- `lesson_id`
+- `submission_id`
+- `file_name`
+- `line_number`
+- `comment_text`
+- `is_resolved`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `teacher_id -> users.id`
+- `student_id -> users.id`
+- `lesson_id -> lessons.id`
+- `submission_id -> submissions.id`
+
+Примітки:
+
+- `submission_id` може бути `null`, якщо коментар прив’язаний до поточного коду учня
+- `file_name` і `line_number` можуть бути `null`, якщо це загальний коментар
+
+---
+
+## 20. `submission_reviews`
+
+Підсумковий review по submission.
+
+Поля:
+
+- `id`
+- `submission_id`
+- `reviewer_id`
+- `status`
+- `summary`
+- `created_at`
+- `updated_at`
+
+Зв’язки:
+
+- `submission_id -> submissions.id`
+- `reviewer_id -> users.id`
+
+Примітки:
+
+- статус review має синхронізуватися зі статусом `submissions.status`
+- детальні inline-коментарі зберігаються в `teacher_comments`
+
+---
+
+## 21. `admin_audit_log`
+
+Журнал дій для адмінки та CRUD контенту.
+
+Поля:
+
+- `id`
+- `actor_user_id`
+- `entity_type`
+- `entity_id`
+- `action`
+- `before_json`
+- `after_json`
+- `created_at`
+
+Зв’язки:
+
+- `actor_user_id -> users.id`
+
+Примітки:
+
+- корисно для змін курсів, уроків, модулів, відео, завдань і груп
+- можна реалізувати не в першій міграції, але контракт варто тримати в плані
+
+---
+
+## Основні Зв’язки
+
+- `track` має багато `courses`
+- `course` має багато `course_modules`
+- `course_module` має багато `lessons`
+- `lesson` має багато `lesson_files`
+- `lesson` має багато `lesson_theory_blocks`
+- `lesson` має багато `lesson_videos`
+- `lesson` має багато `lesson_tasks`
+- `teacher` має багато `groups`
+- `group` має багато `students` через `group_students`
+- `teacher` може мати прямі `students` через `teacher_students`
+- `student` має багато `student_course_assignments`
+- `student` має багато `student_lesson_progress`
+- `student` має багато `student_task_progress`
+- `student` має один актуальний `student_code` на lesson
+- `student` має багато `code_versions`
+- `student` має багато `submissions`
+- `submission` має багато `teacher_comments`
+- `submission` має один або багато `submission_reviews`
+
+---
+
+## Мінімальний Порядок Міграцій
+
+### База MVP
+
+1. `users`
+2. `tracks`
+3. `courses`
+4. `course_modules`
+5. `lessons`
+6. `lesson_files`
+7. `lesson_theory_blocks`
+8. `lesson_tasks`
+9. `teacher_students`
+10. `student_course_assignments`
+11. `student_lesson_progress`
+12. `student_task_progress`
+13. `student_code`
+
+### Найближче Розширення
+
+1. `lesson_videos`
+2. `groups`
+3. `group_students`
+4. `code_versions`
+5. `submissions`
+6. `teacher_comments`
+7. `submission_reviews`
+8. `admin_audit_log`
+
+---
+
+## Важливі Узгодження Для Бекенду І Фронтенду
+
+### Контент уроку
+
+`GET /lessons/:lessonId` має повертати повний lesson object:
+
+- lesson metadata
+- `files`
+- `theoryBlocks`
+- `videos`
+- `tasks`
+
+Фронтенд не має окремо здогадуватися, чи урок відео, практика або техчек. Це визначається через:
+
+- `lessonKind`
+- `runtimeType`
+- `validationType`
+- наявність `files`, `videos`, `tasks`
+
+### Код учня
+
+Фронтенд і бекенд мають використовувати `savedFiles`:
+
+- не вводити окремі API-поля `htmlCode` і `cssCode`
+- не прив’язувати БД до двох файлів
+- для поточного редактора можна показувати тільки `index.html` і `style.css`, але контракт має лишатися multi-file
+
+### Відеоуроки
+
+Відео має бути доступне фронтенду через lesson DTO.
+
+Мінімальний `LessonVideoDTO`:
+
+```ts
+type LessonVideoDTO = {
+  id: string;
+  provider: "upload" | "youtube" | "vimeo" | "mux" | "external";
+  sourceUrl: string | null;
+  assetId: string | null;
+  title: string;
+  description: string;
+  durationSeconds: number | null;
+  thumbnailUrl: string | null;
+  transcript: string | null;
+  captionsUrl: string | null;
+  orderIndex: number;
+  isRequired: boolean;
+};
+```
+
+### Review workflow
+
+Submissions не повинні ламати поточний auto-check flow:
+
+- auto-check оновлює `student_lesson_progress` і `student_task_progress`
+- submission створює review snapshot
+- teacher comments і review status працюють поверх snapshot
+
+### Admin API
+
+CRUD для курсів і уроків має змінювати ті самі таблиці, які читає student content API.
+Не потрібно створювати окрему CMS-модель, яка потім синхронізується з навчальною моделлю.
