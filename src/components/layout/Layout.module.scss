@@ -52,6 +52,7 @@
     margin-left: auto;
 
     .navLink {
+      position: relative;
       font-size: 1rem;
       font-weight: 400;
       color: v.$text-muted;
@@ -62,6 +63,22 @@
         color: v.$text-main;
       }
     }
+
+    .navLinkActive {
+      color: v.$text-main;
+      font-weight: 700;
+    }
+
+    .navLinkActive::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      height: 2px;
+      border-radius: v.$radius-round;
+      background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
+    }
   }
 }
 
@@ -69,34 +86,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: v.$radius-round;
-  background: rgba(10, 14, 25, 0.48);
-  border: 1px solid rgba(v.$glow, 0.2);
-}
-
-.userName {
-  color: v.$text-main;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.roleBadge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: v.$radius-round;
-  background: rgba(v.$glow-strong, 0.14);
-  color: v.$text-main;
-  font-size: 0.75rem;
-  font-weight: 700;
 }
 
 .dashboardLink,
@@ -117,6 +106,10 @@
 .dashboardLink {
   color: v.$text-dark;
   background: linear-gradient(135deg, v.$glow-strong, rgba(120, 200, 255, 0.92));
+
+  &[aria-current="page"] {
+    filter: brightness(1.08);
+  }
 }
 
 .secondaryLink,
@@ -155,11 +148,6 @@
   .siteName {
     font-size: 22px;
     line-height: 22px;
-  }
-
-  .userInfo {
-    width: 100%;
-    justify-content: space-between;
   }
 
   .authControls {

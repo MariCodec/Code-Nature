@@ -161,6 +161,14 @@ export type StudentTaskProgressDTO = {
   updatedAt: string;
 };
 
+export type StudentVideoProgressDTO = {
+  lessonId: string;
+  courseId: string;
+  isWatched: boolean;
+  watchedAt: string | null;
+  updatedAt: string;
+};
+
 export type TeacherStudentListItemDTO = {
   id: string;
   name: string;

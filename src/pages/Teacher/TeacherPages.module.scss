@@ -104,6 +104,10 @@
   gap: 10px;
 }
 
+.cardMuted {
+  opacity: 0.78;
+}
+
 .cardTitle {
   margin: 0;
   color: v.$text-main;
@@ -114,6 +118,20 @@
   margin: 0;
   color: v.$text-muted;
   line-height: 1.5;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: v.$radius-round;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid v.$border;
+  color: v.$text-muted;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .stats {

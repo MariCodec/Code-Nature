@@ -11,8 +11,7 @@
 | `BACKEND_FRONTEND_CONTRACT_UA.md` | Узгодження з бекендом для майбутніх API і DTO |
 | `API_SPEC_UA.md` | Детальні endpoint-и і DTO |
 | `SCHEMA_BD_UA.md` | Концептуальна схема бази даних |
-| `IMPLEMENTATION_ROADMAP.md` | Загальний roadmap продукту |
-| `PLAN_REALIZACII_UA.md` | Старший загальний план українською, можна читати як background |
+
 
 Практично:
 
@@ -58,7 +57,7 @@ track -> course -> module -> lesson
 | Auth guard | Додано role-based доступ | Щоб студент не заходив у teacher area і навпаки | `src/features/auth/AuthGuard.tsx` |
 | Mock auth API | Login/register/logout/session через localStorage | Тимчасова заміна backend auth | `src/api/authApi.ts`, `src/store/thunks/authThunks.ts`, `src/store/slices/authSlice.ts` |
 | App init | Session завантажується при старті | Щоб після refresh користувач не губився | `src/AppInitializer.tsx` |
-| Layout/header | Header показує роль, імʼя, dashboard link, logout | Щоб навігація залежала від ролі | `src/components/layout/Header.tsx` |
+| Layout/header | Header показує role-based navigation, dashboard link, logout | Щоб навігація залежала від ролі без зайвого дублювання `student/Учень` | `src/components/layout/Header.tsx` |
 | Content DTO | Додано типи track/course/module/lesson/files/tasks/videos | Щоб frontend працював у backend-ready моделі | `src/types/content.ts` |
 | Mock content API | Static `lessonData` обгорнуто в API-подібний шар | Щоб потім замінити mock на HTTP без переписування UI | `src/api/contentApi.ts`, `src/data/lessonData.ts` |
 | Content Redux | Додано `contentSlice` з thunk-и для tracks/courses/modules/lessons | Щоб контент жив у Redux, а не напряму в компонентах | `src/store/slices/contentSlice.ts` |
@@ -68,7 +67,8 @@ track -> course -> module -> lesson
 | Student progress page | Є зведення прогресу, задач і continue learning | Щоб студент бачив свій шлях навчання | `src/pages/Student/StudentProgressPage.tsx` |
 | Lessons list | Список уроків курсу працює через content state | Щоб не читати `lessonData` напряму | `src/pages/LessonsList/LessonsList.tsx` |
 | Lesson page | Урок бере `LessonDTO` з `contentSlice` | Щоб сторінка уроку була API-ready | `src/pages/lessonPage/LessonPage.tsx` |
-| Lesson videos | `LessonDTO` має `videos`, урок може показувати відео | Щоб додавати відеоуроки або відео до практичних уроків | `src/types/content.ts`, `src/pages/lessonPage/LessonPage.tsx` |
+| Lesson videos | `LessonDTO` має `videos`; перед практикою показується intro-відео, після старту є малий відеоблок у sidebar | Щоб студент спочатку дивився пояснення, а потім міг повернутися до нього під час практики | `src/types/content.ts`, `src/api/contentApi.ts`, `src/pages/lessonPage/LessonPage.tsx` |
+| Video progress | Є `videoStatus` у progress state і persistence через mock student API | Щоб frontend міг знати, чи студент уже відкрив практику після відео | `src/store/slices/progressSlice.ts`, `src/api/studentApi.ts`, `src/store/thunks/syncThunks.ts` |
 | Code editor | Monaco працює з lesson files і savedFiles | Щоб редактор не був привʼязаний тільки до hardcoded html/css | `src/components/CodeEditor/CodeEditor.tsx`, `src/utils/lessonFiles.ts`, `src/utils/codeFiles.ts` |
 | Preview | HTML/CSS рендериться в iframe | Поточний runtime для HTML/CSS уроків | `src/components/CodeEditor/Output.tsx` |
 | Client validation | Tasks перевіряються на фронті через iframe DOM/CSS checks | Не треба backend execution для HTML/CSS | `src/utils/checkLesson.ts`, `src/utils/validateHtmlCss.ts`, `src/utils/validateHtmlParse5.ts` |
@@ -88,7 +88,7 @@ track -> course -> module -> lesson
 | --- | --- |
 | Немає реального backend API | `authApi`, `contentApi`, `studentApi`, `teacherApi` поки mock/localStorage |
 | Контент ще з `lessonData.ts` | UI вже не читає його напряму, але джерело даних ще статичне |
-| Video support базовий | DTO і рендер є, але немає admin UI для додавання відео |
+| Video support для MVP готовий | Frontend показує intro-відео і sidebar-preview, але немає admin UI/backend API для керування відео |
 | Editor практично HTML/CSS | `savedFiles` уже є, але UI повноцінно підтримує тільки `index.html` і `style.css` |
 | Teacher flow без реальних groups | Список учнів зараз формується з localStorage, не з `teacher_students` / `groups` |
 | Немає submissions/review | Teacher ще не може робити повний review workflow |
@@ -123,19 +123,24 @@ track -> course -> module -> lesson
 
 ## Наступний Frontend Roadmap
 
-### 1. Stabilize Video Lessons UI
+### 1. Video Lessons UI
 
-Пріоритет: високий.
+Статус: frontend MVP зроблено.
 
-Що зробити:
+Що вже зроблено:
 
-- додати тестові video records у `contentApi.ts` для 1-2 уроків
-- перевірити YouTube/Vimeo/upload сценарії
-- зробити відеоблок зручнішим у sidebar або над редактором
-- вирішити фінальний UX:
-  - відео в деталях уроку
-  - відео над редактором
-  - video-only lesson page
+- `LessonDTO.videos` додано в content model
+- у mock `contentApi.ts` додано тестове YouTube-відео
+- перед практикою показується intro-екран з відео
+- після переходу до практики у sidebar лишається малий відеоблок
+- перегляд відео зберігається у `videoStatus`
+- video-only lesson page підтримується для майбутніх уроків без редактора
+
+Що залишилось пізніше:
+
+- замінити тестове YouTube-посилання на реальні дані з backend
+- додати редагування відео в admin lesson editor
+- за потреби додати точніший progress tracking: seconds watched / completedAt
 
 Файли:
 
@@ -146,7 +151,7 @@ track -> course -> module -> lesson
 
 Результат:
 
-- можна додати відео до будь-якого уроку без зміни логіки редактора.
+- frontend готовий приймати відео до будь-якого уроку без зміни логіки редактора.
 
 ---
 
@@ -320,7 +325,7 @@ track -> course -> module -> lesson
 
 Якщо робити прагматично, порядок такий:
 
-1. Довести video lesson UI до зручного стану.
+1. Довести student learning page до фінальної структури: course accordion, locked states, video/practice status.
 2. Підготувати backend HTTP API layer без зміни UI.
 3. Підключити real auth/content/student APIs.
 4. Зробити мінімальну admin page для курсів і уроків.
@@ -334,7 +339,7 @@ track -> course -> module -> lesson
 ## Що Не Варто Робити Зараз
 
 - Не будувати велику адмінку до появи стабільного backend API.
-- Не ускладнювати video progress, поки достатньо просто показувати відео.
+- Не ускладнювати video progress до backend/admin етапу; для MVP достатньо `videoStatus`.
 - Не робити submissions до того, як буде реальна модель student/group/course assignment.
 - Не повертатися до старої моделі `category -> lesson` як основної.
 - Не вводити `htmlCode` / `cssCode` як backend contract; залишати `savedFiles`.

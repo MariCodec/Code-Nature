@@ -1,71 +1,131 @@
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 import Footer from "../../components/layout/Footer";
+import { selectAuthRole, selectIsAuthenticated } from "../../store/slices/authSlice";
 import styles from "./Home.module.scss";
 
 const Home = () => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const role = useSelector(selectAuthRole);
+
+  const primaryPath =
+    role === "teacher"
+      ? "/teacher"
+      : isAuthenticated
+        ? "/student/learning"
+        : "/register";
+  const primaryLabel =
+    role === "teacher"
+      ? "Відкрити кабінет"
+      : isAuthenticated
+        ? "Продовжити навчання"
+        : "Почати навчання";
+  const secondaryPath =
+    role === "teacher"
+      ? "/teacher/students"
+      : isAuthenticated
+        ? "/student/progress"
+        : "/login";
+  const secondaryLabel =
+    role === "teacher"
+      ? "Переглянути учнів"
+      : isAuthenticated
+        ? "Мій прогрес"
+        : "Увійти";
+
   return (
     <>
-      <section className={styles.hero}>
-        <div className={styles.heroBackground}>
-          <span>{"<"}</span>
-          <span>{"{ }"}</span>
-          <span>{"/>"}</span>
-          <span>{"<div>"}</span>
-        </div>
+      <main className={styles.page}>
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <p className={styles.eyebrow}>Code Nature</p>
+            <h1>Платформа для практичного навчання frontend</h1>
+            <p className={styles.lead}>
+              Учні проходять готову програму з відео, теорією, редактором коду і
+              перевіркою завдань. Викладачі бачать прогрес, код і можуть вести
+              навчання груп.
+            </p>
 
-        <div className={styles.heroContent}>
-          <h1>Створити сайт? - та легко 🌿</h1>
-          <p>
-           Створи свій перший сайт на безкоштовному пробному уроці
-          </p>
-          <div className={styles.buttons}>
-            <button className={styles.primary}>Почати безкоштовно</button>
-            <button className={styles.secondary}>Увійти</button>
+            <div className={styles.actions}>
+              <Link className={styles.primaryAction} to={primaryPath}>
+                {primaryLabel}
+              </Link>
+              <Link className={styles.secondaryAction} to={secondaryPath}>
+                {secondaryLabel}
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <div className={styles.heroImage}>
-          <div className={styles.codePreview}>{"<h1>Привіт, HTML!</h1>"}</div>
-          <div className={styles.plant}></div>
-        </div>
-      </section>
+          <aside className={styles.productPreview} aria-label="Можливості платформи">
+            <div className={styles.previewTop}>
+              <span>HTML</span>
+              <span>CSS</span>
+              <span>Video</span>
+            </div>
+            <div className={styles.previewCode}>
+              <span>{"<main>"}</span>
+              <span>{"  <h1>Мій перший сайт</h1>"}</span>
+              <span>{"  <p>Навчаюсь через практику.</p>"}</span>
+              <span>{"</main>"}</span>
+            </div>
+            <div className={styles.previewProgress}>
+              <span>Прогрес курсу</span>
+              <strong>0/2 уроки</strong>
+            </div>
+          </aside>
+        </section>
 
-      <section className={styles.about}>
-        <h2>Що таке Code Nature?</h2>
-        <p>
-          Code Nature — це інтерактивна платформа для навчання HTML, CSS та
-          JavaScript. Пиши код прямо у браузері й одразу бач результат.
-        </p>
-        <div className={styles.icons}>
-          <div>🧱 HTML</div>
-          <div>🎨 CSS</div>
-          <div>⚙️ JS</div>
-        </div>
-      </section>
+        <section className={styles.paths}>
+          <article className={styles.pathCard}>
+            <p className={styles.eyebrow}>Для самостійного навчання</p>
+            <h2>Студент проходить готову програму</h2>
+            <p>
+              Платформа веде учня через курси, модулі, уроки і техчеки. Код і
+              прогрес зберігаються для конкретного користувача.
+            </p>
+            <Link to="/student/learning">Перейти до навчання</Link>
+          </article>
 
-      <section className={styles.steps}>
-        <h2>Як це працює</h2>
-        <ul>
-          <li>
-            <span>1.</span> Залишай заявку
-          </li>
-          <li>
-            <span>2.</span> Пиши код
-          </li>
-          <li>
-            <span>3.</span> Дивись результат 🌱
-          </li>
-        </ul>
-      </section>
+          <article className={styles.pathCard}>
+            <p className={styles.eyebrow}>Для навчання з викладачем</p>
+            <h2>Викладач бачить учнів і їхній прогрес</h2>
+            <p>
+              Поточний teacher flow уже показує учнів, статуси уроків, задачі та
+              snapshots коду. Далі сюди додадуться групи, коментарі й review.
+            </p>
+            <Link to="/teacher/students">Перейти до учнів</Link>
+          </article>
+        </section>
 
-      <section className={styles.freeLesson}>
-        <h2>Спробуй безкоштовно</h2>
-        <p>Перший урок абсолютно безкоштовний. Почни вже сьогодні!</p>
-        <button className={styles.primary}>Пройти пробний урок</button>
-      </section>
+        <section className={styles.capabilities}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.eyebrow}>Що вже закладено</p>
+            <h2>Одна платформа для двох сценаріїв</h2>
+          </div>
 
-      <footer>
-        <Footer />
-      </footer>
+          <div className={styles.capabilityGrid}>
+            <article>
+              <h3>Готова програма</h3>
+              <p>Курси, модулі, уроки, техчеки, відео і практичні завдання.</p>
+            </article>
+            <article>
+              <h3>Практика в браузері</h3>
+              <p>Monaco Editor, preview у iframe і client-side перевірка задач.</p>
+            </article>
+            <article>
+              <h3>Прогрес учня</h3>
+              <p>Поточний урок, завершені уроки, виконані задачі і збережений код.</p>
+            </article>
+            <article>
+              <h3>Teacher flow</h3>
+              <p>Базовий кабінет викладача вже готовий для перегляду student data.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
     </>
   );
 };

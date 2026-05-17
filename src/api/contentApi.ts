@@ -7,6 +7,7 @@ import type {
   LessonListItemDTO,
   LessonTheoryBlockDTO,
   LessonTaskDTO,
+  LessonVideoDTO,
   TrackDTO,
 } from "../types/content";
 import type { LessonCategory, TheoryBlock } from "../types/lessonTypes";
@@ -109,6 +110,23 @@ const mapLessonFiles = (lessonId: string, initialHtml: string, initialCss: strin
   },
 ];
 
+const mapLessonVideos = (lessonId: string, title: string): LessonVideoDTO[] => [
+  {
+    id: `${lessonId}_video_intro`,
+    provider: "youtube",
+    sourceUrl: "https://www.youtube.com/watch?v=qz0aGYrrlhU",
+    assetId: null,
+    title: `Відеоурок: ${title}`,
+    description: "Тестове YouTube-відео для перевірки відображення перед практикою та в сайдбарі.",
+    durationSeconds: 766,
+    thumbnailUrl: null,
+    transcript: null,
+    captionsUrl: null,
+    orderIndex: 1,
+    isRequired: false,
+  },
+];
+
 const mapLessonListItem = (lesson: LessonDTO): LessonListItemDTO => ({
   id: lesson.id,
   courseId: lesson.courseId,
@@ -164,7 +182,7 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
       isPublished: true,
       files,
       theoryBlocks,
-      videos: [],
+      videos: mapLessonVideos(lesson.id, lesson.title),
       tasks,
     };
   });

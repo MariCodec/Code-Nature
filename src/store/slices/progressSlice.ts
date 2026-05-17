@@ -4,6 +4,9 @@ interface ProgressState {
   completedLessons: string[];
   currentLessonId: string | null;
   lastActivityAt: string | null;
+  videoStatus: {
+    [lessonId: string]: boolean;
+  };
   taskStatus: {
     [lessonId: string]: {
       [taskId: string]: boolean;
@@ -15,6 +18,7 @@ const initialState: ProgressState = {
   completedLessons: [],
   currentLessonId: null,
   lastActivityAt: null,
+  videoStatus: {},
   taskStatus: {}, // { "lesson-1": { "task-1": true, "task-2": false }, ... }
 };
 
@@ -34,6 +38,10 @@ const progressSlice = createSlice({
       if (!state.completedLessons.includes(action.payload)) {
         state.completedLessons.push(action.payload);
       }
+      touchProgressState(state);
+    },
+    markLessonVideoAsWatched: (state, action: PayloadAction<string>) => {
+      state.videoStatus[action.payload] = true;
       touchProgressState(state);
     },
     markTaskAsCompleted: (
@@ -67,6 +75,7 @@ const progressSlice = createSlice({
       state.completedLessons = [];
       state.currentLessonId = null;
       state.lastActivityAt = null;
+      state.videoStatus = {};
       state.taskStatus = {};
     },
     hydrateProgress: (_state, action: PayloadAction<ProgressState>) => {
@@ -79,6 +88,7 @@ export const {
   hydrateProgress,
   setCurrentLesson,
   markLessonAsCompleted,
+  markLessonVideoAsWatched,
   markTaskAsCompleted,
   resetProgress,
   resetTasksForLesson,

@@ -1,6 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { studentApi, type StudentProgressRecord } from "../../api/studentApi";
-import type { StudentLessonProgressDTO, StudentTaskProgressDTO } from "../../types/content";
+import type {
+  StudentLessonProgressDTO,
+  StudentTaskProgressDTO,
+  StudentVideoProgressDTO,
+} from "../../types/content";
 import { RootState } from "../index";
 import { hydrateUserCode } from "../slices/userCodeSlice";
 import { hydrateProgress } from "../slices/progressSlice";
@@ -46,6 +50,15 @@ const toHydratedProgressState = (progress: StudentProgressRecord) => {
     },
     {},
   );
+  const videoStatus = progress.videoProgress.reduce<Record<string, boolean>>(
+    (acc, video) => {
+      if (video.isWatched) {
+        acc[video.lessonId] = true;
+      }
+      return acc;
+    },
+    {},
+  );
   const lastActivityCandidates = [
     ...progress.lessonProgress.flatMap((lesson) => [
       lesson.startedAt,
@@ -53,6 +66,7 @@ const toHydratedProgressState = (progress: StudentProgressRecord) => {
       lesson.updatedAt,
     ]),
     ...progress.taskProgress.flatMap((task) => [task.completedAt, task.updatedAt]),
+    ...progress.videoProgress.flatMap((video) => [video.watchedAt, video.updatedAt]),
   ].filter((value): value is string => typeof value === "string");
   const lastActivityAt =
     lastActivityCandidates.length > 0
@@ -65,6 +79,7 @@ const toHydratedProgressState = (progress: StudentProgressRecord) => {
     completedLessons,
     currentLessonId: progress.currentLessonId,
     lastActivityAt,
+    videoStatus,
     taskStatus,
   };
 };
@@ -115,11 +130,23 @@ const toPersistedProgressRecord = (state: RootState): StudentProgressRecord => {
           updatedAt: now,
         })),
   );
+  const videoProgress: StudentVideoProgressDTO[] = Object.entries(
+    progress.videoStatus,
+  )
+    .filter(([, isWatched]) => isWatched)
+    .map(([lessonId]) => ({
+      lessonId,
+      courseId: courseByLessonId[lessonId] ?? "unknown_course",
+      isWatched: true,
+      watchedAt: now,
+      updatedAt: now,
+    }));
 
   return {
     currentLessonId: progress.currentLessonId,
     lessonProgress,
     taskProgress,
+    videoProgress,
   };
 };
 

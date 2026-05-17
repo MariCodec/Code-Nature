@@ -1,301 +1,265 @@
 @use "../../styles/variables" as v;
 
-// === HERO ===
+.page {
+  min-height: calc(100vh - 64px);
+  background:
+    radial-gradient(900px 500px at 14% 8%, rgba(120, 255, 234, 0.12), transparent 56%),
+    radial-gradient(800px 480px at 86% 6%, rgba(120, 170, 255, 0.10), transparent 58%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
+  color: v.$text-main;
+}
+
 .hero {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.75fr);
+  gap: 42px;
+  align-items: center;
+  max-width: 1280px;
+  min-height: 620px;
+  margin: 0 auto;
+  padding: 76px 32px 56px;
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: v.$accent-primary;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.heroContent h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  line-height: 1.02;
+  font-weight: 900;
+}
+
+.lead {
+  max-width: 760px;
+  margin: 0;
+  color: v.$text-muted;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: v.$radius-md;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform v.$tr-fast, filter v.$tr-fast, border-color v.$tr-fast;
+}
+
+.primaryAction {
+  color: v.$text-dark;
+  background: linear-gradient(135deg, v.$glow-strong, rgba(120, 200, 255, 0.92));
+  box-shadow: 0 18px 44px rgba(120, 255, 234, 0.14);
+}
+
+.secondaryAction {
+  color: v.$text-main;
+  border: 1px solid rgba(v.$glow-strong, 0.36);
+  background: rgba(10, 14, 25, 0.42);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.productPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(v.$glow-strong, 0.22);
+  border-radius: v.$radius-lg;
+  background: rgba(12, 18, 32, 0.78);
+  box-shadow: v.$shadow-card;
+}
+
+.previewTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.previewTop span {
+  padding: 7px 10px;
+  color: v.$text-main;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-round;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.previewCode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 220px;
+  padding: 18px;
+  overflow-x: auto;
+  border-radius: v.$radius-md;
+  background: #070a12;
+  color: v.$accent-primary;
+  font-family: v.$font-code;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.previewProgress {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  min-height: calc(100vh - 80px);
-  padding: 0 6rem;
-
-  // shared page background (same as register)
-  background:
-    radial-gradient(1200px 700px at 30% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
-    radial-gradient(900px 500px at 70% 15%, rgba(120, 170, 255, 0.10), transparent 55%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
-
-  overflow: hidden;
-}
-
-/* Летючі символи */
-.heroBackground {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-
-  span {
-    position: absolute;
-    color: rgba(v.$accent-primary, 0.06);
-    font-family: v.$font-code;
-    font-size: 2.4rem;
-    letter-spacing: 0.03em;
-    animation: float 12s ease-in-out infinite;
-    user-select: none;
-    transform-origin: center;
-  }
-
-  span:nth-child(1) { top: 8%; left: 14%; animation-delay: 0s; }
-  span:nth-child(2) { top: 35%; right: 18%; animation-delay: 2s; }
-  span:nth-child(3) { bottom: 12%; left: 36%; animation-delay: 4s; }
-  span:nth-child(4) { bottom: 26%; right: 12%; animation-delay: 6s; }
-}
-
-@keyframes float {
-  0%   { transform: translateY(0) rotate(-2deg); opacity: 0.25; }
-  50%  { transform: translateY(-18px) rotate(6deg); opacity: 0.8; }
-  100% { transform: translateY(0) rotate(-2deg); opacity: 0.25; }
-}
-
-// === HERO CONTENT ===
-.heroContent {
-  position: relative;
-  z-index: 1;
-  max-width: 600px;
-  animation: fadeIn 1.2s ease forwards;
-
-  h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    line-height: 1.2;
-    background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-wrap: balance;
-    text-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-  }
-
-  p {
-    color: v.$text-muted;
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-  }
-}
-
-.buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.primary {
-  background: v.$accent-primary;
-  border: none;
-  color: v.$text-dark;
-  padding: 0.9rem 2rem;
-  border-radius: v.$radius-sm;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background v.$tr-base, box-shadow v.$tr-base, transform v.$tr-fast;
-  box-shadow: 0 0 25px rgba(v.$accent-primary, 0.3);
-
-  &:hover {
-    background: v.$accent-primary;
-    box-shadow: 0 0 25px rgba(v.$accent-primary, 0.3);
-    transform: translateY(-1px);
-  }
-}
-
-.secondary {
-  background: transparent;
-  border: 2px solid v.$accent-primary;
-  color: v.$accent-primary;
-  padding: 0.9rem 2rem;
-  border-radius: v.$radius-sm;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all v.$tr-base;
-
-  &:hover {
-    background: rgba(v.$accent-primary, 0.10);
-  }
-}
-
-// === HERO IMAGE ===
-.heroImage {
-  position: relative;
-  width: 400px;
-  height: 300px;
-  border-radius: v.$radius-lg;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-md;
   background: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  box-shadow: 0 0 40px rgba(v.$accent-primary, 0.15);
-  z-index: 1;
 }
 
-.codePreview {
-  background: v.$bg-surface; // зводимо bg-300/варіанти до surface
-  color: v.$accent-primary;
-  padding: 1rem 2rem;
-  border-radius: v.$radius-sm;
-  font-family: v.$font-code;
-  font-size: 1.1rem;
-  box-shadow: inset 0 0 12px rgba(v.$accent-primary, 0.6);
+.previewProgress span {
+  color: v.$text-muted;
 }
 
-.plant {
-  position: absolute;
-  bottom: -15px;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle at 50% 0%, v.$accent-primary 0%, transparent 70%);
-  filter: blur(25px);
-  animation: grow 4s ease-in-out infinite alternate;
-}
-
-@keyframes grow {
-  from { transform: scale(0.9); opacity: 0.7; }
-  to { transform: scale(1.1); opacity: 1; }
-}
-
-// === ABOUT ===
-.about {
-  text-align: center;
-  padding: 5.5rem 6rem;
-
-  // зводимо #2a2a40/#1e1e2e до surface + легкий варіант
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.06) 0%, v.$bg-surface 70%);
-  background: radial-gradient(circle at center, #2a2a40 0%, #1e1e2e 70%);
+.previewProgress strong {
   color: v.$text-main;
-
-  h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  p {
-    max-width: 760px;
-    margin: 0 auto 2rem;
-    color: v.$text-muted;
-    font-size: 1.05rem;
-    line-height: 1.6;
-  }
-
-  .icons {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 1.5rem;
-
-    div {
-      background: v.$panel;
-      padding: 0.9rem 1.4rem;
-      border-radius: v.$radius-md;
-      font-size: 1.15rem;
-      color: v.$text-main;
-      box-shadow: v.$shadow-soft;
-    }
-  }
 }
 
-// === STEPS ===
-.steps {
-  padding: 5rem 6rem;
-  background: linear-gradient(180deg, v.$bg-surface, v.$bg-main);
-  text-align: center;
-
-  h2 {
-    font-size: 2rem;
-    margin-bottom: 1.6rem;
-    color: v.$text-main;
-  }
-
-  ul {
-    display: flex;
-    justify-content: center;
-    gap: 1.6rem;
-    flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-  }
-
-  li {
-    background: v.$panel;
-    padding: 1.2rem 1.8rem;
-    border-radius: v.$radius-md;
-    color: v.$text-main;
-    min-width: 200px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-
-    span {
-      color: v.$accent-secondary;
-      font-weight: 700;
-      margin-right: 0.5rem;
-    }
-  }
+.paths,
+.capabilities {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 32px 72px;
 }
 
-// === FREE LESSON ===
-.freeLesson {
-  padding: 5.5rem 6rem;
-  background: linear-gradient(135deg, v.$bg-main, v.$bg-surface);
-  text-align: center;
-
-  h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  p {
-    color: v.$text-muted;
-    margin-bottom: 1.8rem;
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .primary {
-    background: v.$accent-primary;
-    color: v.$text-dark;
-    padding: 0.9rem 2rem;
-    border-radius: v.$radius-md;
-    font-weight: 700;
-    box-shadow: 0 12px 40px rgba(v.$accent-primary, 0.12);
-    transition: all v.$tr-base;
-
-    &:hover {
-      box-shadow: 0 0 25px rgba(v.$accent-primary, 0.3);
-      transform: translateY(-1px);
-    }
-  }
+.paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
-// === RESPONSIVE ===
+.pathCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-lg;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.pathCard h2,
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.pathCard p {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.65;
+}
+
+.pathCard a {
+  margin-top: auto;
+  color: v.$accent-primary;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.pathCard a:hover {
+  color: v.$text-main;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.capabilityGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.capabilityGrid article {
+  padding: 18px;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-md;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.capabilityGrid h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.capabilityGrid p {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.55;
+}
+
 @media (max-width: 980px) {
   .hero {
-    flex-direction: column;
-    padding: 4rem 3rem;
-    gap: 2rem;
+    grid-template-columns: 1fr;
     min-height: auto;
+    padding-top: 48px;
   }
 
-  .heroImage {
-    width: 92%;
-    height: auto;
-    padding: 1.2rem;
+  .productPreview {
+    max-width: 620px;
   }
 
-  .codePreview { font-size: 0.95rem; }
-
-  .home, .about, .steps, .freeLesson {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+  .paths,
+  .capabilityGrid {
+    grid-template-columns: 1fr;
   }
 }
 
-// === ANIMATIONS ===
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 640px) {
+  .hero,
+  .paths,
+  .capabilities {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    width: 100%;
+  }
 }

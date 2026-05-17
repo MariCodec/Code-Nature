@@ -2,6 +2,7 @@ import type {
   StudentLessonProgressDTO,
   StudentSavedFileDTO,
   StudentTaskProgressDTO,
+  StudentVideoProgressDTO,
 } from "../types/content";
 
 export type StudentCodeRecord = Record<
@@ -15,6 +16,7 @@ export type StudentProgressRecord = {
   currentLessonId: string | null;
   lessonProgress: StudentLessonProgressDTO[];
   taskProgress: StudentTaskProgressDTO[];
+  videoProgress: StudentVideoProgressDTO[];
 };
 
 const buildStudentCodeKey = (userId: string) => `student_code_v1:${userId}`;
@@ -101,10 +103,24 @@ const normalizeProgressRecord = (value: unknown): StudentProgressRecord | null =
         )
       : [];
 
+    const videoProgress = Array.isArray(progress.videoProgress)
+      ? progress.videoProgress.filter(
+          (item): item is StudentVideoProgressDTO =>
+            Boolean(
+              item &&
+                typeof item.lessonId === "string" &&
+                typeof item.courseId === "string" &&
+                typeof item.isWatched === "boolean" &&
+                typeof item.updatedAt === "string",
+            ),
+        )
+      : [];
+
     return {
       currentLessonId,
       lessonProgress,
       taskProgress,
+      videoProgress,
     };
   }
 
@@ -159,6 +175,7 @@ const normalizeProgressRecord = (value: unknown): StudentProgressRecord | null =
     currentLessonId,
     lessonProgress,
     taskProgress,
+    videoProgress: [],
   };
 };
 

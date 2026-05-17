@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,6 +25,7 @@ const TRACK_SLUG = "frontend";
 
 const StudentLearningPage = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const [expandedCourseIds, setExpandedCourseIds] = useState<string[]>([]);
   const tracks = useSelector(selectTracks);
   const courses = useSelector((state: RootState) =>
     selectCoursesByTrack(state, TRACK_SLUG),
@@ -33,6 +34,7 @@ const StudentLearningPage = () => {
     (state: RootState) => state.progress.completedLessons,
   );
   const taskStatus = useSelector((state: RootState) => state.progress.taskStatus);
+  const videoStatus = useSelector((state: RootState) => state.progress.videoStatus);
   const lessonById = useSelector((state: RootState) => state.content.lessonById);
   const contentError = useSelector(selectContentError);
   const courseSummaries = useSelector((state: RootState) =>
@@ -76,6 +78,13 @@ const StudentLearningPage = () => {
     (sum, item) => sum + item.completedCount,
     0,
   );
+  const toggleCourse = (courseId: string) => {
+    setExpandedCourseIds((current) =>
+      current.includes(courseId)
+        ? current.filter((id) => id !== courseId)
+        : [...current, courseId],
+    );
+  };
 
   useEffect(() => {
     void dispatch(fetchTracks());
@@ -153,12 +162,28 @@ const StudentLearningPage = () => {
         </section>
 
         <section className={styles.learningMap}>
-          {courseSummaries.map(({ course, modules, lessons, techChecks, completedCount }) => {
+          {courseSummaries.map((summary, courseIndex) => {
+            const { course, modules, lessons, techChecks, completedCount } = summary;
+            const previousCourse = courseSummaries[courseIndex - 1] ?? null;
+            const isPreviousCourseCompleted =
+              !previousCourse ||
+              (previousCourse.lessons.length > 0 &&
+                previousCourse.completedCount === previousCourse.lessons.length);
+            const isCourseLocked = courseIndex > 0 && !isPreviousCourseCompleted;
+            const isExpanded =
+              !isCourseLocked &&
+              (expandedCourseIds.includes(course.id) ||
+                (expandedCourseIds.length === 0 && courseIndex === 0));
             const progressRate =
               lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
             return (
-              <article key={course.id} className={styles.courseBlock}>
+              <article
+                key={course.id}
+                className={`${styles.courseBlock} ${
+                  isCourseLocked ? styles.courseBlockLocked : ""
+                }`}
+              >
                 <div className={styles.courseHeader}>
                   <div>
                     <p className={styles.kicker}>{course.level}</p>
@@ -167,13 +192,21 @@ const StudentLearningPage = () => {
                   </div>
 
                   <div className={styles.courseActions}>
-                    <span className={styles.statusBadge}>{progressRate}%</span>
-                    <Link
+                    <span className={styles.statusBadge}>
+                      {isCourseLocked ? "Закрито" : `${progressRate}%`}
+                    </span>
+                    <button
+                      type="button"
                       className={styles.courseAction}
-                      to={`/student/courses/${course.id}`}
+                      disabled={isCourseLocked}
+                      onClick={() => toggleCourse(course.id)}
                     >
-                      Відкрити курс
-                    </Link>
+                      {isCourseLocked
+                        ? "Пройди попередній курс"
+                        : isExpanded
+                          ? "Згорнути курс"
+                          : "Розгорнути курс"}
+                    </button>
                   </div>
                 </div>
 
@@ -184,6 +217,11 @@ const StudentLearningPage = () => {
                   />
                 </div>
 
+                {isCourseLocked ? (
+                  <div className={styles.lockedNotice}>
+                    Наступний курс відкриється після завершення попереднього.
+                  </div>
+                ) : isExpanded ? (
                 <div className={styles.moduleList}>
                   {modules.map((module) => {
                     const moduleLessons = lessons.filter(
@@ -211,13 +249,66 @@ const StudentLearningPage = () => {
                         <div className={styles.lessonList}>
                           {moduleLessons.length > 0 ? (
                             moduleLessons.map((lesson, index) => {
+                              const lessonDetails = lessonById[lesson.id];
                               const lessonTasks = lessonById[lesson.id]?.tasks ?? [];
                               const completedTaskCount = Object.values(
                                 taskStatus[lesson.id] ?? {},
                               ).filter(Boolean).length;
                               const isCompleted = completedLessons.includes(lesson.id);
+                              const previousLesson = moduleLessons[index - 1] ?? null;
+                              const isLessonUnlocked =
+                                !previousLesson || completedLessons.includes(previousLesson.id);
+                              const hasVideo = Boolean(lessonDetails?.videos.length);
+                              const isVideoWatched =
+                                isCompleted || Boolean(videoStatus[lesson.id]);
+                              const lessonRowContent = (
+                                <>
+                                  <span className={styles.lessonIndex}>
+                                    {index + 1}
+                                  </span>
+                                  <div className={styles.lessonCopy}>
+                                    <p className={styles.levelLabel}>Урок</p>
+                                    <h4>{lesson.title}</h4>
+                                    <p>{lesson.description}</p>
+                                    <div className={styles.lessonSteps}>
+                                      {hasVideo && (
+                                        <span
+                                          className={
+                                            isVideoWatched
+                                              ? styles.lessonStepDone
+                                              : styles.lessonStepTodo
+                                          }
+                                        >
+                                          {isVideoWatched ? "✓ Відео" : "Відео"}
+                                        </span>
+                                      )}
+                                      <span
+                                        className={
+                                          isCompleted
+                                            ? styles.lessonStepDone
+                                            : styles.lessonStepTodo
+                                        }
+                                      >
+                                        Практика
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className={styles.lessonMeta}>
+                                    <span>
+                                      {completedTaskCount}/{lessonTasks.length || "?"} задач
+                                    </span>
+                                    <strong>
+                                      {isCompleted
+                                        ? "Завершено"
+                                        : isLessonUnlocked
+                                          ? "Відкрити"
+                                          : "Недоступно"}
+                                    </strong>
+                                  </div>
+                                </>
+                              );
 
-                              return (
+                              return isLessonUnlocked ? (
                                 <Link
                                   key={lesson.id}
                                   className={styles.lessonRow}
@@ -227,23 +318,15 @@ const StudentLearningPage = () => {
                                     lesson.id,
                                   )}
                                 >
-                                  <span className={styles.lessonIndex}>
-                                    {index + 1}
-                                  </span>
-                                  <div className={styles.lessonCopy}>
-                                    <p className={styles.levelLabel}>Урок</p>
-                                    <h4>{lesson.title}</h4>
-                                    <p>{lesson.description}</p>
-                                  </div>
-                                  <div className={styles.lessonMeta}>
-                                    <span>
-                                      {completedTaskCount}/{lessonTasks.length || "?"} задач
-                                    </span>
-                                    <strong>
-                                      {isCompleted ? "Завершено" : "В процесі"}
-                                    </strong>
-                                  </div>
+                                  {lessonRowContent}
                                 </Link>
+                              ) : (
+                                <div
+                                  key={lesson.id}
+                                  className={`${styles.lessonRow} ${styles.lessonRowLocked}`}
+                                >
+                                  {lessonRowContent}
+                                </div>
                               );
                             })
                           ) : (
@@ -278,6 +361,7 @@ const StudentLearningPage = () => {
                     );
                   })}
                 </div>
+                ) : null}
               </article>
             );
           })}

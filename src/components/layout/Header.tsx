@@ -1,10 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./Layout.module.scss";
 import type { AppDispatch } from "../../store";
 import {
   selectAuthRole,
-  selectAuthUser,
   selectIsAuthenticated,
 } from "../../store/slices/authSlice";
 import { logout } from "../../store/thunks/authThunks";
@@ -13,13 +12,13 @@ const Header = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectAuthUser);
   const role = useSelector(selectAuthRole);
 
-  const roleLabel = role === "teacher" ? "Викладач" : "Учень";
   const dashboardPath = role === "teacher" ? "/teacher" : "/student/progress";
   const dashboardLabel = role === "teacher" ? "Мій кабінет" : "Мій прогрес";
-  const showStudentLearningLink = !isAuthenticated || role === "student";
+  const showStudentLearningLink = role === "student";
+  const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+    `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`;
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -80,41 +79,36 @@ const Header = () => {
         </div>
       </div>
       <nav className={styles.navLinks}>
-        <Link className={styles.navLink} to="/home">
-          Home
-        </Link>
+        <NavLink className={navLinkClassName} to="/home">
+          Головна
+        </NavLink>
         {showStudentLearningLink && (
           <>
-            <Link className={styles.navLink} to="/student/learning">
+            <NavLink className={navLinkClassName} to="/student/learning">
               Навчання
-            </Link>
-            <Link className={styles.navLink} to="/student/tech-checks">
+            </NavLink>
+            <NavLink className={navLinkClassName} to="/student/tech-checks">
               Техчеки
-            </Link>
+            </NavLink>
           </>
         )}
         {role === "teacher" && (
-          <Link className={styles.navLink} to="/teacher/students">
+          <NavLink className={navLinkClassName} to="/teacher/students">
             Учні
-          </Link>
+          </NavLink>
         )}
         {/* <Link to="/js">JavaScript Lessons</Link> */}
-        <Link className={styles.navLink} to="/docs">
-          Docs
-        </Link>
+        <NavLink className={navLinkClassName} to="/docs">
+          Довідник
+        </NavLink>
       </nav>
 
       <div className={styles.authControls}>
-        {isAuthenticated && user ? (
+        {isAuthenticated ? (
           <>
-            <div className={styles.userInfo}>
-              <span className={styles.userName}>{user.name}</span>
-              <span className={styles.roleBadge}>{roleLabel}</span>
-            </div>
-
-            <Link className={styles.dashboardLink} to={dashboardPath}>
+            <NavLink className={styles.dashboardLink} to={dashboardPath}>
               {dashboardLabel}
-            </Link>
+            </NavLink>
 
             <button
               type="button"
@@ -126,12 +120,12 @@ const Header = () => {
           </>
         ) : (
           <>
-            <Link className={styles.dashboardLink} to="/login">
+            <NavLink className={styles.dashboardLink} to="/login">
               Увійти
-            </Link>
-            <Link className={styles.secondaryLink} to="/register">
+            </NavLink>
+            <NavLink className={styles.secondaryLink} to="/register">
               Реєстрація
-            </Link>
+            </NavLink>
           </>
         )}
       </div>

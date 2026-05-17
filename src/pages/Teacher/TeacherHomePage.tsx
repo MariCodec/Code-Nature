@@ -6,42 +6,44 @@ export default function TeacherHomePage() {
     <div className={styles.page}>
       <div className={styles.container}>
         <section className={styles.hero}>
-          <p className={styles.eyebrow}>Teacher Area</p>
+          <p className={styles.eyebrow}>Кабінет викладача</p>
           <h1 className={styles.title}>Кабінет викладача</h1>
           <p className={styles.lead}>
-            Тут будуть зібрані учні, їхній прогрес і збережений код. На цьому етапі
-            вже доступний базовий teacher flow для перегляду студентів.
+            Тут зібрані учні, їхній прогрес, виконані задачі та збережений код.
+            Спочатку відкрий список учнів, а потім вибери конкретного учня для
+            перегляду деталей.
           </p>
 
           <div className={styles.actions}>
             <Link className={styles.primaryLink} to="/teacher/students">
               Перейти до учнів
             </Link>
-            <Link className={styles.secondaryLink} to="/home">
-              На головну
-            </Link>
           </div>
         </section>
 
         <section className={styles.grid}>
-          <article className={styles.card}>
-            <h2 className={styles.cardTitle}>Список учнів</h2>
+          <article className={`${styles.card} ${styles.cardMuted}`}>
+            <h2 className={styles.cardTitle}>Групи</h2>
             <p className={styles.cardText}>
-              Перегляд усіх учнів, які вже мають збережений прогрес або код у системі.
+              Тут буде керування класами, списками учнів і призначенням курсів.
             </p>
-            <Link className={styles.cardLink} to="/teacher/students">
-              Відкрити список
-            </Link>
+            <span className={styles.statusPill}>Заплановано</span>
           </article>
 
-          <article className={styles.card}>
-            <h2 className={styles.cardTitle}>Деталі учня</h2>
+          <article className={`${styles.card} ${styles.cardMuted}`}>
+            <h2 className={styles.cardTitle}>Перевірка робіт</h2>
             <p className={styles.cardText}>
-              Окрема сторінка учня з підсумком прогресу, поточним уроком і статусами.
+              Тут зʼявляться submissions, review status і коментарі викладача.
             </p>
-            <span className={styles.cardText}>
-              Доступно після переходу зі списку учнів.
-            </span>
+            <span className={styles.statusPill}>Заплановано</span>
+          </article>
+
+          <article className={`${styles.card} ${styles.cardMuted}`}>
+            <h2 className={styles.cardTitle}>Курси</h2>
+            <p className={styles.cardText}>
+              Тут буде керування навчальними програмами, модулями, уроками й відео.
+            </p>
+            <span className={styles.statusPill}>Заплановано</span>
           </article>
         </section>
       </div>
