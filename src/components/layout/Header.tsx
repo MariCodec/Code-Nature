@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./Layout.module.scss";
 import type { AppDispatch } from "../../store";
@@ -11,12 +11,16 @@ import { logout } from "../../store/thunks/authThunks";
 const Header = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const role = useSelector(selectAuthRole);
 
   const dashboardPath = role === "teacher" ? "/teacher" : "/student/progress";
   const dashboardLabel = role === "teacher" ? "Мій кабінет" : "Мій прогрес";
   const showStudentLearningLink = role === "student";
+  const isMarketingRoute = ["/", "/home", "/learn", "/teach"].includes(
+    location.pathname,
+  );
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
     `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`;
 
@@ -97,10 +101,11 @@ const Header = () => {
             Учні
           </NavLink>
         )}
-        {/* <Link to="/js">JavaScript Lessons</Link> */}
-        <NavLink className={navLinkClassName} to="/docs">
-          Довідник
-        </NavLink>
+        {!isMarketingRoute && (
+          <NavLink className={navLinkClassName} to="/docs">
+            Довідник
+          </NavLink>
+        )}
       </nav>
 
       <div className={styles.authControls}>

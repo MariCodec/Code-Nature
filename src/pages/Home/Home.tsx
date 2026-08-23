@@ -40,11 +40,11 @@ const Home = () => {
         <section className={styles.hero}>
           <div className={styles.heroContent}>
             <p className={styles.eyebrow}>Code Nature</p>
-            <h1>Платформа для практичного навчання frontend</h1>
+            <h1>Одна платформа для самостійного навчання і роботи з учнями</h1>
             <p className={styles.lead}>
-              Учні проходять готову програму з відео, теорією, редактором коду і
-              перевіркою завдань. Викладачі бачать прогрес, код і можуть вести
-              навчання груп.
+              Відеоуроки, теорія, практика, техчеки й підготовка до інтерв&apos;ю
+              зібрані в одному навчальному маршруті. Оберіть сценарій, щоб
+              побачити можливості платформи для себе.
             </p>
 
             <div className={styles.actions}>
@@ -57,71 +57,35 @@ const Home = () => {
             </div>
           </div>
 
-          <aside className={styles.productPreview} aria-label="Можливості платформи">
-            <div className={styles.previewTop}>
-              <span>HTML</span>
-              <span>CSS</span>
-              <span>Video</span>
-            </div>
-            <div className={styles.previewCode}>
-              <span>{"<main>"}</span>
-              <span>{"  <h1>Мій перший сайт</h1>"}</span>
-              <span>{"  <p>Навчаюсь через практику.</p>"}</span>
-              <span>{"</main>"}</span>
-            </div>
-            <div className={styles.previewProgress}>
-              <span>Прогрес курсу</span>
-              <strong>0/2 уроки</strong>
-            </div>
-          </aside>
+          <div className={styles.choiceGrid} aria-label="Оберіть сценарій">
+            <Link className={styles.choiceCard} to="/learn">
+              <span className={styles.choiceTag}>Для учня</span>
+              <h2>Навчатись самостійно</h2>
+              <p>
+                Зрозумілий маршрут від відео й теорії до практики, техчеків і
+                питань для інтерв&apos;ю.
+              </p>
+              <strong>Переглянути можливості</strong>
+            </Link>
+
+            <Link className={styles.choiceCard} to="/teach">
+              <span className={styles.choiceTag}>Для викладача</span>
+              <h2>Вести учнів</h2>
+              <p>
+                Курси, групи, перевірка практики та прогрес учнів в одному
+                робочому просторі.
+              </p>
+              <strong>Дізнатись для викладача</strong>
+            </Link>
+          </div>
         </section>
 
-        <section className={styles.paths}>
-          <article className={styles.pathCard}>
-            <p className={styles.eyebrow}>Для самостійного навчання</p>
-            <h2>Студент проходить готову програму</h2>
-            <p>
-              Платформа веде учня через курси, модулі, уроки і техчеки. Код і
-              прогрес зберігаються для конкретного користувача.
-            </p>
-            <Link to="/student/learning">Перейти до навчання</Link>
-          </article>
-
-          <article className={styles.pathCard}>
-            <p className={styles.eyebrow}>Для навчання з викладачем</p>
-            <h2>Викладач бачить учнів і їхній прогрес</h2>
-            <p>
-              Поточний teacher flow уже показує учнів, статуси уроків, задачі та
-              snapshots коду. Далі сюди додадуться групи, коментарі й review.
-            </p>
-            <Link to="/teacher/students">Перейти до учнів</Link>
-          </article>
-        </section>
-
-        <section className={styles.capabilities}>
-          <div className={styles.sectionHeader}>
-            <p className={styles.eyebrow}>Що вже закладено</p>
-            <h2>Одна платформа для двох сценаріїв</h2>
-          </div>
-
-          <div className={styles.capabilityGrid}>
-            <article>
-              <h3>Готова програма</h3>
-              <p>Курси, модулі, уроки, техчеки, відео і практичні завдання.</p>
-            </article>
-            <article>
-              <h3>Практика в браузері</h3>
-              <p>Monaco Editor, preview у iframe і client-side перевірка задач.</p>
-            </article>
-            <article>
-              <h3>Прогрес учня</h3>
-              <p>Поточний урок, завершені уроки, виконані задачі і збережений код.</p>
-            </article>
-            <article>
-              <h3>Teacher flow</h3>
-              <p>Базовий кабінет викладача вже готовий для перегляду student data.</p>
-            </article>
-          </div>
+        <section className={styles.platformStrip} aria-label="Що всередині платформи">
+          <span>Відеоуроки</span>
+          <span>Теорія</span>
+          <span>Практика</span>
+          <span>Техчеки</span>
+          <span>Інтерв&apos;ю питання</span>
         </section>
       </main>
 

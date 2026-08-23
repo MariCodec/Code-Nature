@@ -18,6 +18,8 @@ import TeacherStudentPage from "./pages/Teacher/TeacherStudentPage";
 import StudentProgressPage from "./pages/Student/StudentProgressPage";
 import StudentLearningPage from "./pages/Student/StudentLearningPage";
 import StudentTechChecksPage from "./pages/Student/StudentTechChecksPage";
+import LearnPage from "./pages/Marketing/LearnPage";
+import TeachPage from "./pages/Marketing/TeachPage";
 
 function StudentHomeRedirect() {
   return <Navigate to="/student/learning" replace />;
@@ -40,6 +42,8 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
+            <Route path="learn" element={<LearnPage />} />
+            <Route path="teach" element={<TeachPage />} />
             <Route path="docs" element={<DocsPage />} />
             <Route path="docs/:category/:id" element={<DocsPage />} />
           </Route>
