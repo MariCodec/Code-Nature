@@ -1,0 +1,120 @@
+{
+  "id": "lsn_css_first_styles",
+  "courseId": "crs_css_basics",
+  "moduleId": "mod_css_start",
+  "slug": "first-styles",
+  "title": "Перші стилі: колір і розмір",
+  "description": "Беремо готову розмітку і змінюємо її вигляд, не чіпаючи HTML.",
+  "lessonKind": "lesson",
+  "runtimeType": "html-css-preview",
+  "validationType": "auto",
+  "orderIndex": 1,
+  "isPublished": true,
+  "files": [
+    {
+      "id": "fil_css_html",
+      "name": "index.html",
+      "language": "html",
+      "initialContent": "<article class=\"card\">\n  <h1>Кава дня</h1>\n  <p class=\"lead\">Еспресо з нотками карамелі.</p>\n</article>\n",
+      "orderIndex": 1,
+      "isEditable": false
+    },
+    {
+      "id": "fil_css_css",
+      "name": "style.css",
+      "language": "css",
+      "initialContent": "/* Пиши свої стилі тут */\n",
+      "orderIndex": 2,
+      "isEditable": true
+    }
+  ],
+  "theoryBlocks": [
+    {
+      "id": "thb_css_1",
+      "blockType": "text",
+      "content": {
+        "text": "CSS відповідає на питання «як це виглядає». Правило складається з **селектора** (до чого застосувати) і **оголошень** у фігурних дужках (що саме змінити)."
+      },
+      "orderIndex": 1
+    },
+    {
+      "id": "thb_css_2",
+      "blockType": "code",
+      "content": {
+        "lang": "css",
+        "code": "h1 {\n  color: green;\n  font-size: 32px;\n}"
+      },
+      "orderIndex": 2
+    },
+    {
+      "id": "thb_css_3",
+      "blockType": "list",
+      "content": {
+        "items": [
+          "`h1` — за назвою тега: всі заголовки першого рівня",
+          "`.card` — за класом: усі елементи з `class=\"card\"`",
+          "`#main` — за ідентифікатором: єдиний елемент з `id=\"main\"`"
+        ]
+      },
+      "orderIndex": 3
+    },
+    {
+      "id": "thb_css_4",
+      "blockType": "note",
+      "content": {
+        "tone": "info",
+        "text": "У цьому уроці файл `index.html` заблоковано для редагування — так і має бути. Завдання саме в тому, щоб домогтися потрібного вигляду **лише** через CSS."
+      },
+      "orderIndex": 4
+    }
+  ],
+  "videos": [],
+  "tasks": [
+    {
+      "id": "tsk_css_1",
+      "title": "Колір заголовка",
+      "description": "Зроби заголовок `<h1>` зеленим.",
+      "orderIndex": 1,
+      "rules": {
+        "kind": "dom",
+        "cssChecks": [{ "selector": "h1", "property": "color", "value": "rgb(0, 128, 0)" }]
+      },
+      "hints": [
+        "Селектор для заголовка — h1.",
+        "Властивість кольору тексту — color.",
+        "Значення можна написати словом: color: green;"
+      ]
+    },
+    {
+      "id": "tsk_css_2",
+      "title": "Відступ усередині картки",
+      "description": "Задай елементу з класом `card` внутрішній відступ `24px`.",
+      "orderIndex": 2,
+      "rules": {
+        "kind": "dom",
+        "cssChecks": [{ "selector": ".card", "property": "padding", "value": "24px" }]
+      },
+      "hints": [
+        "Селектор за класом починається з крапки: .card",
+        "Внутрішній відступ — це padding."
+      ]
+    },
+    {
+      "id": "tsk_css_3",
+      "title": "Приглушений опис",
+      "description": "Зроби абзац з класом `lead` сірим (`#666666`) і розміром `18px`.",
+      "orderIndex": 3,
+      "rules": {
+        "kind": "dom",
+        "cssChecks": [
+          { "selector": ".lead", "property": "color", "value": "rgb(102, 102, 102)" },
+          { "selector": ".lead", "property": "font-size", "value": "18px" }
+        ]
+      },
+      "hints": [
+        "Одне правило може містити кілька оголошень поспіль.",
+        "Розмір шрифту — font-size."
+      ]
+    }
+  ]
+}

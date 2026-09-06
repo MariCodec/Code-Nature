@@ -1,0 +1,116 @@
+{
+  "id": "lsn_html_start_techcheck",
+  "courseId": "crs_html_basics",
+  "moduleId": "mod_html_start",
+  "slug": "start-techcheck",
+  "title": "Техчек: перші кроки",
+  "description": "Спершу кілька питань на розуміння, потім одна робота з нуля.",
+  "lessonKind": "tech_check",
+  "runtimeType": "html-css-preview",
+  "validationType": "auto",
+  "orderIndex": 100,
+  "isPublished": true,
+  "files": [
+    {
+      "id": "fil_tc_html",
+      "name": "index.html",
+      "language": "html",
+      "initialContent": "\n",
+      "orderIndex": 1,
+      "isEditable": true
+    }
+  ],
+  "theoryBlocks": [
+    {
+      "id": "thb_tc_1",
+      "blockType": "note",
+      "content": {
+        "tone": "info",
+        "text": "Техчек закриває модуль. Нової теорії тут немає — лише те, що вже було. Спершу питання, далі практика з порожнього файлу. Помилився в питанні — побачиш чому і одразу спробуєш ще раз, спроби не рахуються проти тебе."
+      },
+      "orderIndex": 1
+    }
+  ],
+  "videos": [],
+  "tasks": [
+    {
+      "id": "tsk_tc_q1",
+      "title": "Питання 1",
+      "description": "Який тег позначає **видимий головний заголовок** сторінки?",
+      "orderIndex": 1,
+      "rules": {
+        "kind": "quiz",
+        "selectionMode": "single",
+        "options": [
+          { "id": "a", "text": "<head>" },
+          { "id": "b", "text": "<title>" },
+          { "id": "c", "text": "<h1>" },
+          { "id": "d", "text": "<header>" }
+        ],
+        "correctOptionIds": ["c"],
+        "explanation": "`<head>` — службова частина документа, її не видно. `<title>` — назва вкладки браузера. `<header>` — верхня частина сторінки, але сама по собі не заголовок. Видимий головний заголовок це `<h1>`.",
+        "reviewLessonId": "lsn_html_first_page"
+      },
+      "hints": []
+    },
+    {
+      "id": "tsk_tc_q2",
+      "title": "Питання 2",
+      "description": "Які з цих тверджень про заголовки правильні?",
+      "orderIndex": 2,
+      "rules": {
+        "kind": "quiz",
+        "selectionMode": "multiple",
+        "options": [
+          { "id": "a", "text": "Рівнів заголовків шість: від h1 до h6" },
+          { "id": "b", "text": "Рівень заголовка обирають за потрібним розміром шрифту" },
+          { "id": "c", "text": "h1 на сторінці зазвичай один" },
+          { "id": "d", "text": "Заголовок обовʼязково має бути першим тегом у документі" }
+        ],
+        "correctOptionIds": ["a", "c"],
+        "explanation": "Рівень означає **важливість у структурі**, а не розмір — розмір задається через CSS. `<h1>` на сторінці зазвичай один, як назва розділу в книжці. Першим тегом заголовок бути не зобовʼязаний.",
+        "reviewLessonId": "lsn_html_first_page"
+      },
+      "hints": []
+    },
+    {
+      "id": "tsk_tc_q3",
+      "title": "Питання 3",
+      "description": "Сторінка, яку ти бачиш у браузері — це…",
+      "orderIndex": 3,
+      "rules": {
+        "kind": "quiz",
+        "selectionMode": "single",
+        "options": [
+          { "id": "a", "text": "картинка, яку намалював сервер" },
+          { "id": "b", "text": "текст із розміткою, який браузер щоразу перетворює на зображення" },
+          { "id": "c", "text": "програма, скомпільована під конкретний браузер" }
+        ],
+        "correctOptionIds": ["b"],
+        "explanation": "Сервер надсилає звичайний текст із тегами. Малює сторінку вже браузер — саме тому її можна написати в текстовому редакторі.",
+        "reviewLessonId": "lsn_html_what_is_web"
+      },
+      "hints": []
+    },
+    {
+      "id": "tsk_tc_practice",
+      "title": "Практика: збери сторінку з нуля",
+      "description": "Файл порожній. Зроби сторінку, на якій є:\n\n- заголовок першого рівня з текстом `Моя сторінка`;\n- **два** окремі абзаци з будь-яким текстом;\n- підзаголовок другого рівня з текстом `Мої улюблені теги`;\n- під ним маркований список із трьома пунктами.",
+      "orderIndex": 10,
+      "rules": {
+        "kind": "dom",
+        "selectors": [
+          { "selector": "h1" },
+          { "selector": "p", "minCount": 2 },
+          { "selector": "h2" },
+          { "selector": "ul li", "minCount": 3 }
+        ],
+        "textContains": [
+          { "selector": "h1", "text": "Моя сторінка" },
+          { "selector": "h2", "text": "Мої улюблені теги" }
+        ]
+      },
+      "hints": []
+    }
+  ]
+}

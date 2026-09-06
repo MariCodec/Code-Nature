@@ -27,15 +27,39 @@ export type CssCheckRule = {
 };
 
 /**
- * Розширювана схема правил.
+ * Розширювана схема правил. Тегований union: `kind` каже, **чим** перевіряти.
  * Важливо: НІЯКИХ функцій, тільки JSON.
+ *
+ * `dom` поки без обовʼязкового тега — щоб наявний контент лишався валідним.
+ * Повний перехід на явний тег відбудеться у Фазі 1 разом з рештою контрактів.
  */
-export type TaskRules = {
+export type DomTaskRules = {
+  kind?: "dom";
   htmlSelectors?: HtmlSelectorRule[];
   cssChecks?: CssCheckRule[];
-  /** на майбутнє: додаткові пресети */
   requireTextContains?: { selector: string; text: string }[];
 };
+
+export type QuizOption = {
+  id: string;
+  text: string;
+};
+
+export type QuizTaskRules = {
+  kind: "quiz";
+  /**
+   * Задає автор, а не кількість правильних варіантів: якщо інтерфейс сам
+   * перемикається radio↔checkbox, він видає відповідь.
+   */
+  selectionMode?: "single" | "multiple";
+  options: QuizOption[];
+  correctOptionIds: string[];
+  explanation: string;
+  /** Урок, до якого відіслати при помилці. */
+  reviewLessonId?: string;
+};
+
+export type TaskRules = DomTaskRules | QuizTaskRules;
 
 export type LessonTask = {
   id: string;

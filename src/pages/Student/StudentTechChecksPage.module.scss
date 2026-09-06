@@ -154,3 +154,13 @@
     justify-items: start;
   }
 }
+
+.checkRowLocked {
+  opacity: 0.55;
+  cursor: not-allowed;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

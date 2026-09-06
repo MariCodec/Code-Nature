@@ -1,0 +1,208 @@
+@use "../../styles/variables" as v;
+
+$line: rgba(255, 255, 255, 0.10);
+$line-strong: rgba(255, 255, 255, 0.20);
+$dim: rgba(255, 255, 255, 0.74);
+$dimmer: rgba(255, 255, 255, 0.5);
+$ok: #4ec38a;
+$bad: #ff6b78;
+
+.page {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  place-items: start center;
+  padding: 32px 16px 48px;
+  background: linear-gradient(180deg, v.$bg-main, v.$bg-deep);
+  text-align: left;
+}
+
+.card {
+  width: min(680px, 100%);
+  padding: 26px;
+  border: 1px solid $line;
+  border-radius: v.$radius-lg;
+  background: #141b2d;
+}
+
+.head {
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid $line;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: v.$radius-round;
+  background: v.$accent-primary;
+  color: v.$bg-deep;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.head h1 {
+  margin: 10px 0 0;
+  color: v.$text-main;
+  font-size: 1.3rem;
+  line-height: 1.25;
+}
+
+.lead {
+  margin: 6px 0 0;
+  color: $dimmer;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.step {
+  width: 26px;
+  height: 4px;
+  border-radius: v.$radius-round;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.stepDone { background: $ok; }
+.stepCurrent { background: v.$accent-primary; }
+
+.stepsLabel {
+  margin-left: 8px;
+  color: $dimmer;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.question {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.modeHint {
+  margin: 6px 0 16px;
+  color: v.$accent-primary;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.options {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid $line;
+  border-radius: v.$radius-sm;
+  background: #1b2338;
+  color: v.$text-main;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: border-color v.$tr-fast, background v.$tr-fast;
+
+  &:hover { border-color: $line-strong; }
+
+  input {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    accent-color: v.$accent-primary;
+    cursor: pointer;
+  }
+}
+
+.optionChosen {
+  border-color: rgba(v.$accent-primary, 0.6);
+  background: rgba(v.$accent-primary, 0.1);
+}
+
+.optionCorrect {
+  border-color: rgba(78, 195, 138, 0.7);
+  background: rgba(78, 195, 138, 0.14);
+}
+
+.optionWrong {
+  border-color: rgba(255, 107, 120, 0.7);
+  background: rgba(255, 107, 120, 0.12);
+}
+
+.feedback {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: v.$radius-sm;
+  border: 1px solid;
+
+  strong {
+    display: block;
+    font-size: 0.92rem;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: $dim;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+}
+
+.feedbackWrong {
+  border-color: rgba(255, 107, 120, 0.4);
+  background: rgba(255, 107, 120, 0.09);
+
+  strong { color: $bad; }
+}
+
+.feedbackRight {
+  border-color: rgba(78, 195, 138, 0.4);
+  background: rgba(78, 195, 138, 0.09);
+
+  strong { color: $ok; }
+}
+
+.reviewLink {
+  display: inline-block;
+  margin-top: 10px;
+  color: v.$accent-primary;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+.primary {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(v.$accent-primary, 0.7);
+  border-radius: v.$radius-sm;
+  background: linear-gradient(90deg, rgba(45, 200, 163, 0.9), rgba(127, 230, 255, 0.55));
+  color: v.$text-main;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter v.$tr-fast, opacity v.$tr-fast;
+
+  &:hover:not(:disabled) { filter: brightness(1.08); }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

@@ -228,35 +228,77 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
       videos: [],
       tasks: [
         {
-          id: `${lessonId}_task_1`,
-          title: "Заголовок",
-          description: "Додай на сторінку заголовок h1 з текстом `Мій перший техчек`.",
+          id: `${lessonId}_q1`,
+          title: "Питання 1",
+          description: "Який тег позначає видимий головний заголовок сторінки?",
           orderIndex: 1,
           rules: {
-            htmlSelectors: [{ selector: "h1" }],
-            requireTextContains: [{ selector: "h1", text: "Мій перший техчек" }],
+            kind: "quiz",
+            selectionMode: "single",
+            options: [
+              { id: "a", text: "<head>" },
+              { id: "b", text: "<title>" },
+              { id: "c", text: "<h1>" },
+              { id: "d", text: "<header>" },
+            ],
+            correctOptionIds: ["c"],
+            explanation:
+              "<head> — службова частина документа, її не видно. <title> — назва вкладки браузера. <header> — верхня частина сторінки, але сама по собі не заголовок. Видимий головний заголовок це <h1>.",
+            reviewLessonId: "intro",
           },
         },
         {
-          id: `${lessonId}_task_2`,
-          title: "Абзац",
-          description: "Додай абзац p з текстом `Я закріплюю HTML.`.",
+          id: `${lessonId}_q2`,
+          title: "Питання 2",
+          description: "Які з цих тверджень про заголовки правильні?",
           orderIndex: 2,
           rules: {
-            htmlSelectors: [{ selector: "p" }],
-            requireTextContains: [{ selector: "p", text: "Я закріплюю HTML." }],
+            kind: "quiz",
+            selectionMode: "multiple",
+            options: [
+              { id: "a", text: "Рівнів заголовків шість: від h1 до h6" },
+              { id: "b", text: "Рівень заголовка обирають за потрібним розміром шрифту" },
+              { id: "c", text: "h1 на сторінці зазвичай один" },
+              { id: "d", text: "Заголовок має бути найпершим тегом у документі" },
+            ],
+            correctOptionIds: ["a", "c"],
+            explanation:
+              "Рівень означає важливість у структурі, а не розмір — розмір задається через CSS. h1 на сторінці зазвичай один, як назва розділу в книжці. Першим тегом заголовок бути не зобовʼязаний.",
+            reviewLessonId: "intro",
           },
         },
         {
-          id: `${lessonId}_task_3`,
-          title: "Колір",
-          description: "Зроби заголовок зеленим через CSS.",
+          id: `${lessonId}_q3`,
+          title: "Питання 3",
+          description: "Чим є сторінка, яку ти бачиш у браузері?",
           orderIndex: 3,
           rules: {
-            htmlSelectors: [{ selector: "h1" }],
-            cssChecks: [
-              { selector: "h1", property: "color", value: "rgb(0, 128, 0)" },
+            kind: "quiz",
+            selectionMode: "single",
+            options: [
+              { id: "a", text: "Картинкою, яку намалював сервер" },
+              { id: "b", text: "Текстом із розміткою, який браузер перетворює на зображення" },
+              { id: "c", text: "Програмою, скомпільованою під конкретний браузер" },
             ],
+            correctOptionIds: ["b"],
+            explanation:
+              "Сервер надсилає звичайний текст із тегами. Малює сторінку вже браузер — саме тому її можна написати в текстовому редакторі.",
+            reviewLessonId: "intro",
+          },
+        },
+        {
+          id: `${lessonId}_practice`,
+          title: "Практика",
+          description:
+            "Збери сторінку, на якій є:\n- заголовок `h1` з текстом `Мій перший техчек`\n- абзац `p` з текстом `Я закріплюю HTML.`\n- заголовок зеленого кольору, заданий через CSS",
+          orderIndex: 10,
+          rules: {
+            htmlSelectors: [{ selector: "h1" }, { selector: "p" }],
+            requireTextContains: [
+              { selector: "h1", text: "Мій перший техчек" },
+              { selector: "p", text: "Я закріплюю HTML." },
+            ],
+            cssChecks: [{ selector: "h1", property: "color", value: "rgb(0, 128, 0)" }],
           },
         },
       ],
@@ -294,32 +336,51 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
     videos: [],
     tasks: [
       {
-        id: `${lessonId}_task_1`,
-        title: "Блок",
-        description: "Переконайся, що на сторінці є елемент з класом `.card`.",
+        id: `${lessonId}_q1`,
+        title: "Питання 1",
+        description: "Як записується селектор за класом?",
         orderIndex: 1,
         rules: {
-          htmlSelectors: [{ selector: ".card" }],
+          kind: "quiz",
+          selectionMode: "single",
+          options: [
+            { id: "a", text: "#card" },
+            { id: "b", text: ".card" },
+            { id: "c", text: "card" },
+          ],
+          correctOptionIds: ["b"],
+          explanation:
+            "Крапка — це клас, решітка — ідентифікатор, а без символу — назва тега.",
         },
       },
       {
-        id: `${lessonId}_task_2`,
-        title: "Відступ",
-        description: "Задай `.card` внутрішній відступ 24px.",
+        id: `${lessonId}_q2`,
+        title: "Питання 2",
+        description: "Яка властивість задає внутрішній відступ елемента?",
         orderIndex: 2,
         rules: {
-          htmlSelectors: [{ selector: ".card" }],
-          cssChecks: [{ selector: ".card", property: "padding", value: "24px" }],
+          kind: "quiz",
+          selectionMode: "single",
+          options: [
+            { id: "a", text: "margin" },
+            { id: "b", text: "border" },
+            { id: "c", text: "padding" },
+          ],
+          correctOptionIds: ["c"],
+          explanation:
+            "padding — відступ усередині елемента, між його краєм і вмістом. margin — навпаки, зовні.",
         },
       },
       {
-        id: `${lessonId}_task_3`,
-        title: "Колір заголовка",
-        description: "Зроби h1 зеленим.",
-        orderIndex: 3,
+        id: `${lessonId}_practice`,
+        title: "Практика",
+        description:
+          "Оформи картку через CSS:\n- внутрішній відступ `.card` — 24px\n- колір заголовка `h1` — зелений",
+        orderIndex: 10,
         rules: {
-          htmlSelectors: [{ selector: "h1" }],
+          htmlSelectors: [{ selector: ".card" }, { selector: "h1" }],
           cssChecks: [
+            { selector: ".card", property: "padding", value: "24px" },
             { selector: "h1", property: "color", value: "rgb(0, 128, 0)" },
           ],
         },

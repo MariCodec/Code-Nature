@@ -19,9 +19,14 @@ import {
 } from "../../store/slices/userCodeSlice";
 
 import styles from "./CodeEditor.module.scss";
-import { resetTasksForLesson, touchProgress } from "../../store/slices/progressSlice";
+import {
+  resetTasksForLesson,
+  selectTaskStatus,
+  touchProgress,
+} from "../../store/slices/progressSlice";
 import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
+import { isQuizRules } from "../../domain/techCheck";
 import { setupMonaco } from "../../utils/monacoSetup";
 import { saveUserData } from "../../store/thunks/syncThunks";
 import {
@@ -49,6 +54,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const lessonCode = useSelector((state: RootState) =>
     selectLessonCode(state, lessonDto.id),
+  );
+  // Питання техчека зараховані раніше — без них урок ніколи не завершився б.
+  const passedTaskIds = useSelector((state: RootState) =>
+    selectTaskStatus(state, lessonDto.id),
   );
   const fallbackHtml = getInitialHtmlFromLessonFiles(lessonDto.files);
   const fallbackCss = getInitialCssFromLessonFiles(lessonDto.files);
@@ -184,6 +193,7 @@ const handleChange = (newValue: string | undefined) => {
       tasks: lessonDto.tasks,
       userHtml: currentHtml,
       userCss: currentCss,
+      passedTaskIds,
       dispatch,
     });
     // Зберігаємо код у Redux як "збережений"
@@ -217,10 +227,14 @@ dispatch(saveUserData());
      if (model) monaco.editor.setModelMarkers(model, "html-parse5", []);
    }
 
+    // Скидаємо лише практику: питання техчека вже складені й скидати їх не можна,
+    // інакше «Clear Code» викине учня назад на квіз.
     dispatch(
       resetTasksForLesson({
         lessonId: lessonDto.id,
-        taskIds: lessonDto.tasks.map((task) => task.id),
+        taskIds: lessonDto.tasks
+          .filter((task) => !isQuizRules(task.rules))
+          .map((task) => task.id),
       })
     );
     

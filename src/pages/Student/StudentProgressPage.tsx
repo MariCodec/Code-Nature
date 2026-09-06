@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styles from "./StudentProgressPage.module.scss";
 import type { AppDispatch, RootState } from "../../store";
 import { selectAuthUser } from "../../store/slices/authSlice";
+import { countCompletedTasks } from "../../domain/progression";
 import {
   fetchCourseModules,
   fetchCoursesByTrack,
@@ -171,8 +172,15 @@ const StudentProgressPage = () => {
     (sum, lesson) => sum + (lessonById[lesson.id]?.tasks.length ?? 0),
     0,
   );
-  const completedTasks = Object.values(progress.taskStatus).reduce(
-    (sum, tasks) => sum + Object.values(tasks).filter(Boolean).length,
+  // Рахуємо від завдань завантажених уроків, а не від усіх ключів сховища —
+  // саме звідси бралося «9/3»: чисельник повний, знаменник частковий.
+  const completedTasks = allLessons.reduce(
+    (sum, lesson) =>
+      sum +
+      countCompletedTasks(
+        lessonById[lesson.id]?.tasks ?? [],
+        progress.taskStatus[lesson.id],
+      ),
     0,
   );
   const remainingLessons = Math.max(allLessons.length - completedLessons.length, 0);
@@ -181,7 +189,10 @@ const StudentProgressPage = () => {
     ? lessonById[continueLesson.id]?.tasks.length ?? 0
     : 0;
   const continueLessonTaskCompleted = continueLesson
-    ? Object.values(progress.taskStatus[continueLesson.id] ?? {}).filter(Boolean).length
+    ? countCompletedTasks(
+        lessonById[continueLesson.id]?.tasks ?? [],
+        progress.taskStatus[continueLesson.id],
+      )
     : 0;
   const activeCourseCompletedLessons = activeCourseLessons.filter((lesson) =>
     completedLessonIds.has(lesson.id),
@@ -192,7 +203,11 @@ const StudentProgressPage = () => {
   );
   const activeCourseTaskCompleted = activeCourseLessons.reduce(
     (sum, lesson) =>
-      sum + Object.values(progress.taskStatus[lesson.id] ?? {}).filter(Boolean).length,
+      sum +
+      countCompletedTasks(
+        lessonById[lesson.id]?.tasks ?? [],
+        progress.taskStatus[lesson.id],
+      ),
     0,
   );
   const activeCourseProgressRate =

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AppDispatch, RootState } from "../../store";
@@ -27,6 +27,15 @@ import {
 } from "../../store/slices/progressSlice";
 import type { LessonVideoDTO } from "../../types/content";
 import LessonNavigation from "../../components/lessonNavigation/LessonNavigation";
+import ModuleCompleteOverlay from "../../components/moduleProgress/ModuleCompleteOverlay";
+import { useModuleProgression } from "../../hooks/useModuleProgression";
+import TechCheckQuiz from "../../components/techCheck/TechCheckQuiz";
+import {
+  isPracticeUnlocked,
+  splitTechCheckTasks,
+} from "../../domain/techCheck";
+import { buildStudentLessonPath } from "../../utils/courseMapping";
+import { markTaskAsCompleted } from "../../store/slices/progressSlice";
 
 const getVideoEmbedUrl = (video: LessonVideoDTO): string | null => {
   if (!video.sourceUrl) return null;
@@ -259,6 +268,8 @@ const LessonPage = () => {
   const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);
   const [isPracticeStarted, setIsPracticeStarted] = useState(false);
   const [isVideoReviewMode, setIsVideoReviewMode] = useState(false);
+  const [isModuleSummaryDismissed, setIsModuleSummaryDismissed] = useState(false);
+  const navigate = useNavigate();
   const { courseId, moduleId, id } = useParams<{
     courseId?: string;
     moduleId?: string;
@@ -280,7 +291,11 @@ const LessonPage = () => {
     id ? selectLessonStatus(state, id) : "idle",
   );
   const videoStatus = useSelector((state: RootState) => state.progress.videoStatus);
+  const taskStatus = useSelector((state: RootState) => state.progress.taskStatus);
   const contentError = useSelector(selectContentError);
+  const moduleProgression = useModuleProgression(courseId, moduleId);
+  const currentModule =
+    courseModules.find((module) => module.id === moduleId) ?? null;
 
   useEffect(() => {
     void dispatch(fetchCoursesByTrack("frontend"));
@@ -316,6 +331,7 @@ const LessonPage = () => {
   useEffect(() => {
     setIsPracticeStarted(false);
     setIsVideoReviewMode(false);
+    setIsModuleSummaryDismissed(false);
   }, [id]);
 
   if (contentError) return <h2>{contentError}</h2>;
@@ -343,11 +359,46 @@ const LessonPage = () => {
     setIsVideoReviewMode(false);
     void dispatch(saveUserData());
   };
+  // Підсумок показуємо лише на останньому елементі модуля: інакше він вискакував би
+  // на будь-якому уроці, відкритому повторно після завершення модуля.
+  const lastModuleItem = moduleProgression.state.ordered.at(-1) ?? null;
+  const shouldShowModuleSummary =
+    moduleProgression.state.isModuleComplete &&
+    lastModuleItem?.id === lessonDto.id &&
+    !isModuleSummaryDismissed;
+
   const shouldShowIntroBeforePractice =
     lessonDto.lessonKind === "lesson" &&
     lessonDto.runtimeType !== "video" &&
     Boolean(introVideo) &&
     ((!isIntroVideoWatched && !isPracticeStarted) || isVideoReviewMode);
+
+  // Техчек: спершу питання, практика відкривається лише після всіх правильних відповідей.
+  const { questions: quizQuestions, practice: practiceTasks } = splitTechCheckTasks(
+    lessonDto.tasks,
+  );
+  const passedTaskIds = taskStatus[lessonDto.id] ?? {};
+
+  if (
+    lessonDto.lessonKind === "tech_check" &&
+    quizQuestions.length > 0 &&
+    !isPracticeUnlocked(quizQuestions, passedTaskIds)
+  ) {
+    return (
+      <TechCheckQuiz
+        lessonTitle={lessonDto.title}
+        questions={quizQuestions}
+        passedTaskIds={passedTaskIds}
+        buildReviewHref={(reviewLessonId) =>
+          buildStudentLessonPath(courseId, moduleId, reviewLessonId)
+        }
+        onPass={(taskId) => {
+          dispatch(markTaskAsCompleted({ lessonId: lessonDto.id, taskId }));
+          void dispatch(saveUserData());
+        }}
+      />
+    );
+  }
 
   if (shouldShowIntroBeforePractice && introVideo) {
     return (
@@ -365,7 +416,12 @@ const LessonPage = () => {
         className={`${styles.lessonInfo} ${isLessonInfoVisible ? styles.show : ""}`}
       >
         <div className={styles.sidebarCard}>
-          <LessonHeader title={lessonDto.title} description={lessonDto.description} />
+          <LessonHeader
+            title={lessonDto.title}
+            description={lessonDto.description}
+            lessonKind={lessonDto.lessonKind}
+            moduleLessonsCount={moduleProgression.state.totalLessonsCount}
+          />
           {introVideo && (
             <LessonSidebarVideo
               video={introVideo}
@@ -374,13 +430,33 @@ const LessonPage = () => {
           )}
           <TaskList
             lessonId={lessonDto.id}
-            tasks={lessonDto.tasks.map((task) => ({
+            tasks={(lessonDto.lessonKind === "tech_check"
+              ? practiceTasks
+              : lessonDto.tasks
+            ).map((task) => ({
               id: task.id,
               text: task.description,
             }))}
           />
         </div>
       </div>
+
+      {shouldShowModuleSummary && (
+        <ModuleCompleteOverlay
+          moduleTitle={currentModule?.title ?? "Модуль"}
+          lessonsCount={moduleProgression.state.totalLessonsCount}
+          hasTechCheck={Boolean(moduleProgression.state.techCheck)}
+          nextModuleTitle={moduleProgression.nextModule?.title ?? null}
+          onNext={() =>
+            navigate(
+              moduleProgression.nextModule
+                ? `/student/courses/${courseId}`
+                : "/student/learning",
+            )
+          }
+          onDismiss={() => setIsModuleSummaryDismissed(true)}
+        />
+      )}
 
       {isVideoOnlyLesson ? (
         <main className={styles.videoOnlyPage}>

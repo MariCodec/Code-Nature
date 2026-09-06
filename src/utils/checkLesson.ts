@@ -5,12 +5,16 @@ import {
 } from "../store/slices/progressSlice";
 import type { LessonTaskDTO } from "../types/content";
 import { validateHtmlCss } from "./validateHtmlCss";
+import { isQuizRules } from "../domain/techCheck";
+import type { DomTaskRules } from "../types/lessonTypes";
 
 interface CheckLessonProps {
   lessonId: string;
   tasks: LessonTaskDTO[];
   userHtml: string;
   userCss: string;
+  /** Уже зараховані завдання — щоб питання техчека не «губились» при запуску коду. */
+  passedTaskIds?: Record<string, boolean>;
   dispatch: AppDispatch;
 }
 
@@ -19,6 +23,7 @@ export const checkLesson = ({
   tasks,
   userHtml,
   userCss,
+  passedTaskIds,
   dispatch,
 }: CheckLessonProps) => {
   if (!tasks.length) return;
@@ -40,11 +45,15 @@ export const checkLesson = ({
 
     const completedTaskIds: string[] = [];
 
+    // Питання техчека перевіряються не по DOM, а звіркою варіантів — тут їх пропускаємо.
     for (const task of tasks) {
+      if (isQuizRules(task.rules)) continue;
+
+      const rules = task.rules as DomTaskRules;
       const success = validateHtmlCss(doc, {
-        htmlSelectors: task.rules?.htmlSelectors ?? [],
-        cssChecks: task.rules?.cssChecks ?? [],
-        requireTextContains: task.rules?.requireTextContains ?? [],
+        htmlSelectors: rules.htmlSelectors ?? [],
+        cssChecks: rules.cssChecks ?? [],
+        requireTextContains: rules.requireTextContains ?? [],
       });
 
       if (success) completedTaskIds.push(task.id);
@@ -54,8 +63,10 @@ export const checkLesson = ({
       dispatch(markTaskAsCompleted({ lessonId, taskId }));
     }
 
-    const allTasksCompleted = tasks.every((t) =>
-      completedTaskIds.includes(t.id),
+    // Урок завершено, коли зараховані ВСІ завдання, включно з питаннями:
+    // їх зарахував quiz-екран раніше, тож враховуємо вже збережений статус.
+    const allTasksCompleted = tasks.every(
+      (t) => completedTaskIds.includes(t.id) || passedTaskIds?.[t.id],
     );
     if (allTasksCompleted) dispatch(markLessonAsCompleted(lessonId));
   } finally {

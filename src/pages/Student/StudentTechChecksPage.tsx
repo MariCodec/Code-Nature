@@ -15,6 +15,7 @@ import {
   selectCoursesByTrack,
 } from "../../store/slices/contentSlice";
 import { buildStudentTechCheckPath } from "../../utils/courseMapping";
+import { countCompletedTasks, getItemAccess } from "../../domain/progression";
 
 const TRACK_SLUG = "frontend";
 
@@ -39,6 +40,7 @@ const StudentTechChecksPage = () => {
         course,
         modules,
         techChecks,
+        lessons: items.filter((item) => item.lessonKind === "lesson"),
       };
     }),
   );
@@ -123,7 +125,7 @@ const StudentTechChecksPage = () => {
         </section>
 
         <section className={styles.checkList}>
-          {courseSummaries.map(({ course, modules, techChecks }) => (
+          {courseSummaries.map(({ course, modules, techChecks, lessons }) => (
             <article key={course.id} className={styles.courseBlock}>
               <div className={styles.courseHeader}>
                 <p className={styles.kicker}>Курс</p>
@@ -137,13 +139,53 @@ const StudentTechChecksPage = () => {
                 if (!techCheck) return null;
 
                 const details = lessonById[techCheck.id];
-                const completedTaskCount = Object.values(
-                  taskStatus[techCheck.id] ?? {},
-                ).filter(Boolean).length;
-                const taskCount = details?.tasks.length ?? 0;
+                const techCheckTasks = details?.tasks ?? [];
+                const completedTaskCount = countCompletedTasks(
+                  techCheckTasks,
+                  taskStatus[techCheck.id],
+                );
+                const taskCount = techCheckTasks.length;
                 const isCompleted = completedLessons.includes(techCheck.id);
+                const access = getItemAccess(techCheck.id, {
+                  items: [
+                    ...lessons.filter((lesson) => lesson.moduleId === module.id),
+                    techCheck,
+                  ],
+                  completedIds: new Set(completedLessons),
+                  nextModuleId: null,
+                });
+                const isLocked = access.unlocked === false;
 
-                return (
+                const body = (
+                  <>
+                    <div>
+                      <p className={styles.kicker}>Модуль</p>
+                      <h3>{module.title}</h3>
+                      <p>
+                        {isLocked
+                          ? `Спершу пройди уроки модуля. Лишилось: ${access.remaining}.`
+                          : techCheck.description}
+                      </p>
+                    </div>
+                    <div className={styles.checkMeta}>
+                      <span>
+                        {completedTaskCount}/{taskCount || "?"} задач
+                      </span>
+                      <strong>
+                        {isCompleted ? "Завершено" : isLocked ? "Недоступно" : "Пройти"}
+                      </strong>
+                    </div>
+                  </>
+                );
+
+                return isLocked ? (
+                  <div
+                    key={techCheck.id}
+                    className={`${styles.checkRow} ${styles.checkRowLocked}`}
+                  >
+                    {body}
+                  </div>
+                ) : (
                   <Link
                     key={techCheck.id}
                     className={styles.checkRow}
@@ -153,17 +195,7 @@ const StudentTechChecksPage = () => {
                       techCheck.id,
                     )}
                   >
-                    <div>
-                      <p className={styles.kicker}>Модуль</p>
-                      <h3>{module.title}</h3>
-                      <p>{techCheck.description}</p>
-                    </div>
-                    <div className={styles.checkMeta}>
-                      <span>
-                        {completedTaskCount}/{taskCount || "?"} задач
-                      </span>
-                      <strong>{isCompleted ? "Завершено" : "Пройти"}</strong>
-                    </div>
+                    {body}
                   </Link>
                 );
               })}

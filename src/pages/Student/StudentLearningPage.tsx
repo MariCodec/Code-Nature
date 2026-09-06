@@ -20,6 +20,12 @@ import {
   buildStudentLessonPath,
   buildStudentTechCheckPath,
 } from "../../utils/courseMapping";
+import {
+  countCompletedTasks,
+  getCurrentItem,
+  getItemAccess,
+  getModuleState,
+} from "../../domain/progression";
 
 const TRACK_SLUG = "frontend";
 
@@ -27,6 +33,10 @@ const StudentLearningPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [expandedCourseIds, setExpandedCourseIds] = useState<string[]>([]);
   const [hasTouchedCourseAccordion, setHasTouchedCourseAccordion] = useState(false);
+  // Модулі згорнуті; сам відкривається лише той, у якому учень зараз.
+  const [moduleOverrides, setModuleOverrides] = useState<Record<string, boolean>>({});
+  const toggleModule = (moduleId: string, isOpen: boolean) =>
+    setModuleOverrides((prev) => ({ ...prev, [moduleId]: !isOpen }));
   const tracks = useSelector(selectTracks);
   const courses = useSelector((state: RootState) =>
     selectCoursesByTrack(state, TRACK_SLUG),
@@ -228,6 +238,7 @@ const StudentLearningPage = () => {
                   </div>
                 ) : isExpanded ? (
                   <div id={coursePanelId} className={styles.moduleList}>
+                    {(() => null)()}
                     {modules.map((module) => {
                       const moduleLessons = lessons.filter(
                         (lesson) => lesson.moduleId === module.id,
@@ -238,43 +249,107 @@ const StudentLearningPage = () => {
                       const moduleCompletedCount = moduleLessons.filter((lesson) =>
                         completedLessons.includes(lesson.id),
                       ).length;
+                      const firstUnfinishedModuleId =
+                        modules.find((candidate) => {
+                          const candidateLessons = lessons.filter(
+                            (lesson) => lesson.moduleId === candidate.id,
+                          );
+                          const candidateCheck =
+                            techChecks.find(
+                              (check) => check.moduleId === candidate.id,
+                            ) ?? null;
+                          return !getModuleState({
+                            items: candidateCheck
+                              ? [...candidateLessons, candidateCheck]
+                              : candidateLessons,
+                            completedIds: new Set(completedLessons),
+                            nextModuleId: null,
+                          }).isModuleComplete;
+                        })?.id ?? null;
+                      const isModuleOpen =
+                        moduleOverrides[module.id] ??
+                        module.id === firstUnfinishedModuleId;
+                      const modulePanelId = `module-panel-${module.id}`;
+                      const moduleCtx = {
+                        items: moduleTechCheck
+                          ? [...moduleLessons, moduleTechCheck]
+                          : moduleLessons,
+                        completedIds: new Set(completedLessons),
+                        nextModuleId: null,
+                      };
+                      // Техчек — ворота модуля, а не ще один рядок у списку.
+                      const techCheckAccess = moduleTechCheck
+                        ? getItemAccess(moduleTechCheck.id, moduleCtx)
+                        : null;
+                      // Один елемент у модулі — той, з якого продовжувати.
+                      const currentItemId = getCurrentItem(moduleCtx)?.id ?? null;
 
                       return (
                         <section key={module.id} className={styles.moduleBlock}>
-                          <div className={styles.moduleHeader}>
-                            <div>
-                              <p className={styles.levelLabel}>Модуль</p>
+                          <button
+                            type="button"
+                            className={`${styles.moduleHeader} ${
+                              isModuleOpen ? styles.moduleHeaderOpen : ""
+                            }`}
+                            onClick={() => toggleModule(module.id, isModuleOpen)}
+                            aria-expanded={isModuleOpen}
+                            aria-controls={modulePanelId}
+                          >
+                            <span className={styles.moduleChevron} aria-hidden="true">
+                              ›
+                            </span>
+                            <span className={styles.moduleHeaderCopy}>
+                              <span className={styles.levelLabel}>Модуль</span>
                               <h3>{module.title}</h3>
-                              <p>{module.description}</p>
-                            </div>
-                            <span>
+                              {isModuleOpen && <p>{module.description}</p>}
+                            </span>
+                            <span className={styles.moduleStat}>
                               {moduleCompletedCount}/{moduleLessons.length || "?"} уроків
                             </span>
-                          </div>
+                          </button>
 
-                          <div className={styles.lessonList}>
+                          <div
+                            id={modulePanelId}
+                            className={styles.lessonList}
+                            hidden={!isModuleOpen}
+                          >
                             {moduleLessons.length > 0 ? (
                               moduleLessons.map((lesson, index) => {
                                 const lessonDetails = lessonById[lesson.id];
                                 const lessonTasks = lessonDetails?.tasks ?? [];
-                                const completedTaskCount = Object.values(
-                                  taskStatus[lesson.id] ?? {},
-                                ).filter(Boolean).length;
+                                const completedTaskCount = countCompletedTasks(
+                                  lessonTasks,
+                                  taskStatus[lesson.id],
+                                );
                                 const isCompleted = completedLessons.includes(lesson.id);
-                                const previousLesson = moduleLessons[index - 1] ?? null;
                                 const isLessonUnlocked =
-                                  !previousLesson ||
-                                  completedLessons.includes(previousLesson.id);
+                                  getItemAccess(lesson.id, moduleCtx).unlocked;
+                                const rowState = isCompleted
+                                  ? "done"
+                                  : lesson.id === currentItemId
+                                    ? "current"
+                                    : isLessonUnlocked
+                                      ? "open"
+                                      : "locked";
+                                const rowLabel = {
+                                  done: "Завершено",
+                                  current: "Продовжити",
+                                  open: "Відкрити",
+                                  locked: "Недоступно",
+                                }[rowState];
                                 const hasVideo = Boolean(lessonDetails?.videos.length);
                                 const isVideoWatched =
                                   isCompleted || Boolean(videoStatus[lesson.id]);
                                 const lessonRowContent = (
                                   <>
-                                    <span className={styles.lessonIndex}>
-                                      {index + 1}
+                                    <span
+                                      className={`${styles.lessonIndex} ${
+                                        styles[`index_${rowState}`]
+                                      }`}
+                                    >
+                                      {isCompleted ? "✓" : index + 1}
                                     </span>
                                     <div className={styles.lessonCopy}>
-                                      <p className={styles.levelLabel}>Урок</p>
                                       <h4>{lesson.title}</h4>
                                       <p>{lesson.description}</p>
                                       <div className={styles.lessonSteps}>
@@ -304,12 +379,8 @@ const StudentLearningPage = () => {
                                       <span>
                                         {completedTaskCount}/{lessonTasks.length || "?"} задач
                                       </span>
-                                      <strong>
-                                        {isCompleted
-                                          ? "Завершено"
-                                          : isLessonUnlocked
-                                            ? "Відкрити"
-                                            : "Недоступно"}
+                                      <strong className={styles[`label_${rowState}`]}>
+                                        {rowLabel}
                                       </strong>
                                     </div>
                                   </>
@@ -318,7 +389,9 @@ const StudentLearningPage = () => {
                                 return isLessonUnlocked ? (
                                   <Link
                                     key={lesson.id}
-                                    className={styles.lessonRow}
+                                    className={`${styles.lessonRow} ${
+                                      styles[`row_${rowState}`]
+                                    }`}
                                     to={buildStudentLessonPath(
                                       lesson.courseId,
                                       lesson.moduleId,
@@ -330,7 +403,7 @@ const StudentLearningPage = () => {
                                 ) : (
                                   <div
                                     key={lesson.id}
-                                    className={`${styles.lessonRow} ${styles.lessonRowLocked}`}
+                                    className={`${styles.lessonRow} ${styles.row_locked}`}
                                   >
                                     {lessonRowContent}
                                   </div>
@@ -338,32 +411,60 @@ const StudentLearningPage = () => {
                               })
                             ) : (
                               <div className={styles.lessonPlaceholder}>
-                                Уроки модуля завантажуються.
+                                У цьому модулі поки немає уроків.
                               </div>
                             )}
                           </div>
 
-                          {moduleTechCheck && (
-                            <Link
-                              className={styles.techCheckRow}
-                              to={buildStudentTechCheckPath(
-                                moduleTechCheck.courseId,
-                                moduleTechCheck.moduleId,
-                                moduleTechCheck.id,
-                              )}
-                            >
-                              <div className={styles.techCheckCopy}>
-                                <p className={styles.levelLabel}>Техчек</p>
-                                <h4>{moduleTechCheck.title}</h4>
-                                <p>{moduleTechCheck.description}</p>
-                              </div>
-                              <strong>
-                                {completedLessons.includes(moduleTechCheck.id)
-                                  ? "Завершено"
-                                  : "Пройти"}
-                              </strong>
-                            </Link>
-                          )}
+                          {isModuleOpen &&
+                            moduleTechCheck &&
+                            (() => {
+                              const isLocked = techCheckAccess?.unlocked === false;
+                              const remaining =
+                                techCheckAccess?.unlocked === false
+                                  ? techCheckAccess.remaining
+                                  : 0;
+
+                              const techCheckBody = (
+                                <>
+                                  <div className={styles.techCheckCopy}>
+                                    <p className={styles.levelLabel}>Техчек</p>
+                                    <h4>{moduleTechCheck.title}</h4>
+                                    <p>
+                                      {isLocked
+                                        ? `Відкриється, коли пройдеш усі уроки модуля. Лишилось: ${remaining}.`
+                                        : moduleTechCheck.description}
+                                    </p>
+                                  </div>
+                                  <strong>
+                                    {completedLessons.includes(moduleTechCheck.id)
+                                      ? "Завершено"
+                                      : isLocked
+                                        ? "Недоступно"
+                                        : "Пройти"}
+                                  </strong>
+                                </>
+                              );
+
+                              return isLocked ? (
+                                <div
+                                  className={`${styles.techCheckRow} ${styles.techCheckRowLocked}`}
+                                >
+                                  {techCheckBody}
+                                </div>
+                              ) : (
+                                <Link
+                                  className={styles.techCheckRow}
+                                  to={buildStudentTechCheckPath(
+                                    moduleTechCheck.courseId,
+                                    moduleTechCheck.moduleId,
+                                    moduleTechCheck.id,
+                                  )}
+                                >
+                                  {techCheckBody}
+                                </Link>
+                              );
+                            })()}
                         </section>
                       );
                     })}

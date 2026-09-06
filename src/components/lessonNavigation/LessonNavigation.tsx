@@ -1,14 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+
 import styles from "./LessonNavigation.module.scss";
 import { AppDispatch, RootState } from "../../store";
-// import { markLessonAsCompleted } from "../../store/slices/progressSlice";
 import {
   fetchCourseModules,
   fetchCoursesByTrack,
   fetchModuleLessons,
-  selectCourseLessons,
   selectCourseModules,
   selectCoursesByTrack,
 } from "../../store/slices/contentSlice";
@@ -16,14 +15,33 @@ import {
   buildStudentLessonPath,
   buildStudentTechCheckPath,
 } from "../../utils/courseMapping";
+import { useModuleProgression } from "../../hooks/useModuleProgression";
+import {
+  getNextStep,
+  getPreviousItem,
+  type ModuleItem,
+} from "../../domain/progression";
+
+const pathForItem = (item: ModuleItem) =>
+  item.lessonKind === "tech_check"
+    ? buildStudentTechCheckPath(item.courseId, item.moduleId, item.id)
+    : buildStudentLessonPath(item.courseId, item.moduleId, item.id);
+
+type NextAction = {
+  label: string;
+  hint?: string;
+  disabled: boolean;
+  accent: boolean;
+  onClick?: () => void;
+};
 
 const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   currentLessonId,
 }) => {
-  // const dispatch = useDispatch();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { courseId, moduleId } = useParams<{ courseId?: string; moduleId?: string }>();
+
   const completedLessons = useSelector(
     (state: RootState) => state.progress.completedLessons,
   );
@@ -36,12 +54,8 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
   const courseModules = useSelector((state: RootState) =>
     selectedCourse ? selectCourseModules(state, selectedCourse.id) : [],
   );
-  const categoryLessons = useSelector((state: RootState) =>
-    selectedCourse ? selectCourseLessons(state, selectedCourse.id) : [],
-  );
-  const orderedModuleItems = categoryLessons.filter(
-    (lesson) => lesson.moduleId === moduleId,
-  );
+
+  const { ctx, state, nextModule } = useModuleProgression(courseId, moduleId);
 
   useEffect(() => {
     void dispatch(fetchCoursesByTrack("frontend"));
@@ -62,72 +76,90 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
     return <h2>Урок не знайдено</h2>;
   }
 
-  // Знаходимо індекс поточного уроку
-  const currentIndex = orderedModuleItems.findIndex(
-    (lesson) => lesson.id === currentLessonId,
-  );
+  const previousItem = getPreviousItem(currentLessonId, ctx);
+  const nextStep = getNextStep(currentLessonId, ctx);
+  const isCurrentDone = completedLessons.includes(currentLessonId);
 
-  // Наступний і попередній уроки
-  const prevLesson =
-    currentIndex > 0 ? orderedModuleItems[currentIndex - 1] : null;
-  const nextLesson =
-    currentIndex < orderedModuleItems.length - 1
-      ? orderedModuleItems[currentIndex + 1]
-      : null;
+  const buildNextAction = (): NextAction => {
+    switch (nextStep.kind) {
+      case "lesson":
+        return {
+          label: "Наступний урок",
+          hint: isCurrentDone ? undefined : "Заверши поточний урок, щоб рухатись далі",
+          disabled: !isCurrentDone,
+          accent: false,
+          onClick: () => navigate(pathForItem(nextStep.item)),
+        };
 
-  // Завершити урок
-  // const handleCompleteLesson = () => {
-  //   if (!completedLessons.includes(currentLessonId)) {
-  //     dispatch(markLessonAsCompleted(currentLessonId));
-  //   }
-  // };
+      case "tech-check":
+        return {
+          label: "Пройти перевірку модуля",
+          hint: "Усі уроки модуля пройдені",
+          disabled: false,
+          accent: true,
+          onClick: () => navigate(pathForItem(nextStep.item)),
+        };
+
+      case "tech-check-locked":
+        return {
+          label: "Перевірка модуля",
+          hint: `Ще ${nextStep.remaining} ${
+            nextStep.remaining === 1 ? "урок" : "уроки"
+          } до перевірки`,
+          disabled: true,
+          accent: false,
+        };
+
+      case "module-complete":
+        if (!state.isModuleComplete) {
+          return {
+            label: "Завершити перевірку",
+            hint: "Виконай усі завдання перевірки",
+            disabled: true,
+            accent: false,
+          };
+        }
+        return nextModule
+          ? {
+              label: "Наступний модуль",
+              hint: nextModule.title,
+              disabled: false,
+              accent: true,
+              onClick: () => navigate(`/student/courses/${courseId}`),
+            }
+          : {
+              label: "Курс завершено",
+              hint: "Обрати наступний курс",
+              disabled: false,
+              accent: true,
+              onClick: () => navigate("/student/learning"),
+            };
+
+      default:
+        return { label: "Наступний урок", disabled: true, accent: false };
+    }
+  };
+
+  const nextAction = buildNextAction();
 
   return (
     <div className={styles.navigationContainer}>
       <button
-        onClick={() =>
-          prevLesson &&
-          navigate(
-            prevLesson.lessonKind === "tech_check"
-              ? buildStudentTechCheckPath(
-                  prevLesson.courseId,
-                  prevLesson.moduleId,
-                  prevLesson.id,
-                )
-              : buildStudentLessonPath(
-                  prevLesson.courseId,
-                  prevLesson.moduleId,
-                  prevLesson.id,
-                ),
-          )
-        }
-        disabled={!prevLesson}
+        onClick={() => previousItem && navigate(pathForItem(previousItem))}
+        disabled={!previousItem}
         className={styles.navButton}
       >
         Попередній урок
       </button>
 
       <button
-        onClick={() =>
-          nextLesson &&
-          navigate(
-            nextLesson.lessonKind === "tech_check"
-              ? buildStudentTechCheckPath(
-                  nextLesson.courseId,
-                  nextLesson.moduleId,
-                  nextLesson.id,
-                )
-              : buildStudentLessonPath(
-                  nextLesson.courseId,
-                  nextLesson.moduleId,
-                  nextLesson.id,
-                ),
-          )
-        }
-        disabled={!nextLesson || !completedLessons.includes(currentLessonId)}
-        className={styles.navButton}
+        onClick={nextAction.onClick}
+        disabled={nextAction.disabled}
+        title={nextAction.hint}
+        className={`${styles.navButton} ${nextAction.accent ? styles.accent : ""}`}
       >
-        Наступний урок
+        <span>{nextAction.label}</span>
+        {nextAction.hint && <small className={styles.hint}>{nextAction.hint}</small>}
       </button>
     </div>
   );

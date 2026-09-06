@@ -47,3 +47,41 @@
   color: v.$text-muted;
   max-width: 90%;
 }
+
+/* Техчек — це іспит, а не урок. Спільна таблиця в БД не означає спільний вигляд. */
+.lessonHeader.techCheck {
+  background: linear-gradient(
+    150deg,
+    rgba(127, 230, 255, 0.10),
+    rgba(255, 255, 255, 0.04)
+  );
+  border-color: rgba(v.$accent-primary, 0.38);
+}
+
+.kindBadge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: v.$radius-round;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: v.$text-muted;
+  background: v.$panel;
+  border: 1px solid v.$border;
+}
+
+.techCheck .kindBadge {
+  color: v.$bg-deep;
+  background: v.$accent-primary;
+  border-color: transparent;
+}
+
+.techCheckNote {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+  line-height: 1.5;
+  color: v.$text-muted;
+}

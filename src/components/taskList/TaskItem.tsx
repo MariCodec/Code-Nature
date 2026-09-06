@@ -3,6 +3,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import styles from "./TaskList.module.scss";
+import InlineMarkdown from "../markdown/InlineMarkdown";
 
 interface TaskItemProps {
   lessonId: string;
@@ -32,7 +33,9 @@ const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId, number 
       <div className={styles.left}>
         <span className={styles.index}>{number}</span>
       </div>
-      <div className={styles.text}>{task.text}</div>
+      <div className={styles.text}>
+        <InlineMarkdown text={task.text} />
+      </div>
       <div className={styles.controls}>
         {isCompleted && (
           <span className={`${styles.iconBadge} ${styles.pop}`}>✓</span>

@@ -1,0 +1,57 @@
+{
+  "tracks": [
+    {
+      "id": "trk_frontend",
+      "slug": "frontend",
+      "title": "Frontend",
+      "description": "Розробка того, що користувач бачить і чим користується у браузері.",
+      "orderIndex": 1
+    }
+  ],
+  "courses": [
+    {
+      "id": "crs_html_basics",
+      "trackId": "trk_frontend",
+      "slug": "html-basics",
+      "title": "HTML з нуля",
+      "description": "Структура веб-сторінки: теги, текст, посилання, зображення, семантика.",
+      "level": "beginner",
+      "accessLevel": "free",
+      "progression": "sequential",
+      "prerequisiteCourseIds": [],
+      "isPublished": true
+    },
+    {
+      "id": "crs_css_basics",
+      "trackId": "trk_frontend",
+      "slug": "css-basics",
+      "title": "CSS з нуля",
+      "description": "Оформлення сторінки: селектори, кольори, текст, відступи, перші макети.",
+      "level": "beginner",
+      "accessLevel": "free",
+      "progression": "sequential",
+      "prerequisiteCourseIds": ["crs_html_basics"],
+      "isPublished": true
+    }
+  ],
+  "modules": [
+    {
+      "id": "mod_html_start",
+      "courseId": "crs_html_basics",
+      "slug": "start",
+      "title": "Перші кроки",
+      "description": "Що таке веб-сторінка і як написати найпростішу.",
+      "orderIndex": 1,
+      "isPublished": true
+    },
+    {
+      "id": "mod_css_start",
+      "courseId": "crs_css_basics",
+      "slug": "start",
+      "title": "Перші стилі",
+      "description": "Як підключити CSS і змінити вигляд елементів.",
+      "orderIndex": 1,
+      "isPublished": true
+    }
+  ]
+}

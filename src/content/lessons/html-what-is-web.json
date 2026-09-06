@@ -1,0 +1,70 @@
+{
+  "id": "lsn_html_what_is_web",
+  "courseId": "crs_html_basics",
+  "moduleId": "mod_html_start",
+  "slug": "what-is-web",
+  "title": "Як працює веб-сторінка",
+  "description": "Що відбувається між тим, як ти вводиш адресу, і тим, як бачиш сторінку.",
+  "lessonKind": "lesson",
+  "runtimeType": "video",
+  "validationType": "none",
+  "orderIndex": 1,
+  "isPublished": true,
+  "files": [],
+  "theoryBlocks": [
+    {
+      "id": "thb_www_1",
+      "blockType": "text",
+      "content": {
+        "text": "Коли ти вводиш адресу в браузері, він звертається до **сервера** — комп'ютера, який зберігає файли сайту. Сервер надсилає у відповідь текстовий файл із розміткою. Браузер читає цей текст і малює з нього сторінку."
+      },
+      "orderIndex": 1
+    },
+    {
+      "id": "thb_www_2",
+      "blockType": "text",
+      "content": {
+        "text": "Тобто сторінка, яку ти бачиш — це **не картинка**. Це текст із інструкціями, який браузер щоразу перетворює на зображення. Саме тому сторінку можна зробити самому у звичайному текстовому редакторі."
+      },
+      "orderIndex": 2
+    },
+    {
+      "id": "thb_www_3",
+      "blockType": "list",
+      "content": {
+        "items": [
+          "**HTML** — що є на сторінці: заголовки, текст, картинки, посилання",
+          "**CSS** — як це виглядає: кольори, розміри, розташування",
+          "**JavaScript** — що відбувається у відповідь на дії: кліки, введення, анімації"
+        ]
+      },
+      "orderIndex": 3
+    },
+    {
+      "id": "thb_www_4",
+      "blockType": "note",
+      "content": {
+        "tone": "info",
+        "text": "У цьому курсі ми беремося за перше — HTML. Він відповідає за зміст і структуру, і без нього решта не має до чого прикріпитися."
+      },
+      "orderIndex": 4
+    }
+  ],
+  "videos": [
+    {
+      "id": "vid_www_intro",
+      "provider": "youtube",
+      "sourceUrl": null,
+      "assetId": null,
+      "title": "Що відбувається, коли ти відкриваєш сайт",
+      "description": "Шлях від адресного рядка до готової сторінки за чотири хвилини.",
+      "durationSeconds": 240,
+      "thumbnailUrl": null,
+      "transcript": null,
+      "captionsUrl": null,
+      "orderIndex": 1,
+      "isRequired": true
+    }
+  ],
+  "tasks": []
+}
