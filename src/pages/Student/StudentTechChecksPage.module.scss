@@ -4,9 +4,9 @@
   min-height: calc(100vh - 64px);
   padding: 28px 16px 44px;
   background:
-    radial-gradient(920px 540px at 10% 8%, rgba(120, 255, 234, 0.1), transparent 60%),
-    radial-gradient(820px 520px at 92% 12%, rgba(120, 170, 255, 0.1), transparent 56%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
+    radial-gradient(920px 540px at 10% 8%, rgb(#{v.$glow-rgb} / 0.1), transparent 60%),
+    radial-gradient(820px 520px at 92% 12%, rgb(#{v.$accent-blue-rgb} / 0.1), transparent 56%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }
 
 .shell {
@@ -37,7 +37,7 @@
 
 .kicker {
   margin: 0;
-  color: rgba(v.$accent-primary, 0.78);
+  color: rgb(#{v.$accent-primary-rgb} / 0.78);
   font-size: 0.76rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -73,9 +73,9 @@
   align-items: center;
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid rgba(v.$glow-strong, 0.22);
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.22);
   border-radius: v.$radius-round;
-  background: rgba(10, 14, 25, 0.44);
+  background: rgb(#{v.$surface-rgb} / 0.44);
   color: v.$text-main;
   font-weight: 700;
   white-space: nowrap;
@@ -103,19 +103,19 @@
   gap: 16px;
   align-items: center;
   padding: 16px;
-  border: 1px solid rgba(v.$accent-primary, 0.28);
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.28);
   border-radius: v.$radius-md;
   background:
-    linear-gradient(135deg, rgba(v.$accent-primary, 0.1), rgba(120, 170, 255, 0.06)),
-    rgba(255, 255, 255, 0.035);
+    linear-gradient(135deg, rgb(#{v.$accent-primary-rgb} / 0.1), rgb(#{v.$accent-blue-rgb} / 0.06)),
+    rgb(#{v.$fg-rgb} / 0.035);
   text-decoration: none;
   transition: transform v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
 }
 
 .checkRow:hover {
   transform: translateY(-1px);
-  border-color: rgba(v.$accent-primary, 0.48);
-  background: rgba(12, 18, 30, 0.58);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.48);
+  background: rgb(#{v.$surface-rgb} / 0.58);
 }
 
 .checkRow h3 {

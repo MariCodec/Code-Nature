@@ -3,8 +3,8 @@
 .code {
   padding: 1px 5px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgb(#{v.$fg-rgb} / 0.12);
+  background: rgb(#{v.$shadow-rgb} / 0.32);
   color: v.$accent-primary;
   font-family: var(--font-code);
   font-size: 0.9em;

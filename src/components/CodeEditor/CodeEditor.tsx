@@ -278,7 +278,9 @@ dispatch(saveUserData());
           className={styles.editorView}
           style={{ width: `${dividerPosition}%` }}
         >
+          <div className={styles.editorSurface}>
           <Editor
+            height="100%"
             theme="myCustomTheme"
             language={activeFile?.language ?? "html"}
             value={activeFile?.content ?? ""}
@@ -292,6 +294,7 @@ dispatch(saveUserData());
               minimap: { enabled: false },
             }}
           />
+          </div>
 
           <CodeButtons
             handleRunCode={handleRunCode}

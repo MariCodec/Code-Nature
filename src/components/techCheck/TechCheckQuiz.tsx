@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 
 import styles from "./TechCheckQuiz.module.scss";
 import InlineMarkdown from "../markdown/InlineMarkdown";
+import { uk } from "../../i18n/uk";
 import {
   checkQuizAnswer,
-  describeVerdict,
+  getFeedbackKey,
   getQuizProgress,
   getSelectionMode,
   type QuizTask,
@@ -81,21 +82,19 @@ export default function TechCheckQuiz({
   };
 
   const isWrong = verdict !== null && !verdict.correct;
+  const feedbackKey = verdict ? getFeedbackKey(verdict, mode) : null;
 
   return (
     <main className={styles.page}>
       <section className={styles.card}>
         <header className={styles.head}>
-          <span className={styles.badge}>Контрольна перевірка</span>
+          <span className={styles.badge}>{uk.techCheck.badge}</span>
           <h1>{lessonTitle}</h1>
-          <p className={styles.lead}>
-            Спершу кілька питань на розуміння. Помилка нічого не псує — покажу чому
-            і спробуєш ще раз.
-          </p>
+          <p className={styles.lead}>{uk.techCheck.intro}</p>
 
           <div
             className={styles.steps}
-            aria-label={`Питання ${shownIndex + 1} з ${progress.total}`}
+            aria-label={uk.techCheck.questionCounter(shownIndex + 1, progress.total)}
           >
             {questions.map((item, index) => (
               <span
@@ -110,7 +109,7 @@ export default function TechCheckQuiz({
               />
             ))}
             <span className={styles.stepsLabel}>
-              Питання {shownIndex + 1} з {progress.total}
+              {uk.techCheck.questionCounter(shownIndex + 1, progress.total)}
             </span>
           </div>
         </header>
@@ -119,7 +118,7 @@ export default function TechCheckQuiz({
           <InlineMarkdown text={question.description} />
         </h2>
         <p className={styles.modeHint}>
-          {mode === "multiple" ? "Обери всі правильні" : "Обери одну відповідь"}
+          {mode === "multiple" ? uk.techCheck.modeMultiple : uk.techCheck.modeSingle}
         </p>
 
         <ul className={styles.options}>
@@ -148,7 +147,7 @@ export default function TechCheckQuiz({
 
         {isWrong && (
           <div className={`${styles.feedback} ${styles.feedbackWrong}`}>
-            <strong>{describeVerdict(verdict, mode)}</strong>
+            <strong>{feedbackKey && uk.techCheck.feedback[feedbackKey]}</strong>
             <p>
               <InlineMarkdown text={question.rules.explanation} />
             </p>
@@ -157,7 +156,7 @@ export default function TechCheckQuiz({
                 className={styles.reviewLink}
                 to={buildReviewHref(question.rules.reviewLessonId)}
               >
-                Повернутись до уроку
+                {uk.techCheck.backToLesson}
               </Link>
             )}
           </div>
@@ -165,7 +164,7 @@ export default function TechCheckQuiz({
 
         {verdict?.correct && (
           <div className={`${styles.feedback} ${styles.feedbackRight}`}>
-            <strong>Правильно</strong>
+            <strong>{uk.techCheck.correct}</strong>
             <p>
               <InlineMarkdown text={question.rules.explanation} />
             </p>
@@ -175,11 +174,11 @@ export default function TechCheckQuiz({
         <div className={styles.actions}>
           {verdict?.correct ? (
             <button type="button" className={styles.primary} onClick={goNext}>
-              {isLast ? "До практики" : "Наступне питання"}
+              {isLast ? uk.techCheck.toPractice : uk.techCheck.nextQuestion}
             </button>
           ) : isWrong ? (
             <button type="button" className={styles.primary} onClick={retry}>
-              Спробувати ще
+              {uk.techCheck.retry}
             </button>
           ) : (
             <button
@@ -188,7 +187,7 @@ export default function TechCheckQuiz({
               onClick={submit}
               disabled={selected.length === 0}
             >
-              Перевірити
+              {uk.techCheck.check}
             </button>
           )}
         </div>

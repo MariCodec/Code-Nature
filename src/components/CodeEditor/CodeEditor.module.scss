@@ -10,9 +10,10 @@
 .browserWindow {
   position: relative;
   width: 50%;
+  min-height: 0;
   border-radius: 10px; // поки лишаю як є (щоб не змінювався вигляд)
   overflow: hidden;
-  box-shadow: 0 5px 15px v.$black-a30; // якщо немає — лиши rgba(0,0,0,0.3)
+  box-shadow: 0 5px 15px v.$black-a30; // якщо немає — лиши rgb(#{v.$shadow-rgb} / 0.3)
   background: #f8f8f8; // це “макет браузера”, можна лишити literal
 }
 
@@ -46,24 +47,29 @@
 .resizer {
   width: 6px;
   cursor: col-resize;
-  background: linear-gradient(180deg, v.$border, rgba(255, 255, 255, 0.02));
+  background: linear-gradient(180deg, v.$border, rgb(#{v.$fg-rgb} / 0.02));
   transition: background v.$tr-fast;
 
   &:hover {
-    background: rgba(v.$accent-secondary, 0.4);
+    background: rgb(#{v.$accent-secondary-rgb} / 0.4);
   }
 }
 
 /* Контейнер редактора */
 .editorContainer {
   width: 100%;
+  /* Прив'язка до вьюпорта: інакше Monaco розтягує колонку,
+     і кнопки Run / Clear / Format виїжджають за екран. */
+  height: calc(100vh - 64px);
+  box-sizing: border-box;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 16px;
 
-  background: linear-gradient(135deg, v.$bg-surface, #282c34, #3a3f51);
+  background: linear-gradient(135deg, v.$bg-surface, v.$bg-300);
   border: 1px solid v.$border;
-  box-shadow: 0 10px 35px rgba(2, 6, 12, 0.7);
+  box-shadow: 0 10px 35px rgb(#{v.$shadow-rgb} / 0.7);
 
   padding: 20px;
   transition: all v.$tr-base;
@@ -71,22 +77,23 @@
 
 /* Верхня панель з вкладками */
 .tabs {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 12px;
 
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(#{v.$fg-rgb} / 0.02);
   border-radius: v.$radius-round;
   padding: 6px 10px;
   backdrop-filter: blur(8px);
 
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgb(#{v.$fg-rgb} / 0.05);
+  border-bottom: 1px solid rgb(#{v.$fg-rgb} / 0.05);
 }
 
 /* Кнопка для показу/приховування деталей */
 .toggleBtn {
-  border: 2px solid rgba(v.$accent-secondary, 0.55);
+  border: 2px solid rgb(#{v.$accent-secondary-rgb} / 0.55);
   color: v.$text-muted;
   background-color: transparent;
 
@@ -95,12 +102,12 @@
   border-radius: v.$radius-round;
   cursor: pointer;
 
-  box-shadow: 0 0px 8px rgba(v.$accent-secondary, 0.35);
+  box-shadow: 0 0px 8px rgb(#{v.$accent-secondary-rgb} / 0.35);
   transition: all v.$tr-base;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0px 8px rgba(v.$accent-secondary, 0.35);
+    box-shadow: 0 0px 8px rgb(#{v.$accent-secondary-rgb} / 0.35);
   }
 
   &:active {
@@ -113,7 +120,7 @@
   font-size: 16px;
   padding: 10px 16px;
 
-  color: #b0b3c3; // можна винести пізніше, зараз лишимо
+  color: v.$text-muted;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -126,7 +133,7 @@
     color: v.$accent-secondary;
     border-bottom: 2px solid v.$accent-secondary;
     border-radius: 10px 20px 0 0;
-    background: #2a2a3a; // можна винести пізніше
+    background: v.$bg-300;
   }
 
   &:disabled {
@@ -140,6 +147,8 @@
   display: flex;
   gap: 20px;
   flex: 1;
+  /* без min-height: 0 flex-дитина не стискається нижче свого вмісту */
+  min-height: 0;
 }
 
 .editorView {
@@ -148,6 +157,15 @@
   flex-direction: column;
   gap: 18px;
   width: 50%;
+  min-height: 0;
+}
+
+/* Monaco забирає весь вільний простір, кнопки лишаються під ним */
+.editorSurface {
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 /* Monaco editor */

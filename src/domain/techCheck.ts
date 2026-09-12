@@ -44,22 +44,25 @@ export function checkQuizAnswer(
   return { correct: true };
 }
 
-export function describeVerdict(
+export type QuizFeedbackKey = "empty" | "extraSingle" | "extraMultiple" | "missing";
+
+/**
+ * Який саме текст показати — вирішує домен, а сам текст живе в `i18n/uk.ts`.
+ * Для одиночного вибору «зайвий варіант» звучить дивно: там просто не та відповідь.
+ */
+export function getFeedbackKey(
   verdict: QuizVerdict,
-  mode: "single" | "multiple" = "multiple",
-): string | null {
+  mode: "single" | "multiple",
+): QuizFeedbackKey | null {
   if (verdict.correct) return null;
 
   switch (verdict.reason) {
     case "empty":
-      return "Обери варіант відповіді.";
+      return "empty";
     case "extra":
-      // Для одиночного вибору «зайвий» звучить дивно: там просто не та відповідь.
-      return mode === "single"
-        ? "Це не та відповідь."
-        : "Один із обраних варіантів тут зайвий.";
+      return mode === "single" ? "extraSingle" : "extraMultiple";
     case "missing":
-      return "Правильно, але не все — є ще один варіант.";
+      return "missing";
   }
 }
 

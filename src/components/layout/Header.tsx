@@ -7,6 +7,8 @@ import {
   selectIsAuthenticated,
 } from "../../store/slices/authSlice";
 import { logout } from "../../store/thunks/authThunks";
+import { selectTheme, toggleTheme } from "../../store/slices/themeSlice";
+import { uk } from "../../i18n/uk";
 // import logo from "../../assets/logo.png"
 const Header = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -14,6 +16,7 @@ const Header = () => {
   const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const role = useSelector(selectAuthRole);
+  const theme = useSelector(selectTheme);
 
   const dashboardPath = role === "teacher" ? "/teacher" : "/student/progress";
   const dashboardLabel = role === "teacher" ? "Мій кабінет" : "Мій прогрес";
@@ -109,6 +112,16 @@ const Header = () => {
       </nav>
 
       <div className={styles.authControls}>
+        <button
+          type="button"
+          className={styles.themeToggle}
+          onClick={() => dispatch(toggleTheme())}
+          title={theme === "dark" ? uk.theme.toLight : uk.theme.toDark}
+          aria-label={theme === "dark" ? uk.theme.toLight : uk.theme.toDark}
+        >
+          {theme === "dark" ? "☾" : "☀"}
+        </button>
+
         {isAuthenticated ? (
           <>
             <NavLink className={styles.dashboardLink} to={dashboardPath}>

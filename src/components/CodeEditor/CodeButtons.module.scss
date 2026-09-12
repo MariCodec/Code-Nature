@@ -1,9 +1,9 @@
 @use "../../styles/variables" as v;
 
 .bottomBtn {
+  flex: none;
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
   gap: 14px;
 }
 
@@ -24,15 +24,15 @@
   @extend .btn;
 background: linear-gradient(
   90deg,
-  rgba(45, 200, 163, 0.55),  
-  rgba(86, 200, 157, 0.15) 
+  rgb(#{v.$accent-secondary-rgb} / 0.55),  
+  rgb(#{v.$accent-secondary-rgb} / 0.15) 
 );
-  border-color: rgba(v.$accent-primary, 0.4);
-  box-shadow: 0 6px 22px rgba(v.$accent-primary, 0.12);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.4);
+  box-shadow: 0 6px 22px rgb(#{v.$accent-primary-rgb} / 0.12);
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 15px rgba(v.$accent-primary, 0.45);
+    box-shadow: 0 0 15px rgb(#{v.$accent-primary-rgb} / 0.45);
   }
 }
 
@@ -48,12 +48,12 @@ background: linear-gradient(
 .clearBtn {
   @extend .btn;
   background: transparent;
-  border-color: rgba(v.$danger, 0.18);
-  box-shadow: 0 6px 18px rgba(v.$danger, 0.08);
+  border-color: rgb(#{v.$danger-rgb} / 0.18);
+  box-shadow: 0 6px 18px rgb(#{v.$danger-rgb} / 0.08);
 
   &:hover {
     background: v.$danger-bg;
-    border-color: rgba(v.$danger, 0.25);
+    border-color: rgb(#{v.$danger-rgb} / 0.25);
   }
 }
 

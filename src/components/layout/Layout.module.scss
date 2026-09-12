@@ -30,7 +30,7 @@
   background: linear-gradient(
     135deg,
     v.$bg-surface 0%,
-    rgba(26, 32, 48, 1) 100%
+    rgb(#{v.$surface-rgb} / 1) 100%
   );
 
   border-bottom: 1px solid v.$border;
@@ -105,7 +105,7 @@
 
 .dashboardLink {
   color: v.$text-dark;
-  background: linear-gradient(135deg, v.$glow-strong, rgba(120, 200, 255, 0.92));
+  background: linear-gradient(135deg, v.$glow-strong, rgb(#{v.$accent-blue-rgb} / 0.92));
 
   &[aria-current="page"] {
     filter: brightness(1.08);
@@ -115,8 +115,8 @@
 .secondaryLink,
 .logoutButton {
   color: v.$text-main;
-  border: 1px solid rgba(v.$glow-strong, 0.38);
-  background: rgba(10, 14, 25, 0.4);
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.38);
+  background: rgb(#{v.$surface-rgb} / 0.4);
 }
 
 .logoutButton {
@@ -160,5 +160,26 @@
   .secondaryLink,
   .logoutButton {
     min-height: 38px;
+  }
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-round;
+  background: transparent;
+  color: v.$text-muted;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color v.$tr-fast, border-color v.$tr-fast;
+
+  &:hover {
+    color: v.$accent-primary;
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.5);
   }
 }

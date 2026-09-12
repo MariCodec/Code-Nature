@@ -5,7 +5,7 @@
   margin-bottom: 4px;
 
   border-radius: v.$radius-md;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgb(#{v.$fg-rgb} / 0.06);
   border: 1px solid v.$border;
 }
 
@@ -18,7 +18,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255,255,255,0.18),
+    rgb(#{v.$fg-rgb} / 0.18),
     transparent
   );
 }
@@ -52,10 +52,10 @@
 .lessonHeader.techCheck {
   background: linear-gradient(
     150deg,
-    rgba(127, 230, 255, 0.10),
-    rgba(255, 255, 255, 0.04)
+    rgb(#{v.$accent-primary-rgb} / 0.10),
+    rgb(#{v.$fg-rgb} / 0.04)
   );
-  border-color: rgba(v.$accent-primary, 0.38);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.38);
 }
 
 .kindBadge {
@@ -80,7 +80,7 @@
 .techCheckNote {
   margin-top: 4px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.14);
+  border-top: 1px dashed rgb(#{v.$fg-rgb} / 0.14);
   font-size: 13px;
   line-height: 1.5;
   color: v.$text-muted;

@@ -9,9 +9,9 @@
   overflow: hidden;
 
   background:
-    radial-gradient(1200px 700px at 30% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
-    radial-gradient(900px 500px at 70% 15%, rgba(120, 170, 255, 0.10), transparent 55%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
+    radial-gradient(1200px 700px at 30% 20%, rgb(#{v.$glow-rgb} / 0.10), transparent 55%),
+    radial-gradient(900px 500px at 70% 15%, rgb(#{v.$accent-blue-rgb} / 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }
 
 .wrapper::before,
@@ -29,13 +29,13 @@
 .wrapper::before {
   left: -180px;
   top: -160px;
-  background: rgba(120, 255, 234, 0.18);
+  background: rgb(#{v.$glow-rgb} / 0.18);
 }
 
 .wrapper::after {
   right: -200px;
   top: -120px;
-  background: rgba(120, 170, 255, 0.16);
+  background: rgb(#{v.$accent-blue-rgb} / 0.16);
 }
 
 .card {
@@ -44,9 +44,9 @@
   padding: 28px 26px 22px;
   border-radius: v.$radius-lg;
 
-  background: rgba(18, 24, 38, 0.62);
+  background: rgb(#{v.$surface-rgb} / 0.62);
   border: 1px solid v.$border;           // було 0.12 → зводимо до border
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 20px 55px rgb(#{v.$shadow-rgb} / 0.55);
   backdrop-filter: blur(14px);
 }
 
@@ -84,19 +84,19 @@
   padding: 12px 12px;
   border-radius: v.$radius-md;
 
-  background: rgba(10, 14, 25, 0.65);
+  background: rgb(#{v.$surface-rgb} / 0.65);
   border: 1px solid v.$border;
   color: v.$text-main;
 }
 
 .input::placeholder {
-  color: rgba(v.$text-main, 0.35);       // audit: 0.35
+  color: rgb(#{v.$text-main-rgb} / 0.35);       // audit: 0.35
 }
 
 .input:focus {
-  border-color: rgba(v.$glow-strong, 0.55);
+  border-color: rgb(#{v.$glow-strong-rgb} / 0.55);
   box-shadow: v.$shadow-focus;
-  background: rgba(10, 14, 25, 0.7);
+  background: rgb(#{v.$surface-rgb} / 0.7);
 }
 
 .error {
@@ -125,7 +125,7 @@
   background: linear-gradient(
     135deg,
     v.$glow-strong,
-    rgba(120, 200, 255, 0.90)
+    rgb(#{v.$accent-blue-rgb} / 0.90)
   );
 
   box-shadow: v.$shadow-card;
@@ -164,5 +164,5 @@
 
 .link:hover {
   color: v.$glow-strong;
-  border-bottom-color: rgba(v.$glow-strong, 0.55);
+  border-bottom-color: rgb(#{v.$glow-strong-rgb} / 0.55);
 }

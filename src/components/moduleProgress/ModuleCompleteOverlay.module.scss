@@ -7,7 +7,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(7, 10, 18, 0.72);
+  background: rgb(#{v.$surface-rgb} / 0.72);
   backdrop-filter: blur(6px);
 }
 
@@ -15,7 +15,7 @@
   width: min(520px, 100%);
   padding: 32px;
   border-radius: v.$radius-lg;
-  border: 1px solid rgba(v.$accent-primary, 0.28);
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.28);
   background: linear-gradient(160deg, v.$bg-surface, v.$bg-deep);
   box-shadow: v.$shadow-card;
   text-align: center;
@@ -84,14 +84,14 @@
 }
 
 .primary {
-  border: 1px solid rgba(v.$accent-primary, 0.7);
-  background: linear-gradient(90deg, rgba(45, 200, 163, 0.9), rgba(127, 230, 255, 0.55));
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.7);
+  background: linear-gradient(90deg, rgb(#{v.$accent-secondary-rgb} / 0.9), rgb(#{v.$accent-primary-rgb} / 0.55));
   color: v.$text-main;
   font-weight: 600;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 25px rgba(v.$accent-primary, 0.22);
+    box-shadow: 0 0 25px rgb(#{v.$accent-primary-rgb} / 0.22);
   }
 }
 
@@ -102,6 +102,6 @@
 
   &:hover {
     color: v.$text-main;
-    border-color: rgba(v.$accent-primary, 0.35);
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.35);
   }
 }

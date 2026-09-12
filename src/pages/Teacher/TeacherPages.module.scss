@@ -4,9 +4,9 @@
   min-height: calc(100vh - 80px);
   padding: 32px 20px 48px;
   background:
-    radial-gradient(900px 500px at 20% 15%, rgba(120, 255, 234, 0.08), transparent 55%),
-    radial-gradient(700px 400px at 85% 10%, rgba(120, 170, 255, 0.08), transparent 55%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
+    radial-gradient(900px 500px at 20% 15%, rgb(#{v.$glow-rgb} / 0.08), transparent 55%),
+    radial-gradient(700px 400px at 85% 10%, rgb(#{v.$accent-blue-rgb} / 0.08), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }
 
 .container {
@@ -19,7 +19,7 @@
 .hero {
   padding: 28px;
   border-radius: v.$radius-lg;
-  background: rgba(18, 24, 38, 0.72);
+  background: rgb(#{v.$surface-rgb} / 0.72);
   border: 1px solid v.$border;
   box-shadow: v.$shadow-card;
 }
@@ -74,14 +74,14 @@
 
 .primaryLink {
   color: v.$text-dark;
-  background: linear-gradient(135deg, v.$glow-strong, rgba(120, 200, 255, 0.92));
+  background: linear-gradient(135deg, v.$glow-strong, rgb(#{v.$accent-blue-rgb} / 0.92));
   box-shadow: v.$shadow-card;
 }
 
 .secondaryLink {
   color: v.$text-main;
-  border: 1px solid rgba(v.$glow-strong, 0.45);
-  background: rgba(10, 14, 25, 0.45);
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.45);
+  background: rgb(#{v.$surface-rgb} / 0.45);
 }
 
 .grid {
@@ -93,7 +93,7 @@
 .card,
 .panel {
   border-radius: v.$radius-lg;
-  background: rgba(18, 24, 38, 0.72);
+  background: rgb(#{v.$surface-rgb} / 0.72);
   border: 1px solid v.$border;
   box-shadow: v.$shadow-card;
 }
@@ -127,7 +127,7 @@
   min-height: 30px;
   padding: 0 10px;
   border-radius: v.$radius-round;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(#{v.$fg-rgb} / 0.08);
   border: 1px solid v.$border;
   color: v.$text-muted;
   font-size: 13px;
@@ -143,8 +143,8 @@
 .stat {
   padding: 16px;
   border-radius: v.$radius-md;
-  background: rgba(10, 14, 25, 0.42);
-  border: 1px solid rgba(v.$glow, 0.2);
+  background: rgb(#{v.$surface-rgb} / 0.42);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.2);
 }
 
 .statLabel {
@@ -193,8 +193,8 @@
   gap: 12px;
   padding: 18px;
   border-radius: v.$radius-md;
-  border: 1px solid rgba(v.$glow, 0.18);
-  background: rgba(10, 14, 25, 0.45);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.18);
+  background: rgb(#{v.$surface-rgb} / 0.45);
 }
 
 .studentTop {
@@ -228,8 +228,8 @@
   min-height: 32px;
   padding: 0 10px;
   border-radius: v.$radius-round;
-  background: rgba(v.$glow-strong, 0.12);
-  border: 1px solid rgba(v.$glow, 0.24);
+  background: rgb(#{v.$glow-strong-rgb} / 0.12);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.24);
   color: v.$text-main;
   font-size: 13px;
 }
@@ -260,8 +260,8 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: v.$radius-md;
-  border: 1px solid rgba(v.$glow, 0.18);
-  background: rgba(10, 14, 25, 0.42);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.18);
+  background: rgb(#{v.$surface-rgb} / 0.42);
 }
 
 .progressLesson {
@@ -287,8 +287,8 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: v.$radius-md;
-  border: 1px solid rgba(v.$glow, 0.18);
-  background: rgba(10, 14, 25, 0.42);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.18);
+  background: rgb(#{v.$surface-rgb} / 0.42);
 }
 
 .taskMeta {
@@ -307,8 +307,8 @@
   gap: 10px;
   padding: 16px;
   border-radius: v.$radius-md;
-  border: 1px solid rgba(v.$glow, 0.18);
-  background: rgba(10, 14, 25, 0.42);
+  border: 1px solid rgb(#{v.$glow-rgb} / 0.18);
+  background: rgb(#{v.$surface-rgb} / 0.42);
 }
 
 .codeTitle {
@@ -329,8 +329,8 @@
   min-height: 30px;
   padding: 0 10px;
   border-radius: v.$radius-round;
-  background: rgba(120, 170, 255, 0.14);
-  border: 1px solid rgba(120, 170, 255, 0.24);
+  background: rgb(#{v.$accent-blue-rgb} / 0.14);
+  border: 1px solid rgb(#{v.$accent-blue-rgb} / 0.24);
   color: v.$text-main;
   font-size: 13px;
 }
@@ -343,29 +343,29 @@
   border-radius: v.$radius-round;
   font-size: 13px;
   font-weight: 700;
-  background: rgba(v.$glow-strong, 0.12);
+  background: rgb(#{v.$glow-strong-rgb} / 0.12);
   color: v.$text-main;
 }
 
 .statusCompleted {
-  background: rgba(86, 200, 157, 0.15);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.15);
   color: #9df0ca;
 }
 
 .statusProgress {
-  background: rgba(120, 170, 255, 0.16);
+  background: rgb(#{v.$accent-blue-rgb} / 0.16);
   color: #b2d2ff;
 }
 
 .statusIdle {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(#{v.$fg-rgb} / 0.08);
   color: v.$text-muted;
 }
 
 .empty {
   padding: 32px 20px;
   border-radius: v.$radius-lg;
-  border: 1px dashed rgba(v.$glow, 0.25);
+  border: 1px dashed rgb(#{v.$glow-rgb} / 0.25);
   color: v.$text-muted;
   text-align: center;
 }

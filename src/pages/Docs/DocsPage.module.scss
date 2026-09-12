@@ -5,9 +5,9 @@
   padding: 20px 16px 44px;
 
   background:
-    radial-gradient(1200px 700px at 15% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
-    radial-gradient(900px 500px at 85% 18%, rgba(120, 170, 255, 0.10), transparent 55%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
+    radial-gradient(1200px 700px at 15% 20%, rgb(#{v.$glow-rgb} / 0.10), transparent 55%),
+    radial-gradient(900px 500px at 85% 18%, rgb(#{v.$accent-blue-rgb} / 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }
 
 .shell {
@@ -31,7 +31,7 @@
 .sidebarHeader {
   padding: 10px 10px 12px;
   border-radius: v.$radius-md;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgb(#{v.$fg-rgb} / 0.04);
   border: 1px solid v.$border;
   margin-bottom: 12px;
 }
@@ -65,7 +65,7 @@
 
 .categoryBtn {
   border: 1px solid v.$border;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(#{v.$fg-rgb} / 0.03);
   color: v.$text-muted;
   padding: 8px 10px;
   border-radius: v.$radius-round;
@@ -74,15 +74,15 @@
 
   &:hover {
     transform: translateY(-1px);
-    border-color: rgba(v.$accent-primary, 0.25);
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
     color: v.$text-main;
   }
 }
 
 .active {
-  border-color: rgba(v.$accent-secondary, 0.55);
-  color: rgba(v.$accent-secondary, 0.95);
-  background: rgba(v.$accent-secondary, 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
+  color: rgb(#{v.$accent-secondary-rgb} / 0.95);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
 }
 
 .lessonNav {
@@ -96,20 +96,20 @@
   text-decoration: none;
   border-radius: v.$radius-md;
   border: 1px solid v.$border;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(#{v.$fg-rgb} / 0.03);
   padding: 12px 12px;
   transition: transform v.$tr-base, border-color v.$tr-base, background v.$tr-base;
 
   &:hover {
     transform: translateY(-1px);
-    border-color: rgba(v.$accent-primary, 0.25);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
+    background: rgb(#{v.$fg-rgb} / 0.05);
   }
 }
 
 .lessonLinkActive {
-  border-color: rgba(v.$accent-secondary, 0.55);
-  background: rgba(v.$accent-secondary, 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
 }
 
 .lessonLinkTitle {
@@ -138,7 +138,7 @@
 .contentHeader {
   padding: 12px 12px 14px;
   border-radius: v.$radius-md;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgb(#{v.$fg-rgb} / 0.04);
   border: 1px solid v.$border;
   margin-bottom: 12px;
 }
@@ -162,7 +162,7 @@
 .card {
   border-radius: v.$radius-lg;
   border: 1px solid v.$border;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(#{v.$fg-rgb} / 0.03);
   padding: 16px;
 }
 
@@ -188,7 +188,7 @@
 .codeBlock {
   border-radius: v.$radius-md;
   border: 1px solid v.$border;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(#{v.$fg-rgb} / 0.03);
   overflow: hidden;
 }
 
@@ -221,7 +221,7 @@
     padding: 2px 6px;
     border-radius: 8px;
     border: 1px solid v.$border;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgb(#{v.$fg-rgb} / 0.04);
     color: v.$text-main;
   }
 }

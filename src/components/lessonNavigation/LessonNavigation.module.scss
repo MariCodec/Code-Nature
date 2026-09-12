@@ -11,11 +11,11 @@
 .completeButton {
 background: linear-gradient(
   90deg,
-  rgba(45, 200, 163, 0.55),  
-  rgba(86, 200, 157, 0.15) 
+  rgb(#{v.$accent-secondary-rgb} / 0.55),  
+  rgb(#{v.$accent-secondary-rgb} / 0.15) 
 );
 
-  border: 1px solid rgba(v.$accent-primary, 0.35);
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.35);
   padding: 10px 15px;
   cursor: pointer;
   color: v.$text-main;
@@ -24,7 +24,7 @@ background: linear-gradient(
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 25px rgba(v.$accent-primary, 0.18);
+    box-shadow: 0 0 25px rgb(#{v.$accent-primary-rgb} / 0.18);
   }
 
   &:disabled {
@@ -52,8 +52,8 @@ background: linear-gradient(
 }
 
 .accent {
-  background: linear-gradient(90deg, rgba(45, 200, 163, 0.9), rgba(127, 230, 255, 0.55));
-  border-color: rgba(v.$accent-primary, 0.7);
+  background: linear-gradient(90deg, rgb(#{v.$accent-secondary-rgb} / 0.9), rgb(#{v.$accent-primary-rgb} / 0.55));
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.7);
   font-weight: 600;
-  box-shadow: 0 0 22px rgba(v.$accent-primary, 0.22);
+  box-shadow: 0 0 22px rgb(#{v.$accent-primary-rgb} / 0.22);
 }

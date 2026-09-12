@@ -8,9 +8,9 @@
   padding: 28px 16px 44px;
 
   background:
-    radial-gradient(1200px 700px at 15% 20%, rgba(120, 255, 234, 0.10), transparent 55%),
-    radial-gradient(900px 500px at 85% 18%, rgba(120, 170, 255, 0.10), transparent 55%),
-    linear-gradient(180deg, v.$bg-main, #070a12);
+    radial-gradient(1200px 700px at 15% 20%, rgb(#{v.$glow-rgb} / 0.10), transparent 55%),
+    radial-gradient(900px 500px at 85% 18%, rgb(#{v.$accent-blue-rgb} / 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }
 
 /* center card */
@@ -38,7 +38,7 @@
   font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(v.$accent-primary, 0.78);
+  color: rgb(#{v.$accent-primary-rgb} / 0.78);
   text-align: left;
 }
 
@@ -60,9 +60,9 @@
   justify-content: center;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid rgba(v.$glow-strong, 0.36);
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.36);
   border-radius: v.$radius-md;
-  background: rgba(10, 14, 25, 0.42);
+  background: rgb(#{v.$surface-rgb} / 0.42);
   color: v.$text-main;
   font-size: 0.95rem;
   font-weight: 700;
@@ -79,7 +79,7 @@
 .backLink:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  border-color: rgba(v.$accent-primary, 0.5);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.5);
 }
 
 .lessonCardContainer {
@@ -119,8 +119,8 @@
   border-radius: v.$radius-md;
   border: 1px solid v.$border;
 
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  background: rgb(#{v.$fg-rgb} / 0.04);
+  box-shadow: 0 14px 30px rgb(#{v.$shadow-rgb} / 0.35);
 
   display: flex;
   flex-direction: column;
@@ -133,15 +133,15 @@
 
 .lessonCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(v.$accent-primary, 0.25);
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
+  box-shadow: 0 20px 55px rgb(#{v.$shadow-rgb} / 0.55);
 }
 
 .lessonCardTitle {
   font-size: 20px;
   font-weight: 900;
   margin: 0 0 8px;
-  color: rgba(v.$accent-primary, 0.95);
+  color: rgb(#{v.$accent-primary-rgb} / 0.95);
 }
 
 .lessonCard p {
@@ -151,27 +151,27 @@
 }
 
 .completedCard {
-  border-color: rgba(v.$accent-secondary, 0.55);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
   background: linear-gradient(
     135deg,
-    rgba(v.$accent-secondary, 0.14),
-    rgba(255, 255, 255, 0.03)
+    rgb(#{v.$accent-secondary-rgb} / 0.14),
+    rgb(#{v.$fg-rgb} / 0.03)
   );
 }
 
 .techCheckCard {
   min-height: 138px;
   margin-top: 14px;
-  border-color: rgba(v.$accent-primary, 0.34);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.34);
   background:
-    linear-gradient(135deg, rgba(v.$accent-primary, 0.12), rgba(120, 170, 255, 0.07)),
-    rgba(255, 255, 255, 0.035);
+    linear-gradient(135deg, rgb(#{v.$accent-primary-rgb} / 0.12), rgb(#{v.$accent-blue-rgb} / 0.07)),
+    rgb(#{v.$fg-rgb} / 0.035);
 }
 
 .techCheckLabel {
   display: inline-flex;
   margin-bottom: 8px;
-  color: rgba(v.$accent-primary, 0.86);
+  color: rgb(#{v.$accent-primary-rgb} / 0.86);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -188,7 +188,7 @@
 }
 
 .completedText {
-  color: rgba(v.$accent-secondary, 0.95);
+  color: rgb(#{v.$accent-secondary-rgb} / 0.95);
   font-weight: 900;
 }
 

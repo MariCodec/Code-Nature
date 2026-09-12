@@ -47,7 +47,7 @@
   font-weight: 750;
 
   color: v.$text-muted;
-  background: rgba(v.$text-main, 0.05);
+  background: rgb(#{v.$text-main-rgb} / 0.05);
   border: 1px solid v.$border;
 }
 
@@ -71,18 +71,18 @@
   padding: 12px;
   border-radius: v.$radius-md;
 
-  background: rgba(v.$text-main, 0.04);
+  background: rgb(#{v.$text-main-rgb} / 0.04);
   border: 1px solid v.$border;
 
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 22px rgb(#{v.$shadow-rgb} / 0.18);
 
   transition: transform v.$tr-fast, box-shadow v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast, opacity v.$tr-fast;
 }
 
 .taskItem:hover {
   transform: translateY(-1px);
-  border-color: rgba(v.$accent-primary, 0.25);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
+  box-shadow: 0 16px 34px rgb(#{v.$shadow-rgb} / 0.28);
 }
 
 .left {
@@ -105,7 +105,7 @@
   line-height: 1;
 
   color: v.$text-muted;
-  background: rgba(v.$text-main, 0.04);
+  background: rgb(#{v.$text-main-rgb} / 0.04);
   border: 1px solid v.$border;
 }
 
@@ -138,20 +138,20 @@
   font-weight: 900;
 
   color: v.$text-main;
-  background: rgba(v.$accent-secondary, 0.14);
-  border: 1px solid rgba(v.$accent-secondary, 0.28);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.14);
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.28);
 }
 
 /* ---------- ACTIVE ---------- */
 .active {
-  background: rgba(v.$accent-secondary, 0.10);
-  border-color: rgba(v.$accent-secondary, 0.28);
-  box-shadow: 0 16px 34px rgba(v.$accent-secondary, 0.12);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.28);
+  box-shadow: 0 16px 34px rgb(#{v.$accent-secondary-rgb} / 0.12);
 }
 
 .active .index {
-  background: rgba(v.$accent-secondary, 0.14);
-  border-color: rgba(v.$accent-secondary, 0.30);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.14);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.30);
   color: v.$glow-strong;
 }
 
@@ -171,22 +171,22 @@
 /* ---------- COMPLETED ---------- */
 .completed {
   opacity: 0.9;
- border-color: rgba(v.$accent-secondary, 0.55);
+ border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
   background: linear-gradient(
     135deg,
-    rgba(v.$accent-secondary, 0.14),
-    rgba(255, 255, 255, 0.03)
+    rgb(#{v.$accent-secondary-rgb} / 0.14),
+    rgb(#{v.$fg-rgb} / 0.03)
   );
 }
 
 .completed .text {
-  color: rgba(v.$text-main, 0.5);
+  color: rgb(#{v.$text-main-rgb} / 0.5);
 }
 
 .completed .index {
-  background: rgba(v.$accent-secondary, 0.10);
-  border-color: rgba(v.$accent-secondary, 0.22);
-  color: rgba(v.$glow-strong, 0.9);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.22);
+  color: rgb(#{v.$glow-strong-rgb} / 0.9);
 }
 
 /* ---------- DISABLED ---------- */
@@ -197,7 +197,7 @@
 
 .disabled:hover {
   transform: none;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 22px rgb(#{v.$shadow-rgb} / 0.18);
 }
 
 /* ---------- Check pop ---------- */

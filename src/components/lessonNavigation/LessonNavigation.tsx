@@ -16,6 +16,7 @@ import {
   buildStudentTechCheckPath,
 } from "../../utils/courseMapping";
 import { useModuleProgression } from "../../hooks/useModuleProgression";
+import { uk } from "../../i18n/uk";
 import {
   getNextStep,
   getPreviousItem,
@@ -84,8 +85,8 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
     switch (nextStep.kind) {
       case "lesson":
         return {
-          label: "Наступний урок",
-          hint: isCurrentDone ? undefined : "Заверши поточний урок, щоб рухатись далі",
+          label: uk.lessonNav.nextLesson,
+          hint: isCurrentDone ? undefined : uk.lessonNav.finishCurrentFirst,
           disabled: !isCurrentDone,
           accent: false,
           onClick: () => navigate(pathForItem(nextStep.item)),
@@ -93,8 +94,8 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
 
       case "tech-check":
         return {
-          label: "Пройти перевірку модуля",
-          hint: "Усі уроки модуля пройдені",
+          label: uk.lessonNav.goToTechCheck,
+          hint: uk.lessonNav.allLessonsDone,
           disabled: false,
           accent: true,
           onClick: () => navigate(pathForItem(nextStep.item)),
@@ -102,10 +103,8 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
 
       case "tech-check-locked":
         return {
-          label: "Перевірка модуля",
-          hint: `Ще ${nextStep.remaining} ${
-            nextStep.remaining === 1 ? "урок" : "уроки"
-          } до перевірки`,
+          label: uk.lessonNav.techCheckLocked,
+          hint: uk.lessonNav.lessonsLeft(nextStep.remaining),
           disabled: true,
           accent: false,
         };
@@ -113,30 +112,30 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
       case "module-complete":
         if (!state.isModuleComplete) {
           return {
-            label: "Завершити перевірку",
-            hint: "Виконай усі завдання перевірки",
+            label: uk.lessonNav.finishTechCheck,
+            hint: uk.lessonNav.finishTechCheckHint,
             disabled: true,
             accent: false,
           };
         }
         return nextModule
           ? {
-              label: "Наступний модуль",
+              label: uk.lessonNav.nextModule,
               hint: nextModule.title,
               disabled: false,
               accent: true,
               onClick: () => navigate(`/student/courses/${courseId}`),
             }
           : {
-              label: "Курс завершено",
-              hint: "Обрати наступний курс",
+              label: uk.lessonNav.courseDone,
+              hint: uk.lessonNav.pickNextCourse,
               disabled: false,
               accent: true,
               onClick: () => navigate("/student/learning"),
             };
 
       default:
-        return { label: "Наступний урок", disabled: true, accent: false };
+        return { label: uk.lessonNav.nextLesson, disabled: true, accent: false };
     }
   };
 
@@ -149,7 +148,7 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
         disabled={!previousItem}
         className={styles.navButton}
       >
-        Попередній урок
+        {uk.lessonNav.previous}
       </button>
 
       <button

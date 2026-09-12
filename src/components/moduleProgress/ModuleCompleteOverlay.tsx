@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./ModuleCompleteOverlay.module.scss";
+import { uk } from "../../i18n/uk";
 
 type ModuleCompleteOverlayProps = {
   moduleTitle: string;
@@ -24,34 +25,36 @@ const ModuleCompleteOverlay: React.FC<ModuleCompleteOverlayProps> = ({
   onNext,
   onDismiss,
 }) => (
-  <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label="Модуль пройдено">
+  <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label={uk.moduleSummary.eyebrow}>
     <section className={styles.card}>
-      <p className={styles.eyebrow}>Модуль пройдено</p>
+      <p className={styles.eyebrow}>{uk.moduleSummary.eyebrow}</p>
       <h2 className={styles.title}>{moduleTitle}</h2>
 
       <p className={styles.lead}>
         {hasTechCheck
-          ? "Ти не просто пройшов уроки, а склав перевірку — тобто зібрав рішення самостійно."
-          : "Усі уроки модуля пройдені."}
+          ? uk.moduleSummary.withTechCheck
+          : uk.moduleSummary.withoutTechCheck}
       </p>
 
       <dl className={styles.stats}>
         <div className={styles.stat}>
-          <dt>Уроків пройдено</dt>
+          <dt>{uk.moduleSummary.lessonsDone}</dt>
           <dd>{lessonsCount}</dd>
         </div>
         <div className={styles.stat}>
-          <dt>Перевірка модуля</dt>
-          <dd>{hasTechCheck ? "складена" : "не потрібна"}</dd>
+          <dt>{uk.moduleSummary.techCheckLabel}</dt>
+          <dd>{hasTechCheck ? uk.moduleSummary.techCheckPassed : uk.moduleSummary.techCheckNone}</dd>
         </div>
       </dl>
 
       <div className={styles.actions}>
         <button type="button" className={styles.primary} onClick={onNext}>
-          {nextModuleTitle ? `Далі: ${nextModuleTitle}` : "До списку курсів"}
+          {nextModuleTitle
+            ? uk.moduleSummary.next(nextModuleTitle)
+            : uk.moduleSummary.toCourses}
         </button>
         <button type="button" className={styles.secondary} onClick={onDismiss}>
-          Лишитись тут
+          {uk.moduleSummary.stay}
         </button>
       </div>
     </section>

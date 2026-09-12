@@ -1,67 +1,200 @@
 // ==============================
-// Backgrounds & surfaces
+// Дизайн-токени
+//
+// Кольори живуть як CSS custom properties — тільки так їх можна перемкнути
+// в рантаймі. SCSS-змінні нижче лишаються як посилання на токени, щоб усі
+// наявні файли стилів працювали без правок.
+//
+// Не-кольори (радіуси, відступи, переходи, шрифти) лишаються звичайними
+// SCSS-змінними: від теми вони не залежать, тож рахувати їх у рантаймі нема сенсу.
 // ==============================
-$bg-main: #0b1020;                 // основний фон
-$bg-surface: #1e1e2e;              // картки, панелі, editor
-$panel: rgba(255, 255, 255, 0.04); // напівпрозорі блоки
-$border: rgba(255, 255, 255, 0.08);
-$black-a30: rgba(0, 0, 0, 0.3);
-// Background glow (soft)
-$glow-soft: rgba(120, 255, 234, 0.10);
-$blue-soft: rgba(120, 170, 255, 0.10);
-$bg-deep: #070a12;
-$bg-300: #2c2f3e;
-// ==============================
-// Text
-// ==============================
-$text-main: #ffffff;
-$text-muted: rgba(255, 255, 255, 0.65);
-$text-dark: #262c29;               // для світлих областей (iframe/output)
+
+:root {
+  // Поверхні
+  --bg-main: #0b1020;
+  --bg-deep: #070a12;
+  --bg-surface: #1e1e2e;
+  --bg-300: #2c2f3e;
+  --panel: rgb(255 255 255 / 0.04);
+  --border: rgb(255 255 255 / 0.08);
+  --black-a30: rgb(0 0 0 / 0.3);
+  --glow-soft: rgb(120 255 234 / 0.1);
+  --blue-soft: rgb(120 170 255 / 0.1);
+
+  // Текст
+  --text-main: #ffffff;
+  --text-muted: rgb(255 255 255 / 0.65);
+  --text-dark: #262c29; // для світлих областей (iframe/output)
+
+  // Акценти
+  --accent-primary: #7fe6ff;
+  --accent-secondary: #1f9d72;
+  --glow: rgb(120 255 234 / 0.35);
+  --glow-strong: rgb(120 255 234 / 0.95);
+
+  // Стани
+  --danger: #ff4d5a;
+  --danger-bg: rgb(255 70 90 / 0.1);
+  --danger-bg-strong: rgb(255 70 90 / 0.25);
+  --success: #37c784;
+
+  // Тіні
+  --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.5);
+  --shadow-card: 0 14px 30px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.08) inset;
+  --shadow-focus: 0 0 0 4px rgb(120 255 234 / 0.12), 0 10px 20px rgb(0 0 0 / 0.25);
+
+  // ==============================
+  // Трійки каналів.
+  //
+  // Потрібні там, де колір використовується з прозорістю: SCSS-функція rgba()
+  // працює під час збірки й не вміє рахувати від var(), який побачить лише браузер.
+  // Тому прозорість задається вже в CSS: rgb(var(--x-rgb) / 0.35).
+  // ==============================
+  // Поверхні списків: сторінка → картка → рядок
+  --surface-card: #141b2d;
+  --surface-row: #1b2338;
+  --surface-row-hover: #232d49;
+  --border-strong: rgb(255 255 255 / 0.18);
+  --text-dimmer: rgb(255 255 255 / 0.48);
+  --state-done: #4ec38a;
+  --state-bad: #ff6b78;
+
+  // Канал переднього плану: усі підсвітки, рамки й напівпрозорі поверхні
+  // будуються від нього, тож у світлій темі інвертуються самі.
+  --fg-rgb: 255 255 255;
+  --shadow-rgb: 0 0 0;
+  // Канал панелі: усі напівпрозорі підкладки будуються від нього.
+  // Раніше тут було чотири різні темні відтінки — палітра просто розповзлась.
+  --surface-rgb: 10 14 25;
+
+  --accent-primary-rgb: 127 230 255;
+  --accent-secondary-rgb: 31 157 114;
+  --accent-blue-rgb: 120 170 255;
+  --glow-rgb: 120 255 234;
+  --glow-strong-rgb: 120 255 234;
+  --text-main-rgb: 255 255 255;
+  --danger-rgb: 255 77 90;
+}
 
 // ==============================
-// Accent colors
+// Світла тема.
+//
+// Стартовий набір, не витриманий дизайн: підібраний так, щоб контраст був
+// достатній і механізм було видно. Палітру ще належить довести — окремим кроком.
+//
+// Preview учня темі НЕ підкоряється: сторінка, яку він зібрав, завжди рендериться
+// на білому, як у справжньому браузері. Див. PLATFORM_UA, розділ 4.
 // ==============================
-$accent-primary: #7fe6ff;           // основний блакитний (CTA, hover)
-$accent-secondary: #1f9d72;         // бірюзовий / success-подібний
+:root[data-theme="light"] {
+  --bg-main: #f5f7fb;
+  --bg-deep: #e9edf6;
+  --bg-surface: #ffffff;
+  --bg-300: #dde3ef;
+  --panel: rgb(14 20 36 / 0.03);
+  --border: rgb(14 20 36 / 0.12);
+  --black-a30: rgb(14 20 36 / 0.08);
+  --glow-soft: rgb(10 126 164 / 0.08);
+  --blue-soft: rgb(60 110 200 / 0.08);
 
-// Glow / focus
-$glow: rgba(120, 255, 234, 0.35);
-$glow-strong: rgba(120, 255, 234, 0.95);
+  --text-main: #0e1424;
+  --text-muted: rgb(14 20 36 / 0.66);
+
+  --accent-primary: #0a7ea4;
+  --accent-secondary: #12795a;
+  --glow: rgb(10 126 164 / 0.28);
+  --glow-strong: rgb(10 126 164 / 0.85);
+
+  --danger: #c62b3c;
+  --danger-bg: rgb(198 43 60 / 0.08);
+  --danger-bg-strong: rgb(198 43 60 / 0.18);
+  --success: #14855a;
+
+  --shadow-soft: 0 6px 20px rgb(14 20 36 / 0.1);
+  --shadow-card: 0 10px 24px rgb(14 20 36 / 0.08), 0 0 0 1px rgb(14 20 36 / 0.06) inset;
+  --shadow-focus: 0 0 0 4px rgb(10 126 164 / 0.14), 0 10px 20px rgb(14 20 36 / 0.1);
+
+  --surface-card: #ffffff;
+  --surface-row: #f2f5fa;
+  --surface-row-hover: #e7ecf6;
+  --border-strong: rgb(14 20 36 / 0.2);
+  --text-dimmer: rgb(14 20 36 / 0.5);
+  --state-done: #12795a;
+  --state-bad: #c62b3c;
+
+  --fg-rgb: 14 20 36;
+  --shadow-rgb: 14 20 36;
+  --surface-rgb: 255 255 255;
+
+  --accent-primary-rgb: 10 126 164;
+  --accent-secondary-rgb: 18 121 90;
+  --accent-blue-rgb: 52 96 190;
+  --glow-rgb: 10 126 164;
+  --glow-strong-rgb: 10 126 164;
+  --text-main-rgb: 14 20 36;
+  --danger-rgb: 198 43 60;
+}
 
 // ==============================
-// States
+// Посилання на токени
 // ==============================
-$danger: #ff4d5a;
-$danger-bg: rgba(255, 70, 90, 0.10);
-$danger-bg-strong: rgba(255, 70, 90, 0.25);
+$bg-main: var(--bg-main);
+$bg-deep: var(--bg-deep);
+$bg-surface: var(--bg-surface);
+$bg-300: var(--bg-300);
+$panel: var(--panel);
+$border: var(--border);
+$black-a30: var(--black-a30);
+$glow-soft: var(--glow-soft);
+$blue-soft: var(--blue-soft);
 
-$success: #37c784;
+$text-main: var(--text-main);
+$text-muted: var(--text-muted);
+$text-dark: var(--text-dark);
+
+$accent-primary: var(--accent-primary);
+$accent-secondary: var(--accent-secondary);
+$glow: var(--glow);
+$glow-strong: var(--glow-strong);
+
+$danger: var(--danger);
+$danger-bg: var(--danger-bg);
+$danger-bg-strong: var(--danger-bg-strong);
+$success: var(--success);
+
+$surface-card: var(--surface-card);
+$surface-row: var(--surface-row);
+$surface-row-hover: var(--surface-row-hover);
+$border-strong: var(--border-strong);
+$text-dimmer: var(--text-dimmer);
+$state-done: var(--state-done);
+$state-bad: var(--state-bad);
+
+$shadow-soft: var(--shadow-soft);
+$shadow-card: var(--shadow-card);
+$shadow-focus: var(--shadow-focus);
+
+// Трійки — для використання з прозорістю
+$accent-primary-rgb: var(--accent-primary-rgb);
+$accent-secondary-rgb: var(--accent-secondary-rgb);
+$glow-rgb: var(--glow-rgb);
+$glow-strong-rgb: var(--glow-strong-rgb);
+$text-main-rgb: var(--text-main-rgb);
+$fg-rgb: var(--fg-rgb);
+$surface-rgb: var(--surface-rgb);
+$shadow-rgb: var(--shadow-rgb);
+$accent-blue-rgb: var(--accent-blue-rgb);
+$danger-rgb: var(--danger-rgb);
 
 // ==============================
-// Shadows
-// ==============================
-$shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.5);
-$shadow-card: 0 14px 30px rgba(0, 0, 0, 0.35),
-              0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-$shadow-focus: 0 0 0 4px rgba(120, 255, 234, 0.12),
-               0 10px 20px rgba(0, 0, 0, 0.25);
-
-// ==============================
-// Radii
+// Не залежить від теми
 // ==============================
 $radius-sm: 8px;
 $radius-md: 12px;
 $radius-lg: 16px;
 $radius-round: 999px;
 
-// ==============================
-// Fonts
-// ==============================
 $font-main: "Inter", sans-serif;
 $font-code: "Fira Code", monospace;
 
-// ==============================
-// Transitions
-// ==============================
 $tr-fast: 0.12s ease;
 $tr-base: 0.25s ease;

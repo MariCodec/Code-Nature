@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkQuizAnswer,
-  describeVerdict,
+  getFeedbackKey,
   getQuizProgress,
   getSelectionMode,
   isPracticeUnlocked,
@@ -71,11 +71,10 @@ describe("getSelectionMode", () => {
   });
 });
 
-describe("describeVerdict", () => {
-  it("для одиночного вибору не каже «зайвий»", () => {
-    expect(describeVerdict({ correct: false, reason: "extra" }, "single")).toBe(
-      "Це не та відповідь.",
-    );
+describe("getFeedbackKey", () => {
+  it("одиночний і множинний вибір дають різні підказки", () => {
+    expect(getFeedbackKey({ correct: false, reason: "extra" }, "single")).toBe("extraSingle");
+    expect(getFeedbackKey({ correct: false, reason: "extra" }, "multiple")).toBe("extraMultiple");
   });
 });
 
