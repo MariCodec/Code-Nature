@@ -6,6 +6,7 @@ import {
 } from "../../api/authApi";
 import {
   clearSession,
+  markSessionResolved,
   setAuthError,
   setAuthStatus,
   setSession,
@@ -62,16 +63,22 @@ export const loadSession = createAsyncThunk(
     dispatch(setAuthStatus("loading"));
     dispatch(setAuthError(null));
 
-    const session = await authApi.loadSession();
+    try {
+      const session = await authApi.loadSession();
 
-    if (session) {
-      dispatch(setSession(session));
-      // setSession вже ставить status "succeeded"
-      return session;
+      if (session) {
+        dispatch(setSession(session));
+        // setSession вже ставить status "succeeded"
+        return session;
+      }
+
+      dispatch(setAuthStatus("idle"));
+      return null;
+    } finally {
+      // Саме `finally`: якщо читання сесії впало, відповідь усе одно має зʼявитись.
+      // Інакше гвард лишиться в стані «ще не знаємо» назавжди і покаже порожнечу.
+      dispatch(markSessionResolved());
     }
-
-    dispatch(setAuthStatus("idle"));
-    return null;
   },
 );
 

@@ -20,6 +20,15 @@ export type AuthState = {
   tokens: AuthTokens | null;
   status: AuthStatus;
   error: string | null;
+  /**
+   * Чи ми вже питали сховище про сесію. Це не те саме, що `status`: той описує
+   * останній запит входу, а це — чи взагалі відома відповідь на питання «хто це».
+   *
+   * Без цього прапорця гвард на першому рендері бачить `user: null` і не може
+   * зрозуміти, це «сесії немає» чи «ще не встигли підняти» — і викидає на /login
+   * при кожному F5.
+   */
+  isSessionResolved: boolean;
 };
 
 const initialState: AuthState = {
@@ -27,6 +36,7 @@ const initialState: AuthState = {
   tokens: null,
   status: "idle",
   error: null,
+  isSessionResolved: false,
 };
 
 type SessionPayload = {
@@ -43,12 +53,19 @@ export const authSlice = createSlice({
       state.tokens = action.payload.tokens;
       state.status = "succeeded";
       state.error = null;
+      state.isSessionResolved = true;
     },
     clearSession: (state) => {
       state.user = null;
       state.tokens = null;
       state.status = "idle";
       state.error = null;
+      // Після виходу відповідь відома: сесії немає. Скидати прапорець не можна —
+      // інакше застосунок знову вирішить, що ще не знає, і зависне.
+      state.isSessionResolved = true;
+    },
+    markSessionResolved: (state) => {
+      state.isSessionResolved = true;
     },
     setAuthStatus: (state, action: PayloadAction<AuthStatus>) => {
       state.status = action.payload;
@@ -59,8 +76,13 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setSession, clearSession, setAuthStatus, setAuthError } =
-  authSlice.actions;
+export const {
+  setSession,
+  clearSession,
+  markSessionResolved,
+  setAuthStatus,
+  setAuthError,
+} = authSlice.actions;
 
 export default authSlice.reducer;
 
@@ -69,5 +91,7 @@ export const selectAuthUser = (state: RootState) => state.auth.user;
 export const selectAuthTokens = (state: RootState) => state.auth.tokens;
 export const selectIsAuthenticated = (state: RootState) => Boolean(state.auth.user);
 export const selectAuthStatus = (state: RootState) => state.auth.status;
+export const selectIsSessionResolved = (state: RootState) =>
+  state.auth.isSessionResolved;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectAuthRole = (state: RootState) => state.auth.user?.role ?? null;

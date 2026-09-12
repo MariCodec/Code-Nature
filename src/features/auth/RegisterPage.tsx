@@ -8,6 +8,7 @@ import {
   selectAuthRole,
   selectAuthStatus,
   selectIsAuthenticated,
+  selectIsSessionResolved,
 } from "../../store/slices/authSlice";
 
 import styles from "./RegisterPage.module.scss";
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
+  const isSessionResolved = useSelector(selectIsSessionResolved);
   const isAuth = useSelector(selectIsAuthenticated);
   const role = useSelector(selectAuthRole);
   const status = useSelector(selectAuthStatus);
@@ -25,6 +27,10 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState<"student" | "teacher">("student");
+
+  // Та сама причина, що й у AuthGuard: до відповіді про сесію форму показувати
+  // не можна — інакше залогінений користувач на F5 бачить спалах форми входу.
+  if (!isSessionResolved) return null;
 
   if (isAuth) return <Navigate to={role === "teacher" ? "/teacher" : "/student"} replace />;
 

@@ -23,6 +23,7 @@ import {
 import { saveUserData } from "../../store/thunks/syncThunks";
 import {
   markLessonVideoAsWatched,
+  selectIsProgressHydrated,
   setCurrentLesson,
 } from "../../store/slices/progressSlice";
 import type { LessonVideoDTO } from "../../types/content";
@@ -290,6 +291,7 @@ const LessonPage = () => {
   const lessonStatus = useSelector((state: RootState) =>
     id ? selectLessonStatus(state, id) : "idle",
   );
+  const isProgressHydrated = useSelector(selectIsProgressHydrated);
   const videoStatus = useSelector((state: RootState) => state.progress.videoStatus);
   const taskStatus = useSelector((state: RootState) => state.progress.taskStatus);
   const contentError = useSelector(selectContentError);
@@ -323,10 +325,14 @@ const LessonPage = () => {
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (!id) return;
+    // Чекаємо на гідратацію, і не лише заради збереження: `hydrateProgress`
+    // замінює весь стан прогресу цілим обʼєктом, тож `setCurrentLesson`,
+    // зроблений до неї, був би затертий — і «продовжити навчання» вказувало б
+    // на попередній урок після відкриття прямого посилання.
+    if (!id || !isProgressHydrated) return;
     dispatch(setCurrentLesson(id));
     void dispatch(saveUserData());
-  }, [dispatch, id]);
+  }, [dispatch, id, isProgressHydrated]);
 
   useEffect(() => {
     setIsPracticeStarted(false);

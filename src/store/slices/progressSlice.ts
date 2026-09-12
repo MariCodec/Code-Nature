@@ -12,7 +12,18 @@ interface ProgressState {
       [taskId: string]: boolean;
     };
   };
+  /**
+   * Чи цей стан відповідає збереженому для поточного користувача.
+   *
+   * Поки `false`, зберігати не можна: порожній стартовий стан ляже поверх
+   * реального прогресу. Саме це й ставалось, коли сторінка уроку на монтуванні
+   * зберігала дані, не дочекавшись `loadUserData`.
+   */
+  isHydrated: boolean;
 }
+
+/** Те, що приходить зі сховища: без службового прапорця. */
+export type HydratedProgress = Omit<ProgressState, "isHydrated">;
 
 const initialState: ProgressState = {
   completedLessons: [],
@@ -20,6 +31,7 @@ const initialState: ProgressState = {
   lastActivityAt: null,
   videoStatus: {},
   taskStatus: {}, // { "lesson-1": { "task-1": true, "task-2": false }, ... }
+  isHydrated: false,
 };
 
 const touchProgressState = (state: ProgressState) => {
@@ -77,9 +89,14 @@ const progressSlice = createSlice({
       state.lastActivityAt = null;
       state.videoStatus = {};
       state.taskStatus = {};
+      // Після виходу це вже не чийсь прогрес, а порожнеча: зберігати її нікуди.
+      state.isHydrated = false;
     },
-    hydrateProgress: (_state, action: PayloadAction<ProgressState>) => {
-      return action.payload;
+    hydrateProgress: (_state, action: PayloadAction<HydratedProgress>) => {
+      return { ...action.payload, isHydrated: true };
+    },
+    setProgressHydrated: (state, action: PayloadAction<boolean>) => {
+      state.isHydrated = action.payload;
     },
   },
 });
@@ -92,8 +109,11 @@ export const {
   markTaskAsCompleted,
   resetProgress,
   resetTasksForLesson,
+  setProgressHydrated,
   touchProgress,
 } = progressSlice.actions;
 export const selectTaskStatus = (state: RootState, lessonId: string) =>
   state.progress.taskStatus[lessonId] || {};
+export const selectIsProgressHydrated = (state: RootState) =>
+  state.progress.isHydrated;
 export default progressSlice.reducer;

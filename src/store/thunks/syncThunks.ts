@@ -7,30 +7,8 @@ import type {
 } from "../../types/content";
 import { RootState } from "../index";
 import { hydrateUserCode } from "../slices/userCodeSlice";
-import { hydrateProgress } from "../slices/progressSlice";
-
-const buildLessonCourseMap = (state: RootState): Record<string, string> => {
-  const fromLessonDetails = Object.values(state.content.lessonById).reduce<
-    Record<string, string>
-  >((acc, lesson) => {
-    acc[lesson.id] = lesson.courseId;
-    return acc;
-  }, {});
-
-  const fromModuleLessonLists = Object.values(state.content.lessonsByModule).reduce<
-    Record<string, string>
-  >((acc, lessons) => {
-    lessons.forEach((lesson) => {
-      acc[lesson.id] = lesson.courseId;
-    });
-    return acc;
-  }, {});
-
-  return {
-    ...fromModuleLessonLists,
-    ...fromLessonDetails,
-  };
-};
+import { hydrateProgress, setProgressHydrated } from "../slices/progressSlice";
+import { buildLessonCourseMap } from "../../domain/lessonCourses";
 
 const toHydratedProgressState = (progress: StudentProgressRecord) => {
   const completedLessons = progress.lessonProgress
@@ -84,10 +62,19 @@ const toHydratedProgressState = (progress: StudentProgressRecord) => {
   };
 };
 
-const toPersistedProgressRecord = (state: RootState): StudentProgressRecord => {
+/**
+ * Прогрес без курсу не зберігається взагалі — див. розділ 6 PLATFORM_UA:
+ * `course_id` обовʼязковий, фолбеків немає. Якщо курс уроку зараз невідомий
+ * (контент ще не завантажився, а уроку немає й у збереженому), рядок просто
+ * не пишеться цього разу: наступне збереження додасть його вже з курсом.
+ * Вигадати `unknown_course` означало б зіпсувати дані замість відкласти запис.
+ */
+const toPersistedProgressRecord = (
+  state: RootState,
+  courseByLessonId: Record<string, string>,
+): StudentProgressRecord => {
   const progress = state.progress;
   const now = progress.lastActivityAt ?? new Date().toISOString();
-  const courseByLessonId = buildLessonCourseMap(state);
 
   const lessonIds = new Set<string>([
     ...progress.completedLessons,
@@ -95,52 +82,68 @@ const toPersistedProgressRecord = (state: RootState): StudentProgressRecord => {
     ...(progress.currentLessonId ? [progress.currentLessonId] : []),
   ]);
 
-  const lessonProgress: StudentLessonProgressDTO[] = Array.from(lessonIds).map(
+  const lessonProgress: StudentLessonProgressDTO[] = Array.from(lessonIds).flatMap(
     (lessonId) => {
+      const courseId = courseByLessonId[lessonId];
+      if (!courseId) return [];
+
       const hasCompletedTasks = Object.values(progress.taskStatus[lessonId] ?? {}).some(
         Boolean,
       );
       const isCompleted = progress.completedLessons.includes(lessonId);
 
-      return {
-        lessonId,
-        courseId: courseByLessonId[lessonId] ?? "unknown_course",
-        status: isCompleted
-          ? "completed"
-          : hasCompletedTasks || progress.currentLessonId === lessonId
-            ? "in_progress"
-            : "not_started",
-        startedAt: null,
-        completedAt: isCompleted ? now : null,
-        updatedAt: now,
-      };
+      return [
+        {
+          lessonId,
+          courseId,
+          status: isCompleted
+            ? "completed"
+            : hasCompletedTasks || progress.currentLessonId === lessonId
+              ? "in_progress"
+              : "not_started",
+          startedAt: null,
+          completedAt: isCompleted ? now : null,
+          updatedAt: now,
+        },
+      ];
     },
   );
 
   const taskProgress: StudentTaskProgressDTO[] = Object.entries(progress.taskStatus).flatMap(
-    ([lessonId, tasks]) =>
-      Object.entries(tasks)
+    ([lessonId, tasks]) => {
+      const courseId = courseByLessonId[lessonId];
+      if (!courseId) return [];
+
+      return Object.entries(tasks)
         .filter(([, isCompleted]) => isCompleted)
         .map(([taskId]) => ({
           lessonId,
           taskId,
-          courseId: courseByLessonId[lessonId] ?? "unknown_course",
+          courseId,
           isCompleted: true,
           completedAt: now,
           updatedAt: now,
-        })),
+        }));
+    },
   );
   const videoProgress: StudentVideoProgressDTO[] = Object.entries(
     progress.videoStatus,
   )
     .filter(([, isWatched]) => isWatched)
-    .map(([lessonId]) => ({
-      lessonId,
-      courseId: courseByLessonId[lessonId] ?? "unknown_course",
-      isWatched: true,
-      watchedAt: now,
-      updatedAt: now,
-    }));
+    .flatMap(([lessonId]) => {
+      const courseId = courseByLessonId[lessonId];
+      if (!courseId) return [];
+
+      return [
+        {
+          lessonId,
+          courseId,
+          isWatched: true,
+          watchedAt: now,
+          updatedAt: now,
+        },
+      ];
+    });
 
   return {
     currentLessonId: progress.currentLessonId,
@@ -157,23 +160,39 @@ export const loadUserData = createAsyncThunk(
     const user = state.auth.user;
 
     if (!user || user.role !== "student") {
+      // Піднімати нічого, але й затирати нічого: гість і викладач прогрес не зберігають.
+      dispatch(setProgressHydrated(true));
       return null;
     }
 
-    const [code, progress] = await Promise.all([
-      studentApi.loadMyCode(user.id),
-      studentApi.loadMyProgress(user.id),
-    ]);
+    // Поточний стан ще не належить цьому користувачеві — до кінця завантаження
+    // збереження заборонене.
+    dispatch(setProgressHydrated(false));
 
-    if (code) {
-      dispatch(hydrateUserCode(code));
+    try {
+      const [code, progress] = await Promise.all([
+        studentApi.loadMyCode(user.id),
+        studentApi.loadMyProgress(user.id),
+      ]);
+
+      if (code) {
+        dispatch(hydrateUserCode(code));
+      }
+
+      if (progress) {
+        dispatch(hydrateProgress(toHydratedProgressState(progress)));
+      }
+
+      // Збереженого прогресу могло не бути зовсім — це теж відповідь,
+      // і вона так само відкриває збереження.
+      dispatch(setProgressHydrated(true));
+
+      return { code, progress };
+    } catch (error) {
+      // Читання впало — зберігати не можна: порожній стан ліг би поверх уцілілого.
+      dispatch(setProgressHydrated(false));
+      throw error;
     }
-
-    if (progress) {
-      dispatch(hydrateProgress(toHydratedProgressState(progress)));
-    }
-
-    return { code, progress };
   },
 );
 
@@ -187,9 +206,32 @@ export const saveUserData = createAsyncThunk(
       return;
     }
 
+    // Головна охорона: поки збережений стан не піднято, цей — стартовий і порожній.
+    // Саме це знищувало прогрес, коли сторінка уроку зберігала дані на монтуванні,
+    // не дочекавшись `loadUserData`.
+    if (!state.progress.isHydrated) {
+      return;
+    }
+
+    const persistedProgress = await studentApi.loadMyProgress(user.id);
+    const courseByLessonId = buildLessonCourseMap({
+      saved: persistedProgress
+        ? [
+            ...persistedProgress.lessonProgress,
+            ...persistedProgress.taskProgress,
+            ...persistedProgress.videoProgress,
+          ]
+        : [],
+      lessonsByModule: state.content.lessonsByModule,
+      lessonById: state.content.lessonById,
+    });
+
     await Promise.all([
       studentApi.saveMyCode(user.id, state.userCode),
-      studentApi.saveMyProgress(user.id, toPersistedProgressRecord(state)),
+      studentApi.saveMyProgress(
+        user.id,
+        toPersistedProgressRecord(state, courseByLessonId),
+      ),
     ]);
   },
 );
