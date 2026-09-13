@@ -26,6 +26,9 @@ import {
 } from "../../store/slices/progressSlice";
 import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
+import type { TaskResult } from "../../domain/runner";
+import { getFirstFailureText } from "../../i18n/taskFailureText";
+import { uk } from "../../i18n/uk";
 import { isQuizRules } from "../../domain/techCheck";
 import { setupMonaco } from "../../utils/monacoSetup";
 import { saveUserData } from "../../store/thunks/syncThunks";
@@ -59,6 +62,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const passedTaskIds = useSelector((state: RootState) =>
     selectTaskStatus(state, lessonDto.id),
   );
+  const isVideoWatched = useSelector(
+    (state: RootState) => Boolean(state.progress.videoStatus[lessonDto.id]),
+  );
   const fallbackHtml = getInitialHtmlFromLessonFiles(lessonDto.files);
   const fallbackCss = getInitialCssFromLessonFiles(lessonDto.files);
   const effectiveSavedFiles =
@@ -88,6 +94,8 @@ const validateTimerRef = useRef<number | null>(null);
     css: currentCss,
   });
 const [htmlError, setHtmlError] = useState<string | null>(null);
+  // Що саме не зійшлося на останньому запуску. null — ще не запускали.
+  const [checkResults, setCheckResults] = useState<TaskResult[] | null>(null);
   const activeFile =
     currentFiles.find((file) => file.name === fileName) ?? currentFiles[0] ?? null;
 
@@ -178,6 +186,15 @@ const handleChange = (newValue: string | undefined) => {
 };
 
 
+  // Показуємо перше правило, яке не зійшлося у першому незарахованому завданні:
+  // список провалів одразу лякає, а сенс гранулярності саме в конкретиці.
+  const firstFailed = checkResults?.find((result) => !result.passed) ?? null;
+  const checkFeedback = !checkResults?.length
+    ? null
+    : firstFailed
+      ? { passed: false, text: getFirstFailureText(firstFailed.rules) ?? uk.taskCheck.notPassed }
+      : { passed: true, text: uk.taskCheck.allPassed };
+
   const handleRunCode = () => {
     setOutput({
       html: currentHtml,
@@ -188,14 +205,16 @@ const handleChange = (newValue: string | undefined) => {
     return;
   }
     dispatch(touchProgress());
-    checkLesson({
-      lessonId: lessonDto.id,
-      tasks: lessonDto.tasks,
-      userHtml: currentHtml,
-      userCss: currentCss,
-      passedTaskIds,
-      dispatch,
-    });
+    setCheckResults(
+      checkLesson({
+        lesson: lessonDto,
+        userHtml: currentHtml,
+        userCss: currentCss,
+        passedTaskIds,
+        isVideoWatched,
+        dispatch,
+      }),
+    );
     // Зберігаємо код у Redux як "збережений"
     dispatch(
       setLessonCode({
@@ -221,6 +240,7 @@ dispatch(saveUserData());
     );
     setOutput({ html: fallbackHtml, css: fallbackCss });
    setHtmlError(null);
+   setCheckResults(null);
 
    if (monaco && editorRef.current) {
      const model = editorRef.current.getModel();
@@ -302,6 +322,17 @@ dispatch(saveUserData());
             formatCode={formatCode}
             htmlError={htmlError}
           />
+
+          {checkFeedback && (
+            <p
+              className={`${styles.checkFeedback} ${
+                checkFeedback.passed ? styles.checkFeedbackOk : ""
+              }`}
+              role="status"
+            >
+              {checkFeedback.text}
+            </p>
+          )}
         </div>
 
         <div className={styles.resizer} onMouseDown={startResizing} />

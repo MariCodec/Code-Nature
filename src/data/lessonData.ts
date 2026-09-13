@@ -26,8 +26,9 @@ export const lessons: LessonsByCategory = {
           id: "task-1",
           text: "Створіть заголовок <h1> зеленого кольору",
           rules: {
-            htmlSelectors: [{ selector: "h1" }],
-            requireTextContains: [{ selector: "h1", text: "Привіт, HTML!" }],
+            kind: "dom",
+            selectors: [{ selector: "h1" }],
+            textContains: [{ selector: "h1", text: "Привіт, HTML!" }],
             cssChecks: [
               { selector: "h1", property: "color", value: "rgb(0, 128, 0)" },
             ],
@@ -37,7 +38,8 @@ export const lessons: LessonsByCategory = {
           id: "task-2",
           text: "Створіть заголовок <h1> зеленого кольору",
           rules: {
-            htmlSelectors: [{ selector: "h1" }],
+            kind: "dom",
+            selectors: [{ selector: "h1" }],
             cssChecks: [
               { selector: "h1", property: "color", value: "rgb(0, 128, 0)" },
             ],
@@ -69,7 +71,8 @@ export const lessons: LessonsByCategory = {
           id: "task-1",
           text: "Створіть заголовок <p> зеленого кольору",
           rules: {
-            htmlSelectors: [{ selector: "p" }],
+            kind: "dom",
+            selectors: [{ selector: "p" }],
           },
         },
       ],

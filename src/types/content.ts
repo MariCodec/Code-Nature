@@ -1,14 +1,18 @@
 import type { TaskRules } from "./lessonTypes";
 
-export type UserRole = "student" | "teacher";
+/** Роль завжди приходить із сервера. Enum повний з першого дня, навіть поки
+ * teacher і admin без функціоналу — див. PLATFORM_UA, розділ 2. */
+export type UserRole = "student" | "teacher" | "admin";
 
 export type TrackDTO = {
   id: string;
   slug: string;
   title: string;
   description: string;
+  orderIndex: number;
 };
 
+/** Одиниця доступу: саме тут вирішується платно/безкоштовно і що після чого. */
 export type CourseDTO = {
   id: string;
   trackId: string;
@@ -16,6 +20,12 @@ export type CourseDTO = {
   title: string;
   description: string;
   level: string;
+  /** Монетизація відкладена, але поле є з першого дня — розділ 3. */
+  accessLevel: "free" | "paid";
+  /** Чи можна стрибати між уроками. */
+  progression: "sequential" | "free";
+  /** CSS після HTML, React після JS. */
+  prerequisiteCourseIds: string[];
   isPublished: boolean;
 };
 
@@ -33,14 +43,17 @@ export type LessonRuntimeType =
   | "html-css-preview"
   | "js-dom"
   | "code-output"
+  | "spa-preview"
   | "theory-only"
   | "video";
 
-export type LessonValidationType =
-  | "dom-check"
-  | "output-check"
-  | "manual-check"
-  | "none";
+/**
+ * Каже *чи* перевіряти, а не *чим*. Чим — каже `TaskRules.kind` у кожному завданні
+ * окремо, тож значень рівно три: `dom-check`/`output-check` дублювали б тег правила
+ * й розійшлися б із ним на першому ж уроці, де в одному завданні DOM, а в іншому
+ * питання. Такий урок — техчек — уже існує. Див. PLATFORM_UA, розділ 3.
+ */
+export type LessonValidationType = "auto" | "manual" | "none";
 
 export type LessonKind = "lesson" | "tech_check";
 
@@ -85,6 +98,9 @@ export type LessonTaskDTO = {
   description: string;
   orderIndex: number;
   rules: TaskRules;
+  /** 2–3 підказки, що розкриваються поступово. У самостійному режимі це заміна
+   * викладача, а не додаткова зручність — розділ 3. Порожній масив, якщо їх немає. */
+  hints: string[];
 };
 
 export type LessonVideoProvider =

@@ -29,6 +29,7 @@ const question = (id: string, orderIndex: number, correct: string[]): QuizTask =
   description: id,
   orderIndex,
   rules: quizRules(correct),
+  hints: [],
 });
 
 const practice = (id: string, orderIndex: number): LessonTaskDTO => ({
@@ -36,7 +37,8 @@ const practice = (id: string, orderIndex: number): LessonTaskDTO => ({
   title: id,
   description: id,
   orderIndex,
-  rules: { htmlSelectors: [{ selector: "h1" }] },
+  rules: { kind: "dom", selectors: [{ selector: "h1" }] },
+  hints: [],
 });
 
 describe("checkQuizAnswer", () => {

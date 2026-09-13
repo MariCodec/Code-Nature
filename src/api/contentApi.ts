@@ -22,6 +22,7 @@ const track: TrackDTO = {
   slug: FRONTEND_TRACK_SLUG,
   title: "Frontend",
   description: "Базові курси для вивчення HTML, CSS та майбутніх frontend напрямів.",
+  orderIndex: 1,
 };
 
 const categoryToCourse: Record<LessonCategory, CourseDTO> = {
@@ -32,6 +33,9 @@ const categoryToCourse: Record<LessonCategory, CourseDTO> = {
     title: "HTML для початківців",
     description: "Базова HTML-розмітка і структура документа.",
     level: "beginner",
+    accessLevel: "free",
+    progression: "sequential",
+    prerequisiteCourseIds: [],
     isPublished: true,
   },
   css: {
@@ -41,6 +45,9 @@ const categoryToCourse: Record<LessonCategory, CourseDTO> = {
     title: "CSS для початківців",
     description: "Основи стилізації елементів та layout-підходів.",
     level: "beginner",
+    accessLevel: "free",
+    progression: "sequential",
+    prerequisiteCourseIds: ["course_html_basic"],
     isPublished: true,
   },
 };
@@ -166,6 +173,9 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
       description: task.text,
       orderIndex: taskIndex + 1,
       rules: task.rules,
+      // Старий формат підказок не має. Порожній масив, а не вигаданий текст:
+      // підказки приїдуть із контенту у Фазі 5, коли це джерело помре.
+      hints: [],
     }));
 
     return {
@@ -177,7 +187,7 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
       title: lesson.title,
       description: lesson.description,
       runtimeType: "html-css-preview",
-      validationType: "dom-check",
+      validationType: "auto",
       orderIndex: lesson.order || index + 1,
       isPublished: true,
       files,
@@ -195,6 +205,9 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
   const courseId = categoryToCourse[category].id;
   const module = categoryToModule[category];
   const lessonId = `techcheck_${module.slug}`;
+  // Позицію техчека визначає `lessonKind`, а не число: домен ставить його в кінець
+  // сам (`domain/progression`). Тут просто наступний номер, без магічних 10_000.
+  const orderIndex = getLessonsForModule(moduleId).length + 1;
 
   if (category === "html") {
     return {
@@ -206,8 +219,8 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
       title: "Техчек: HTML Basic",
       description: "Закріпи структуру HTML-документа, заголовок, текст і базову стилізацію.",
       runtimeType: "html-css-preview",
-      validationType: "dom-check",
-      orderIndex: 10_000,
+      validationType: "auto",
+      orderIndex,
       isPublished: true,
       files: mapLessonFiles(
         lessonId,
@@ -246,6 +259,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               "<head> — службова частина документа, її не видно. <title> — назва вкладки браузера. <header> — верхня частина сторінки, але сама по собі не заголовок. Видимий головний заголовок це <h1>.",
             reviewLessonId: "intro",
           },
+          hints: [],
         },
         {
           id: `${lessonId}_q2`,
@@ -266,6 +280,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               "Рівень означає важливість у структурі, а не розмір — розмір задається через CSS. h1 на сторінці зазвичай один, як назва розділу в книжці. Першим тегом заголовок бути не зобовʼязаний.",
             reviewLessonId: "intro",
           },
+          hints: [],
         },
         {
           id: `${lessonId}_q3`,
@@ -285,6 +300,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               "Сервер надсилає звичайний текст із тегами. Малює сторінку вже браузер — саме тому її можна написати в текстовому редакторі.",
             reviewLessonId: "intro",
           },
+          hints: [],
         },
         {
           id: `${lessonId}_practice`,
@@ -293,13 +309,15 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
             "Збери сторінку, на якій є:\n- заголовок `h1` з текстом `Мій перший техчек`\n- абзац `p` з текстом `Я закріплюю HTML.`\n- заголовок зеленого кольору, заданий через CSS",
           orderIndex: 10,
           rules: {
-            htmlSelectors: [{ selector: "h1" }, { selector: "p" }],
-            requireTextContains: [
+            kind: "dom",
+            selectors: [{ selector: "h1" }, { selector: "p" }],
+            textContains: [
               { selector: "h1", text: "Мій перший техчек" },
               { selector: "p", text: "Я закріплюю HTML." },
             ],
             cssChecks: [{ selector: "h1", property: "color", value: "rgb(0, 128, 0)" }],
           },
+          hints: [],
         },
       ],
     };
@@ -314,8 +332,8 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
     title: "Техчек: CSS Basic",
     description: "Перевір базову стилізацію елементів: колір, фон і відступи.",
     runtimeType: "html-css-preview",
-    validationType: "dom-check",
-    orderIndex: 10_000,
+    validationType: "auto",
+    orderIndex,
     isPublished: true,
     files: mapLessonFiles(
       lessonId,
@@ -352,6 +370,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
           explanation:
             "Крапка — це клас, решітка — ідентифікатор, а без символу — назва тега.",
         },
+        hints: [],
       },
       {
         id: `${lessonId}_q2`,
@@ -370,6 +389,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
           explanation:
             "padding — відступ усередині елемента, між його краєм і вмістом. margin — навпаки, зовні.",
         },
+        hints: [],
       },
       {
         id: `${lessonId}_practice`,
@@ -378,12 +398,14 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
           "Оформи картку через CSS:\n- внутрішній відступ `.card` — 24px\n- колір заголовка `h1` — зелений",
         orderIndex: 10,
         rules: {
-          htmlSelectors: [{ selector: ".card" }, { selector: "h1" }],
+          kind: "dom",
+          selectors: [{ selector: ".card" }, { selector: "h1" }],
           cssChecks: [
             { selector: ".card", property: "padding", value: "24px" },
             { selector: "h1", property: "color", value: "rgb(0, 128, 0)" },
           ],
         },
+        hints: [],
       },
     ],
   };

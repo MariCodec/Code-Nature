@@ -10,6 +10,7 @@
  * Тут лише форма розмови. Виконання приїде у Фазі 3.
  */
 
+import type { RuleResult } from "./taskValidation";
 import type { TaskRules } from "../types/lessonTypes";
 
 export type RunnerFile = {
@@ -18,11 +19,15 @@ export type RunnerFile = {
   content: string;
 };
 
+/**
+ * Результат по кожному правилу, а не один булеан: учневі треба знати, **яке саме**
+ * не зійшлося. Рядка тут немає — правила повертають ключі, текст складає інтерфейс
+ * із `i18n`, тож через `postMessage` їде структура, а не українське речення.
+ */
 export type TaskResult = {
   taskId: string;
   passed: boolean;
-  /** Що саме не збіглося — показуємо учневі. */
-  message?: string;
+  rules: RuleResult[];
 };
 
 export type ConsoleLevel = "log" | "warn" | "error";

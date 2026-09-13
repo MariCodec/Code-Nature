@@ -12,37 +12,61 @@ export type LessonTheory = {
   blocks: TheoryBlock[];
 };
 
-/** Декларативні перевірки (серіалізуються) */
-export type HtmlSelectorRule = {
-  selector: string;
-  /** опційно: "наступний тег" для порядку */
-  next?: string;
-};
+/**
+ * Декларативні перевірки. Жодних функцій — лише JSON.
+ *
+ * Умова, яку не можна порушувати: правило, яке неможливо виконати на сервері,
+ * до `TaskRules` не потрапляє. Саме це дозволить перенести перевірку на бек,
+ * коли зʼявиться платний доступ, без зміни контракту й міграції контенту
+ * (PLATFORM_UA, розділ 8, «Модель довіри до перевірки»).
+ */
 
-export type CssCheckRule = {
+/** Елемент є, і його щонайменше `minCount` штук. Без `minCount` — один. */
+export type SelectorRule = {
+  /** Будь-який CSS-селектор, включно з вкладеним: `"ul li"`. */
   selector: string;
-  /** краще string, а не keyof CSSStyleDeclaration (бо для БД/API простіше) */
-  property: string;
-  value: string;
+  minCount?: number;
 };
 
 /**
- * Розширювана схема правил. Тегований union: `kind` каже, **чим** перевіряти.
- * Важливо: НІЯКИХ функцій, тільки JSON.
+ * Текст елемента. `text` — має міститись, `minLength` — мінімальна довжина
+ * після обрізання пробілів. Разом означають обидві умови одночасно.
  *
- * `dom` поки без обовʼязкового тега — щоб наявний контент лишався валідним.
- * Повний перехід на явний тег відбудеться у Фазі 1 разом з рештою контрактів.
+ * `minLength` існує тому, що реальні завдання формулюються як «текст будь-який,
+ * але не порожній» — знахідка Фази 0, яку дослівний збіг не виражає.
  */
-export type DomTaskRules = {
-  kind?: "dom";
-  htmlSelectors?: HtmlSelectorRule[];
-  cssChecks?: CssCheckRule[];
-  requireTextContains?: { selector: string; text: string }[];
+export type TextRule = {
+  selector: string;
+  text?: string;
+  minLength?: number;
+};
+
+/** Обчислений стиль — не той, що написаний у CSS, а той, що застосувався. */
+export type CssRule = {
+  selector: string;
+  /** Рядок, а не `keyof CSSStyleDeclaration`: значення їде в БД і через API. */
+  property: string;
+  value: string;
 };
 
 export type QuizOption = {
   id: string;
   text: string;
+};
+
+/**
+ * Тегований union: `kind` каже, **чим** перевіряти. Обовʼязковий у всіх варіантах —
+ * опційний тег означав би, що наступний runtime знову вгадуватимуть за формою полів.
+ *
+ * Варіантів рівно два, бо рівно на два є контент. `js-test`, `output` і `manual`
+ * зʼявляться разом зі своїми runtime-ами (Фази 3–4): варіант без гілки у валідаторі —
+ * це та сама заглушка, яких ми не робимо в реєстрі runtime-ів.
+ */
+export type DomTaskRules = {
+  kind: "dom";
+  selectors?: SelectorRule[];
+  cssChecks?: CssRule[];
+  textContains?: TextRule[];
 };
 
 export type QuizTaskRules = {

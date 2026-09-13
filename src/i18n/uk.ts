@@ -37,6 +37,30 @@ export const uk = {
     },
   },
 
+  taskCheck: {
+    /** Текст до ключів `RuleFailure` з `domain/taskValidation`. */
+    selectorMissing: (selector: string) => `Не знайшла ${selector} на сторінці.`,
+    selectorTooFew: (selector: string, expected: number, actual: number) =>
+      `${selector}: потрібно щонайменше ${expected}, а зараз ${actual}.`,
+    textMismatch: (selector: string, expected: string) =>
+      `${selector} є, але в ньому немає тексту «${expected}».`,
+    textTooShort: (selector: string, expected: number) =>
+      `${selector} є, але текст закороткий — треба хоча б ${expected} символів.`,
+    cssMismatch: (selector: string, property: string, expected: string, actual: string) =>
+      actual
+        ? `${selector}: ${property} зараз ${actual}, а має бути ${expected}.`
+        : `${selector}: ${property} ще не задано, а має бути ${expected}.`,
+    /** Три помилки автора уроку, не учня — формулюємо так, щоб учень не шукав їх у себе. */
+    selectorInvalid: (selector: string) =>
+      `Перевірку не вдалося виконати: у завданні неправильний селектор ${selector}.`,
+    ruleEmpty: "Перевірку не вдалося виконати: у завданні порожнє правило.",
+    rulesEmpty: "Перевірку не вдалося виконати: до завдання не написані правила.",
+    rulesUnsupported: (kind: string) =>
+      `Перевірку не вдалося виконати: правило «${kind}» тут не перевіряється.`,
+    notPassed: "Ще не зараховано.",
+    allPassed: "Усі завдання зараховані.",
+  },
+
   moduleSummary: {
     eyebrow: "Модуль пройдено",
     withTechCheck:
