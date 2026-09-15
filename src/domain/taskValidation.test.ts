@@ -143,3 +143,59 @@ describe("checkTask: стилі перевіряються обчислені, �
     });
   });
 });
+
+describe("checkTask: структура документа", () => {
+  const full =
+    '<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>Мій перший сайт</title></head><body><h1>Привіт</h1></body></html>';
+
+  it("цілий документ проходить усі чотири умови одразу", () => {
+    const rules = dom({
+      document: { hasDoctype: true, lang: "uk", title: "Мій перший сайт", charset: "utf-8" },
+    });
+
+    expect(checkTask(parsed(full), rules).passed).toBe(true);
+  });
+
+  it("doctype — єдине, чого селектором не дістати, тож має власний ключ", () => {
+    const rules = dom({ document: { hasDoctype: true } });
+
+    expect(firstFailure(parsed("<html><body><h1>x</h1></body></html>"), rules)).toEqual({
+      key: "doctypeMissing",
+    });
+  });
+
+  it("«не задано» і «задано інше» — різні поради, тож actual їх розрізняє", () => {
+    const rules = dom({ document: { lang: "uk" } });
+
+    expect(firstFailure(parsed("<html><body></body></html>"), rules)).toEqual({
+      key: "documentMismatch",
+      part: "lang",
+      expected: "uk",
+      actual: "",
+    });
+
+    expect(firstFailure(parsed('<html lang="en"><body></body></html>'), rules)).toEqual({
+      key: "documentMismatch",
+      part: "lang",
+      expected: "uk",
+      actual: "en",
+    });
+  });
+
+  it("charset читається з оголошення, а не з characterSet документа", () => {
+    const rules = dom({ document: { charset: "utf-8" } });
+
+    // `document.characterSet` тут дорівнює UTF-8 незалежно від вмісту `<head>` —
+    // саме тому правило дивиться на `<meta charset>`, інакше воно зараховувало б порожній файл.
+    expect(firstFailure(parsed("<html><head></head><body></body></html>"), rules)).toEqual({
+      key: "documentMismatch",
+      part: "charset",
+      expected: "utf-8",
+      actual: "",
+    });
+  });
+
+  it("порожнє правило документа — помилка автора, а не мовчазне зарахування", () => {
+    expect(firstFailure(parsed(full), dom({ document: {} }))).toEqual({ key: "ruleEmpty" });
+  });
+});

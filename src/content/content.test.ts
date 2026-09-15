@@ -61,3 +61,31 @@ describe("перевірка справді щось ловить", () => {
     expect(format(issues)).toContain("validationType");
   });
 });
+
+/**
+ * Розтяжка, а не перевірка можливості. `DocumentRule` існує в типах — валідатор уміє
+ * читати doctype, lang, title і charset. Але **контент їх ще писати не може**, і це
+ * навмисно: поки `buildDocument` загортає файл учня у власний `<!doctype>` і `<html lang>`,
+ * такі правила бачили б обгортку, а не учня, — тобто зараховувались би на порожньому файлі.
+ *
+ * Парсер контенту їх не знає, тож урок із таким правилом валить схема-перевірку.
+ *
+ * КОЛИ ЦЕЙ ТЕСТ ВПАДЕ — значить парсер навчився `document`. Разом із цим entry-файл уроку
+ * мусить стати **цілим документом** (Фаза 3), інакше відкриється рівно той хибний залік,
+ * заради недопущення якого написана ця розтяжка.
+ */
+describe("document-правила ще закриті для контенту", () => {
+  it("урок із document-правилом не проходить схема-перевірку", () => {
+    const raw = readJson(join(LESSONS_DIR, "html-first-page.json")) as {
+      tasks: { rules: Record<string, unknown> }[];
+    };
+    raw.tasks[0].rules = {
+      kind: "dom",
+      selectors: [{ selector: "h1" }],
+      document: { hasDoctype: true },
+    };
+
+    const { issues } = parseLesson(raw, "document до Фази 3");
+    expect(format(issues)).toContain('невідоме поле "document"');
+  });
+});

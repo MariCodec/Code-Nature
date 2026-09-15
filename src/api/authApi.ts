@@ -1,14 +1,17 @@
+/**
+ * Ролі тут немає навмисно: PLATFORM_UA, розділ 2 — «роль завжди приходить із сервера,
+ * клієнт її не обирає й не надсилає при вході». Мок теж мусить дотримуватись контракту,
+ * інакше Фаза 7 успадкує від нього форму, якої в API не буде.
+ */
 export type LoginPayload = {
   email: string;
   password: string;
-  role: "student" | "teacher";
 };
 
 export type RegisterPayload = {
   name: string;
   email: string;
   password: string;
-  role: "student" | "teacher";
 };
 
 export type AuthUserDTO = {
@@ -105,7 +108,8 @@ export const authApi = {
         id: makeUserIdFromEmail(email),
         name: payload.name.trim(),
         email,
-        role: payload.role,
+        // Розділ 7: усі, хто реєструється самостійно, — `student`.
+        role: "student",
       },
       tokens: { accessToken: randomToken(), refreshToken: randomToken() },
     };
@@ -130,7 +134,7 @@ export const authApi = {
         id: makeUserIdFromEmail(email),
         name: email.split("@")[0],
         email,
-        role: payload.role,
+        role: "student",
       },
       tokens: { accessToken: randomToken(), refreshToken: randomToken() },
     };

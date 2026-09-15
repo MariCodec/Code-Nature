@@ -20,6 +20,7 @@
 
 import type {
   CssRule,
+  DocumentRule,
   DomTaskRules,
   SelectorRule,
   TaskRules,
@@ -42,6 +43,18 @@ export type RuleFailure =
       expected: string;
       actual: string;
     }
+  /** Немає `<!doctype html>`. Окремий ключ, бо doctype не елемент. */
+  | { key: "doctypeMissing" }
+  /**
+   * Частина документа є, але не та. `actual: ""` означає «не задано взагалі» —
+   * інтерфейс розрізняє ці два випадки текстом, як уже робить для `cssMismatch`.
+   */
+  | {
+      key: "documentMismatch";
+      part: "lang" | "title" | "charset";
+      expected: string;
+      actual: string;
+    }
   /** Правило без жодної умови — теж помилка автора. */
   | { key: "ruleEmpty" }
   /** У завдання немає жодного правила. */
@@ -53,7 +66,7 @@ export type RuleResult = { passed: true } | { passed: false; failure: RuleFailur
 
 export type TaskCheck = {
   passed: boolean;
-  /** Результат по кожному правилу, у порядку: селектори → текст → стилі. */
+  /** Результат по кожному правилу, у порядку: документ → селектори → текст → стилі. */
   rules: RuleResult[];
 };
 
@@ -163,8 +176,65 @@ function checkCssRule(doc: Document, rule: CssRule): RuleResult {
   });
 }
 
+/**
+ * Повертає **список** результатів, а не один: у правилі може бути до чотирьох
+ * незалежних умов, і учневі треба знати, яка саме не зійшлася.
+ *
+ * Порожній обʼєкт (чи сам лише `hasDoctype: false`) — помилка автора, як і
+ * порожнє текстове правило.
+ */
+function checkDocumentRule(doc: Document, rule: DocumentRule): RuleResult[] {
+  const results: RuleResult[] = [];
+
+  const compare = (
+    part: "lang" | "title" | "charset",
+    expected: string,
+    actual: string,
+    caseSensitive = false,
+  ) => {
+    const same = caseSensitive
+      ? actual === expected
+      : actual.toLowerCase() === expected.toLowerCase();
+    results.push(same ? PASSED : failed({ key: "documentMismatch", part, expected, actual }));
+  };
+
+  if (rule.hasDoctype) {
+    const doctype = doc.doctype;
+    results.push(
+      doctype && doctype.name.toLowerCase() === "html"
+        ? PASSED
+        : failed({ key: "doctypeMissing" }),
+    );
+  }
+
+  if (rule.lang !== undefined)
+    compare("lang", rule.lang, doc.documentElement?.getAttribute("lang")?.trim() ?? "");
+
+  if (rule.title !== undefined)
+    compare(
+      "title",
+      rule.title,
+      (doc.querySelector("head > title")?.textContent ?? "").trim(),
+      true,
+    );
+
+  if (rule.charset !== undefined) {
+    /**
+     * Читається оголошення, а не `document.characterSet`. У `srcdoc`-iframe документ
+     * успадковує кодування батьківської сторінки, тож `characterSet` показував би
+     * UTF-8 незалежно від того, що написав учень, — тобто завдання зараховувалось би
+     * порожнім файлом.
+     */
+    const meta = doc.querySelector("head meta[charset]");
+    compare("charset", rule.charset, meta?.getAttribute("charset")?.trim() ?? "");
+  }
+
+  return results.length > 0 ? results : [failed({ key: "ruleEmpty" })];
+}
+
 function checkDomRules(doc: Document, rules: DomTaskRules): TaskCheck {
   const results = [
+    ...(rules.document ? checkDocumentRule(doc, rules.document) : []),
     ...(rules.selectors ?? []).map((rule) => checkSelectorRule(doc, rule)),
     ...(rules.textContains ?? []).map((rule) => checkTextRule(doc, rule)),
     ...(rules.cssChecks ?? []).map((rule) => checkCssRule(doc, rule)),

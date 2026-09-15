@@ -4,8 +4,13 @@ import progressReducer from "./slices/progressSlice";
 import userCodeReducer from "./slices/userCodeSlice";
 import authReducer from "./slices/authSlice";
 import contentReducer from "./slices/contentSlice";
+/**
+ * Редюсер лишається, хоч викладацьких маршрутів уже немає: селектори `teacherSlice`
+ * типізуються через `RootState`, тож прибрати його звідси — означає зламати `tsc`
+ * у замороженому коді. Піде разом із самим слайсом, коли зʼявиться справжній
+ * `/teacher/*` API — див. позначку в `slices/teacherSlice.ts`.
+ */
 import teacherReducer from "./slices/teacherSlice";
-// import lessonReducer from "./slices/lessonSlice";
 
 const store = configureStore({
   reducer: {
@@ -15,7 +20,6 @@ const store = configureStore({
     theme: themeReducer,
     progress: progressReducer,
     userCode: userCodeReducer,
-    // lesson: lessonReducer,
   },
 });
 export type RootState = ReturnType<typeof store.getState>; // Тип кореневого стану

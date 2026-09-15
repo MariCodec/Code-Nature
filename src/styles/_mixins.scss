@@ -1,8 +1,15 @@
 @use "./variables" as v;
 
+// Фон сторінки. Існує тому, що `body` власного фону не має: кожна сторінка малює свій,
+// і хто забуде — просвічує до `html` з `color-scheme: dark`, тобто у світлій темі
+// виходить темний екран із темним текстом.
+//
+// Прозорість через канали, а не через готові `$glow-soft`/`$blue-soft`: канальна форма
+// є чинною конвенцією проєкту й інвертується разом із темою. Коментар навмисно `//`,
+// а не `/* */` — Sass обчислює інтерполяцію навіть усередині блокових коментарів.
 @mixin pageBackground {
   background:
-    radial-gradient(1200px 700px at 30% 20%, v.$glow-soft, transparent 55%),
-    radial-gradient(900px 500px at 70% 15%, v.$blue-soft, transparent 55%),
+    radial-gradient(1200px 700px at 30% 20%, rgb(#{v.$glow-rgb} / 0.10), transparent 55%),
+    radial-gradient(900px 500px at 70% 15%, rgb(#{v.$accent-blue-rgb} / 0.10), transparent 55%),
     linear-gradient(180deg, v.$bg-main, v.$bg-deep);
 }

@@ -49,6 +49,35 @@ export type CssRule = {
   value: string;
 };
 
+/**
+ * Структура самого документа, а не вмісту `<body>`.
+ *
+ * `hasDoctype` — єдине, чого `SelectorRule` виразити **не може**: doctype це не
+ * елемент, і `querySelectorAll` його не бачить. Решту три формально можна було б
+ * написати селекторами (`html[lang="uk"]`, `head > meta[charset="utf-8"]`), але
+ * учень отримав би «Не знайшла html[lang="uk"] на сторінці» замість «у <html>
+ * не вказана мова». Окреме правило існує заради повідомлення — та сама причина,
+ * з якої результат рахується по кожному правилу окремо.
+ *
+ * Потрібне з моменту, коли entry-файл уроку став цілим документом: доти
+ * doctype і `<head>` давав рушій, і перевіряти в них не було чого.
+ *
+ * **Контенту ці правила поки недоступні, і це навмисно.** Доки `buildDocument`
+ * загортає файл учня у власний `<!doctype>` і `<html lang>`, вони бачили б обгортку —
+ * тобто зараховувались би на порожньому файлі. Парсер контенту їх не знає, і розтяжка
+ * в `content/content.test.ts` тримає цей стан до Фази 3.
+ */
+export type DocumentRule = {
+  /** `true` — вимагати `<!doctype html>`. `false` і `undefined` — не перевіряти. */
+  hasDoctype?: boolean;
+  /** Значення `lang` у `<html>`; порівняння без урахування регістру. */
+  lang?: string;
+  /** Текст `<title>`; має збігатися повністю після обрізання пробілів. */
+  title?: string;
+  /** Значення `<meta charset>`; порівняння без урахування регістру. */
+  charset?: string;
+};
+
 export type QuizOption = {
   id: string;
   text: string;
@@ -64,6 +93,7 @@ export type QuizOption = {
  */
 export type DomTaskRules = {
   kind: "dom";
+  document?: DocumentRule;
   selectors?: SelectorRule[];
   cssChecks?: CssRule[];
   textContains?: TextRule[];

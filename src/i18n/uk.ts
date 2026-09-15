@@ -50,6 +50,23 @@ export const uk = {
       actual
         ? `${selector}: ${property} зараз ${actual}, а має бути ${expected}.`
         : `${selector}: ${property} ще не задано, а має бути ${expected}.`,
+    /**
+     * Структура документа. Порожній `actual` означає «не задано взагалі» —
+     * це різні поради, тож і речення різні, як уже зроблено для `cssMismatch`.
+     */
+    doctypeMissing: "На початку документа немає <!doctype html>.",
+    langMismatch: (expected: string, actual: string) =>
+      actual
+        ? `У <html> вказана мова «${actual}», а має бути «${expected}».`
+        : `У <html> не вказана мова: потрібен lang="${expected}".`,
+    titleMismatch: (expected: string, actual: string) =>
+      actual
+        ? `У <title> зараз «${actual}», а має бути «${expected}».`
+        : `У <head> немає <title> з текстом «${expected}».`,
+    charsetMismatch: (expected: string, actual: string) =>
+      actual
+        ? `Кодування вказане як «${actual}», а має бути «${expected}».`
+        : `У <head> немає <meta charset="${expected}">.`,
     /** Три помилки автора уроку, не учня — формулюємо так, щоб учень не шукав їх у себе. */
     selectorInvalid: (selector: string) =>
       `Перевірку не вдалося виконати: у завданні неправильний селектор ${selector}.`,
@@ -124,5 +141,11 @@ export const uk = {
     nextModule: "Наступний модуль",
     courseDone: "Курс завершено",
     pickNextCourse: "Обрати наступний курс",
+  },
+
+  notFound: {
+    title: "Такої сторінки немає",
+    hint: "Можливо, посилання застаріло або в адресі одрук.",
+    back: "На головну",
   },
 } as const;

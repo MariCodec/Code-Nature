@@ -2,37 +2,17 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import Footer from "../../components/layout/Footer";
-import { selectAuthRole, selectIsAuthenticated } from "../../store/slices/authSlice";
+import { selectIsAuthenticated } from "../../store/slices/authSlice";
 import styles from "./Home.module.scss";
 
 const Home = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const role = useSelector(selectAuthRole);
 
-  const primaryPath =
-    role === "teacher"
-      ? "/teacher"
-      : isAuthenticated
-        ? "/student/learning"
-        : "/register";
-  const primaryLabel =
-    role === "teacher"
-      ? "Відкрити кабінет"
-      : isAuthenticated
-        ? "Продовжити навчання"
-        : "Почати навчання";
-  const secondaryPath =
-    role === "teacher"
-      ? "/teacher/students"
-      : isAuthenticated
-        ? "/student/progress"
-        : "/login";
-  const secondaryLabel =
-    role === "teacher"
-      ? "Переглянути учнів"
-      : isAuthenticated
-        ? "Мій прогрес"
-        : "Увійти";
+  // Роль у MVP одна, тож вибір лише між «уже вчиться» і «ще не зареєстрований».
+  const primaryPath = isAuthenticated ? "/student/learning" : "/register";
+  const primaryLabel = isAuthenticated ? "Продовжити навчання" : "Почати навчання";
+  const secondaryPath = isAuthenticated ? "/student/progress" : "/login";
+  const secondaryLabel = isAuthenticated ? "Мій прогрес" : "Увійти";
 
   return (
     <>

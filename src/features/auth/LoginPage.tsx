@@ -5,12 +5,11 @@ import type { AppDispatch } from "../../store";
 import { login } from "../../store/thunks/authThunks";
 import {
   selectAuthError,
-  selectAuthRole,
   selectAuthStatus,
   selectIsAuthenticated,
   selectIsSessionResolved,
 } from "../../store/slices/authSlice";
-import styles from "./RegisterPage.module.scss";
+import styles from "./AuthForm.module.scss";
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,27 +17,22 @@ export default function LoginPage() {
 
   const isSessionResolved = useSelector(selectIsSessionResolved);
   const isAuth = useSelector(selectIsAuthenticated);
-  const role = useSelector(selectAuthRole);
   const status = useSelector(selectAuthStatus);
   const error = useSelector(selectAuthError);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"student" | "teacher">("student");
 
   // Та сама причина, що й у AuthGuard: до відповіді про сесію форму показувати
   // не можна — інакше залогінений користувач на F5 бачить спалах форми входу.
   if (!isSessionResolved) return null;
 
-  if (isAuth) return <Navigate to={role === "teacher" ? "/teacher" : "/student"} replace />;
+  if (isAuth) return <Navigate to="/student" replace />;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await dispatch(login({ email, password, role: selectedRole }));
-    if (login.fulfilled.match(res)) {
-      const nextRole = res.payload.user.role;
-      navigate(nextRole === "teacher" ? "/teacher" : "/student", { replace: true });
-    }
+    const res = await dispatch(login({ email, password }));
+    if (login.fulfilled.match(res)) navigate("/student", { replace: true });
   };
 
   return (
@@ -64,15 +58,6 @@ export default function LoginPage() {
           placeholder="Password"
           required
         />
-
-        <select
-          className={styles.input}
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value as "student" | "teacher")}
-        >
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-        </select>
 
         {error && <div className={styles.error}>{error}</div>}
 

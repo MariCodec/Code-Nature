@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import styles from "./Layout.module.scss";
 import type { AppDispatch } from "../../store";
 import {
-  selectAuthRole,
   selectIsAuthenticated,
 } from "../../store/slices/authSlice";
 import { logout } from "../../store/thunks/authThunks";
@@ -15,12 +14,11 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const role = useSelector(selectAuthRole);
   const theme = useSelector(selectTheme);
 
-  const dashboardPath = role === "teacher" ? "/teacher" : "/student/progress";
-  const dashboardLabel = role === "teacher" ? "Мій кабінет" : "Мій прогрес";
-  const showStudentLearningLink = role === "student";
+  // Роль у MVP одна (PLATFORM_UA, розділ 2), тож розгалуження за нею тут немає.
+  const dashboardPath = "/student/progress";
+  const dashboardLabel = "Мій прогрес";
   const isMarketingRoute = ["/", "/home", "/learn", "/teach"].includes(
     location.pathname,
   );
@@ -89,7 +87,7 @@ const Header = () => {
         <NavLink className={navLinkClassName} to="/home">
           Головна
         </NavLink>
-        {showStudentLearningLink && (
+        {isAuthenticated && (
           <>
             <NavLink className={navLinkClassName} to="/student/learning">
               Навчання
@@ -98,11 +96,6 @@ const Header = () => {
               Техчеки
             </NavLink>
           </>
-        )}
-        {role === "teacher" && (
-          <NavLink className={navLinkClassName} to="/teacher/students">
-            Учні
-          </NavLink>
         )}
         {!isMarketingRoute && (
           <NavLink className={navLinkClassName} to="/docs">

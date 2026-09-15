@@ -8,6 +8,24 @@
 import type { RuleFailure } from "../domain/taskValidation";
 import { uk } from "./uk";
 
+/** Кожна частина документа має власне речення — спільне вийшло б надто загальним. */
+function getDocumentMismatchText(
+  part: "lang" | "title" | "charset",
+  expected: string,
+  actual: string,
+): string {
+  const t = uk.taskCheck;
+
+  switch (part) {
+    case "lang":
+      return t.langMismatch(expected, actual);
+    case "title":
+      return t.titleMismatch(expected, actual);
+    case "charset":
+      return t.charsetMismatch(expected, actual);
+  }
+}
+
 export function getTaskFailureText(failure: RuleFailure): string {
   const t = uk.taskCheck;
 
@@ -29,6 +47,10 @@ export function getTaskFailureText(failure: RuleFailure): string {
         failure.expected,
         failure.actual,
       );
+    case "doctypeMissing":
+      return t.doctypeMissing;
+    case "documentMismatch":
+      return getDocumentMismatchText(failure.part, failure.expected, failure.actual);
     case "ruleEmpty":
       return t.ruleEmpty;
     case "rulesEmpty":

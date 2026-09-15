@@ -1,0 +1,42 @@
+@use "../../styles/variables" as v;
+@use "../../styles/mixins" as m;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: calc(100vh - 64px);
+  padding: 32px 16px;
+  text-align: center;
+
+  /* Чому власний фон узагалі потрібен — див. коментар до самого міксина. */
+  @include m.pageBackground;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.45rem;
+  color: v.$text-main;
+}
+
+.hint {
+  margin: 0;
+  max-width: 40ch;
+  color: v.$text-muted;
+}
+
+.back {
+  margin-top: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: v.$text-main;
+  border: 1px solid rgb(#{v.$fg-rgb} / 0.18);
+  background: rgb(#{v.$fg-rgb} / 0.06);
+
+  &:hover {
+    background: rgb(#{v.$fg-rgb} / 0.12);
+  }
+}
