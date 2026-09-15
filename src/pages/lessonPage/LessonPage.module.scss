@@ -338,3 +338,54 @@
 .detailsButton:hover {
   background: rgb(#{v.$fg-rgb} / 0.12);
 }
+
+/* Теорія в сайдбарі уроку. Крок 5 шляху учня (розділ 4) — між відео й практикою. */
+.theorySection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid v.$border;
+}
+
+.theoryTitle {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: v.$text-dimmer;
+}
+
+/* Завершення уроку без завдань: гілка `validation_type: none`. */
+.finishSection {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 20px 24px 32px;
+}
+
+.finishHint {
+  margin: 0;
+  color: v.$text-muted;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.finishButton {
+  padding: 12px 24px;
+  border-radius: v.$radius-round;
+  border: none;
+  background: v.$accent-secondary;
+  color: v.$text-dark;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}

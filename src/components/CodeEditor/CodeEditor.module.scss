@@ -192,3 +192,39 @@
   border-color: rgb(#{v.$accent-secondary-rgb} / 0.35);
   background: rgb(#{v.$accent-secondary-rgb} / 0.12);
 }
+
+/* Заблокована вкладка: `isEditable: false` — педагогічний прийом, а не технічна
+   опція, тож замок має бути видимий. Мовчазне ігнорування прапорця знищує сенс
+   уроку, у якому «розмітку не чіпай». Див. PLATFORM_UA, розділ 5. */
+.tabLocked {
+  color: v.$text-dimmer;
+
+  &:hover {
+    color: v.$text-muted;
+  }
+}
+
+.tabLockIcon {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.lockedNotice {
+  flex: none;
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: v.$radius-sm;
+  border: 1px solid rgb(#{v.$accent-blue-rgb} / 0.35);
+  background: rgb(#{v.$accent-blue-rgb} / 0.12);
+  color: v.$text-muted;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.editorEmpty {
+  margin: 0;
+  padding: 24px;
+  color: v.$text-muted;
+  font-size: 14px;
+}

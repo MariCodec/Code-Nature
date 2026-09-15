@@ -1,4 +1,11 @@
 import { lessons as lessonData } from "../data/lessonData";
+import {
+  fileCatalog,
+  getFileCoursesByTrackSlug,
+  getFileLesson,
+  getFileLessonsForModule,
+  getFileModulesForCourse,
+} from "../content/fileContent";
 import type {
   CourseDTO,
   CourseModuleDTO,
@@ -428,35 +435,60 @@ const getLessonsForCourse = (courseId: string): LessonDTO[] => {
   return getModuleContentItems(categoryToModule[category].id);
 };
 
+/**
+ * Два джерела контенту живуть поруч, і файли стоять першими.
+ *
+ * Фаза 2 відкриває теку `src/content/`; `lessonData.ts` разом із техчеками,
+ * покладеними тут інлайном, помирає у Фазі 5 (PLATFORM_UA, розділ 9). Доти в каталозі
+ * видно обидва набори курсів — і це краще, ніж тихо сховати один із них: поки старе
+ * джерело живе, воно має бути видиме, інакше про нього забудуть разом із його
+ * дефектами (порожній курс «CSS для початківців» — розділ 10).
+ *
+ * Id не перетинаються: файли дають `crs_*` / `lsn_*`, старе джерело — `course_*`
+ * / `intro`. Тому «файли першими» тут ще не має жодного ефекту, але порядок
+ * записаний зараз, доки перетину немає: коли Фаза 5 почне переносити уроки,
+ * саме він вирішить, хто з двох правий.
+ */
 export const contentApi = {
   async getTracks(): Promise<TrackDTO[]> {
     await delay();
-    return [track];
+    return [...fileCatalog.tracks, track];
   },
 
   async getCoursesByTrack(trackSlug: string): Promise<CourseDTO[]> {
     await delay();
-    if (trackSlug !== FRONTEND_TRACK_SLUG) return [];
-    return Object.values(categoryToCourse);
+    const fromFiles = getFileCoursesByTrackSlug(trackSlug);
+    if (trackSlug !== FRONTEND_TRACK_SLUG) return fromFiles;
+    return [...fromFiles, ...Object.values(categoryToCourse)];
   },
 
   async getCourse(courseId: string): Promise<CourseDTO | null> {
     await delay();
-    return Object.values(categoryToCourse).find((course) => course.id === courseId) ?? null;
+    return (
+      fileCatalog.courses.find((course) => course.id === courseId) ??
+      Object.values(categoryToCourse).find((course) => course.id === courseId) ??
+      null
+    );
   },
 
   async getCourseModules(courseId: string): Promise<CourseModuleDTO[]> {
     await delay();
-    return getModulesForCourse(courseId);
+    const fromFiles = getFileModulesForCourse(courseId);
+    return fromFiles.length > 0 ? fromFiles : getModulesForCourse(courseId);
   },
 
   async getModuleLessons(moduleId: string): Promise<LessonListItemDTO[]> {
     await delay();
+    const fromFiles = getFileLessonsForModule(moduleId);
+    if (fromFiles.length > 0) return fromFiles.map(mapLessonListItem);
     return getModuleContentItems(moduleId).map(mapLessonListItem);
   },
 
   async getLesson(lessonId: string): Promise<LessonDTO | null> {
     await delay();
+    const fromFile = getFileLesson(lessonId);
+    if (fromFile) return fromFile;
+
     const courses = Object.values(categoryToCourse);
     for (const course of courses) {
       const lesson = getLessonsForCourse(course.id).find((item) => item.id === lessonId);

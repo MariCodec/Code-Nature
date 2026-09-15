@@ -340,6 +340,14 @@ const StudentLearningPage = () => {
                                 const hasVideo = Boolean(lessonDetails?.videos.length);
                                 const isVideoWatched =
                                   isCompleted || Boolean(videoStatus[lesson.id]);
+                                // Практика є не в кожного уроку: урок-відео завершується
+                                // додивленим відео, і завдань у ньому нуль. Безумовний
+                                // підпис обіцяв би йому редактор, а «0/? задач» —
+                                // завдання, яких автор не писав. `?` тут означав би
+                                // «ще вантажиться», і два різні стани злились би в один.
+                                const hasPractice = Boolean(
+                                  lessonDetails && lessonTasks.length > 0,
+                                );
                                 const lessonRowContent = (
                                   <>
                                     <span
@@ -364,21 +372,25 @@ const StudentLearningPage = () => {
                                             {isVideoWatched ? "✓ Відео" : "Відео"}
                                           </span>
                                         )}
-                                        <span
-                                          className={
-                                            isCompleted
-                                              ? styles.lessonStepDone
-                                              : styles.lessonStepTodo
-                                          }
-                                        >
-                                          Практика
-                                        </span>
+                                        {hasPractice && (
+                                          <span
+                                            className={
+                                              isCompleted
+                                                ? styles.lessonStepDone
+                                                : styles.lessonStepTodo
+                                            }
+                                          >
+                                            Практика
+                                          </span>
+                                        )}
                                       </div>
                                     </div>
                                     <div className={styles.lessonMeta}>
-                                      <span>
-                                        {completedTaskCount}/{lessonTasks.length || "?"} задач
-                                      </span>
+                                      {hasPractice && (
+                                        <span>
+                                          {completedTaskCount}/{lessonTasks.length} задач
+                                        </span>
+                                      )}
                                       <strong className={styles[`label_${rowState}`]}>
                                         {rowLabel}
                                       </strong>

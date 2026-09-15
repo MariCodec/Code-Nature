@@ -4,10 +4,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import styles from "./TaskList.module.scss";
 import InlineMarkdown from "../markdown/InlineMarkdown";
+import TaskHints from "./TaskHints";
 
 interface TaskItemProps {
   lessonId: string;
-  task: { id: string; text: string };
+  task: { id: string; text: string; hints: string[] };
   prevTaskId: string | null;
   number: number;
 }
@@ -35,6 +36,9 @@ const TaskItem: React.FC<TaskItemProps> = ({ lessonId, task, prevTaskId, number 
       </div>
       <div className={styles.text}>
         <InlineMarkdown text={task.text} />
+        {/* Підказки лише там, де вони ще потрібні: до зарахованого завдання
+            вони вже нічого не пояснюють, а до замкненого — розкривають наперед. */}
+        {isActive && <TaskHints hints={task.hints} />}
       </div>
       <div className={styles.controls}>
         {isCompleted && (

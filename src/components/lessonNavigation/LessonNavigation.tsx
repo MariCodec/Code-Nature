@@ -111,12 +111,22 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
 
       case "module-complete":
         if (!state.isModuleComplete) {
-          return {
-            label: uk.lessonNav.finishTechCheck,
-            hint: uk.lessonNav.finishTechCheckHint,
-            disabled: true,
-            accent: false,
-          };
+          // Що саме тримає модуль — залежить від того, чи є в ньому техчек.
+          // Без цієї розвилки модуль із одних уроків посилав учня «виконати
+          // завдання перевірки», якої в модулі немає.
+          return state.techCheck
+            ? {
+                label: uk.lessonNav.finishTechCheck,
+                hint: uk.lessonNav.finishTechCheckHint,
+                disabled: true,
+                accent: false,
+              }
+            : {
+                label: uk.lessonNav.finishModule,
+                hint: uk.lessonNav.finishModuleHint,
+                disabled: true,
+                accent: false,
+              };
         }
         return nextModule
           ? {

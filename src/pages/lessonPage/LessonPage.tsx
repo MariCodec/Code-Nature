@@ -22,6 +22,7 @@ import {
 } from "../../store/slices/contentSlice";
 import { saveUserData } from "../../store/thunks/syncThunks";
 import {
+  markLessonAsCompleted,
   markLessonVideoAsWatched,
   selectIsProgressHydrated,
   setCurrentLesson,
@@ -37,6 +38,10 @@ import {
 } from "../../domain/techCheck";
 import { buildStudentLessonPath } from "../../utils/courseMapping";
 import { markTaskAsCompleted } from "../../store/slices/progressSlice";
+import TheoryBlocks from "../../components/theory/TheoryBlocks";
+import { getLessonRuntime } from "../../runtimes/registry";
+import { getLessonCompletion } from "../../domain/lessonCompletion";
+import { uk } from "../../i18n/uk";
 
 const getVideoEmbedUrl = (video: LessonVideoDTO): string | null => {
   if (!video.sourceUrl) return null;
@@ -145,7 +150,13 @@ const LessonIntroScreen = ({
   );
 };
 
-const LessonVideos = ({ videos }: { videos: LessonVideoDTO[] }) => {
+const LessonVideos = ({
+  videos,
+  onFileVideoEnded,
+}: {
+  videos: LessonVideoDTO[];
+  onFileVideoEnded?: () => void;
+}) => {
   const orderedVideos = [...videos].sort((a, b) => a.orderIndex - b.orderIndex);
 
   if (orderedVideos.length === 0) return null;
@@ -170,6 +181,7 @@ const LessonVideos = ({ videos }: { videos: LessonVideoDTO[] }) => {
                   preload="metadata"
                   poster={video.thumbnailUrl ?? undefined}
                   src={source}
+                  onEnded={onFileVideoEnded}
                 >
                   {video.captionsUrl && (
                     <track
@@ -264,6 +276,64 @@ const LessonSidebarVideo = ({
   );
 };
 
+/**
+ * Урок без редактора: відео і теорія.
+ *
+ * Runtime каже `hasEditor: false` — сторінка не питає «а це часом не video?»,
+ * вона питає реєстр. Сюди однаково потрапляють `video` і `theory-only`.
+ *
+ * Завершення таких уроків — це гілка `validation_type: none` (розділ 3): обовʼязкове
+ * відео додивлене, а якщо додивлятись нема чого — явна дія учня. Без неї урок,
+ * у якому немає завдань, не завершується **ніколи**: правило `auto` спирається
+ * на завдання, а їх тут нуль.
+ */
+const LessonWithoutEditor = ({
+  videos,
+  isFinished,
+  isRequiredVideo,
+  onFinish,
+}: {
+  videos: LessonVideoDTO[];
+  isFinished: boolean;
+  isRequiredVideo: boolean;
+  onFinish: () => void;
+}) => {
+  const [isFileVideoFinished, setIsFileVideoFinished] = useState(false);
+  const mainVideo = [...videos].sort((a, b) => a.orderIndex - b.orderIndex)[0] ?? null;
+  const source = mainVideo ? getVideoEmbedUrl(mainVideo) : null;
+  // Дочекатись кінця можна лише там, де кінець нам повідомляють. YouTube без свого
+  // API мовчить, а відео без джерела не існує — тоді лишається явна дія учня.
+  const shouldWaitForVideoEnd = Boolean(
+    isRequiredVideo && source && mainVideo && isFileVideo(mainVideo),
+  );
+  const canFinish = !shouldWaitForVideoEnd || isFileVideoFinished;
+
+  return (
+    <>
+      <LessonVideos videos={videos} onFileVideoEnded={() => setIsFileVideoFinished(true)} />
+
+      <section className={styles.finishSection}>
+        {!source && isRequiredVideo && (
+          <p className={styles.finishHint}>{uk.videoLesson.noVideoYet}</p>
+        )}
+
+        <button
+          type="button"
+          className={styles.finishButton}
+          disabled={isFinished || !canFinish}
+          onClick={onFinish}
+        >
+          {isFinished
+            ? uk.videoLesson.finished
+            : canFinish
+              ? uk.videoLesson.finish
+              : uk.videoLesson.watchToFinish}
+        </button>
+      </section>
+    </>
+  );
+};
+
 const LessonPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);
@@ -292,6 +362,9 @@ const LessonPage = () => {
     id ? selectLessonStatus(state, id) : "idle",
   );
   const isProgressHydrated = useSelector(selectIsProgressHydrated);
+  const completedLessons = useSelector(
+    (state: RootState) => state.progress.completedLessons,
+  );
   const videoStatus = useSelector((state: RootState) => state.progress.videoStatus);
   const taskStatus = useSelector((state: RootState) => state.progress.taskStatus);
   const contentError = useSelector(selectContentError);
@@ -353,8 +426,15 @@ const LessonPage = () => {
   }
 
   const toggleBtn = () => setIsLessonInfoVisible((prev) => !prev);
-  const isVideoOnlyLesson =
-    lessonDto.runtimeType === "video" && lessonDto.files.length === 0;
+  /**
+   * Тип уроку читається з реєстру, а не вгадується по полях.
+   *
+   * Було `runtimeType === "video" && files.length === 0` — здогадка, яка помиляється
+   * двічі: урок-відео з файлом дістав би редактор, а `theory-only` дістав би його
+   * завжди. Реєстр відповідає на це питання один раз і для всіх типів, і саме
+   * тому «додати новий тип уроку = один запис, нуль правок у сторінці» (розділ 5).
+   */
+  const runtime = getLessonRuntime(lessonDto.runtimeType);
   const introVideo = [...lessonDto.videos].sort(
     (a, b) => a.orderIndex - b.orderIndex,
   )[0];
@@ -365,6 +445,38 @@ const LessonPage = () => {
     setIsVideoReviewMode(false);
     void dispatch(saveUserData());
   };
+
+  const hasRequiredVideo = lessonDto.videos.some((video) => video.isRequired);
+  const isLessonFinished = completedLessons.includes(lessonDto.id);
+
+  /**
+   * Єдина дія учня на уроці без завдань. Вона повідомляє **один факт**, а чи
+   * цього досить — вирішує правило з домену: на уроці з невиконаними завданнями
+   * `getLessonCompletion` поверне `blockedBy` і нічого не зарахує.
+   *
+   * Який саме факт — залежить від уроку, і це не одне й те саме: «додивився»
+   * стосується обовʼязкового відео, «пройдено» — уроку, де дивитись нема чого.
+   * Що відео справді додивлене, тримає не правило, а кнопка: сигнал про кінець
+   * дає лише файловий плеєр, і доменне правило його побачити не може.
+   */
+  const finishLessonWithoutTasks = () => {
+    const reportedFact = hasRequiredVideo
+      ? { isVideoWatched: true, isMarkedDone: false }
+      : { isVideoWatched: isIntroVideoWatched, isMarkedDone: true };
+
+    if (hasRequiredVideo) dispatch(markLessonVideoAsWatched(lessonDto.id));
+
+    const completion = getLessonCompletion({
+      validationType: lessonDto.validationType,
+      tasks: lessonDto.tasks,
+      videos: lessonDto.videos,
+      taskStatus: taskStatus[lessonDto.id],
+      ...reportedFact,
+    });
+
+    if (completion.completed) dispatch(markLessonAsCompleted(lessonDto.id));
+    void dispatch(saveUserData());
+  };
   // Підсумок показуємо лише на останньому елементі модуля: інакше він вискакував би
   // на будь-якому уроці, відкритому повторно після завершення модуля.
   const lastModuleItem = moduleProgression.state.ordered.at(-1) ?? null;
@@ -373,9 +485,11 @@ const LessonPage = () => {
     lastModuleItem?.id === lessonDto.id &&
     !isModuleSummaryDismissed;
 
+  // Екран «спершу відео, потім практика» має сенс лише там, де практика є.
+  // Питає про це той самий реєстр: урок-відео й теорія ведуть до себе самих.
   const shouldShowIntroBeforePractice =
     lessonDto.lessonKind === "lesson" &&
-    lessonDto.runtimeType !== "video" &&
+    Boolean(runtime?.hasEditor) &&
     Boolean(introVideo) &&
     ((!isIntroVideoWatched && !isPracticeStarted) || isVideoReviewMode);
 
@@ -434,6 +548,13 @@ const LessonPage = () => {
               onReplayIntro={() => setIsVideoReviewMode(true)}
             />
           )}
+          {lessonDto.theoryBlocks.length > 0 && (
+            <section className={styles.theorySection}>
+              <h2 className={styles.theoryTitle}>{uk.theory.title}</h2>
+              <TheoryBlocks blocks={lessonDto.theoryBlocks} />
+            </section>
+          )}
+
           <TaskList
             lessonId={lessonDto.id}
             tasks={(lessonDto.lessonKind === "tech_check"
@@ -442,6 +563,7 @@ const LessonPage = () => {
             ).map((task) => ({
               id: task.id,
               text: task.description,
+              hints: task.hints,
             }))}
           />
         </div>
@@ -464,7 +586,15 @@ const LessonPage = () => {
         />
       )}
 
-      {isVideoOnlyLesson ? (
+      {runtime?.hasEditor ? (
+        <CodeEditor
+          key={lessonDto.id}
+          lessonDto={lessonDto}
+          runtime={runtime}
+          toggleBtn={toggleBtn}
+          isVisible={isLessonInfoVisible}
+        />
+      ) : (
         <main className={styles.videoOnlyPage}>
           <div className={styles.videoOnlyTopBar}>
             <button className={styles.detailsButton} onClick={toggleBtn}>
@@ -472,15 +602,23 @@ const LessonPage = () => {
             </button>
             <LessonNavigation currentLessonId={lessonDto.id} />
           </div>
-          <LessonVideos videos={lessonDto.videos} />
+
+          {runtime ? (
+            <LessonWithoutEditor
+              videos={lessonDto.videos}
+              isFinished={isLessonFinished}
+              isRequiredVideo={hasRequiredVideo}
+              onFinish={finishLessonWithoutTasks}
+            />
+          ) : (
+            /* Тип уроку, для якого реалізації ще немає: `js-dom`, `code-output`,
+               `spa-preview`. Порожній редактор тут був би гіршим за чесний напис —
+               учень вирішив би, що зламався застосунок. */
+            <p className={styles.finishHint}>
+              {uk.editor.runtimeUnsupported(lessonDto.runtimeType)}
+            </p>
+          )}
         </main>
-      ) : (
-        <CodeEditor
-          key={lessonDto.id}
-          lessonDto={lessonDto}
-          toggleBtn={toggleBtn}
-          isVisible={isLessonInfoVisible}
-        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
@@ -13,9 +13,8 @@ import "../../utils/monacoSetup";
 import { AppDispatch, RootState } from "../../store";
 import {
   selectLessonCode,
-  updateHtml,
-  updateCss,
-  setLessonCode,
+  setLessonFiles,
+  updateLessonFile,
 } from "../../store/slices/userCodeSlice";
 
 import styles from "./CodeEditor.module.scss";
@@ -32,25 +31,27 @@ import { uk } from "../../i18n/uk";
 import { isQuizRules } from "../../domain/techCheck";
 import { setupMonaco } from "../../utils/monacoSetup";
 import { saveUserData } from "../../store/thunks/syncThunks";
-import {
-  getInitialCssFromLessonFiles,
-  getInitialHtmlFromLessonFiles,
-} from "../../utils/lessonFiles";
-import {
-  buildSavedFiles,
-  getCssFromSavedFiles,
-  getHtmlFromSavedFiles,
-  getSavedFileContent,
-} from "../../utils/codeFiles";
+import { buildLessonFileStates, toSavedFiles } from "../../utils/codeFiles";
+import type { LessonRuntime } from "../../runtimes/types";
 
 interface CodeEditorProps {
   lessonDto: LessonDTO;
+  /** Runtime уроку з реєстру: він і збирає документ для preview й перевірки. */
+  runtime: LessonRuntime;
   toggleBtn: () => void;
   isVisible: boolean;
 }
 
+/**
+ * Шлях моделі Monaco. Обовʼязково з id уроку: моделі живуть у самому Monaco
+ * і переживають розмонтування редактора, тож на голому `index.html` другий урок
+ * дістав би буфер першого.
+ */
+const modelPath = (lessonId: string, fileName: string) => `${lessonId}/${fileName}`;
+
 const CodeEditor: React.FC<CodeEditorProps> = ({
   lessonDto,
+  runtime,
   toggleBtn,
   isVisible,
 }) => {
@@ -62,129 +63,113 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const passedTaskIds = useSelector((state: RootState) =>
     selectTaskStatus(state, lessonDto.id),
   );
-  const isVideoWatched = useSelector(
-    (state: RootState) => Boolean(state.progress.videoStatus[lessonDto.id]),
+  const isVideoWatched = useSelector((state: RootState) =>
+    Boolean(state.progress.videoStatus[lessonDto.id]),
   );
-  const fallbackHtml = getInitialHtmlFromLessonFiles(lessonDto.files);
-  const fallbackCss = getInitialCssFromLessonFiles(lessonDto.files);
-  const effectiveSavedFiles =
-    lessonCode.savedFiles.length > 0
-      ? lessonCode.savedFiles
-      : buildSavedFiles(fallbackHtml, fallbackCss);
-  const currentHtml = getHtmlFromSavedFiles(effectiveSavedFiles) || fallbackHtml;
-  const currentCss = getCssFromSavedFiles(effectiveSavedFiles) || fallbackCss;
+
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monaco = useMonaco();
-const validateTimerRef = useRef<number | null>(null);
+  const validateTimerRef = useRef<number | null>(null);
 
-  const supportedFiles = lessonDto.files
-    .filter(
-    (file) => file.name === "index.html" || file.name === "style.css",
-    )
-    .sort((a, b) => a.orderIndex - b.orderIndex);
+  /**
+   * Вкладки — це `files[]` уроку, скільки б їх не було й як би вони не звались.
+   * Фіксована пара `index.html` + `style.css` мовчки викидала все інше: урок із
+   * третім файлом виглядав би як урок із двома, і автор шукав би помилку в контенті.
+   */
+  const files = useMemo(
+    () => buildLessonFileStates(lessonDto.files, lessonCode.savedFiles),
+    [lessonDto.files, lessonCode.savedFiles],
+  );
+  const initialFiles = useMemo(
+    () => buildLessonFileStates(lessonDto.files, []),
+    [lessonDto.files],
+  );
 
-  const currentFiles = supportedFiles.map((file) => ({
-    ...file,
-    content: getSavedFileContent(effectiveSavedFiles, file.name) || file.initialContent,
-  }));
+  const [fileName, setFileName] = useState<string>(() => files[0]?.name ?? "");
+  const activeFile = files.find((file) => file.name === fileName) ?? files[0] ?? null;
 
-  const [fileName, setFileName] = useState<string>(() => supportedFiles[0]?.name ?? "index.html");
-  const [output, setOutput] = useState({
-    html: currentHtml,
-    css: currentCss,
-  });
-const [htmlError, setHtmlError] = useState<string | null>(null);
+  const [documentHtml, setDocumentHtml] = useState<string>(() =>
+    runtime.buildDocument ? runtime.buildDocument(files) : "",
+  );
+  const [htmlError, setHtmlError] = useState<string | null>(null);
   // Що саме не зійшлося на останньому запуску. null — ще не запускали.
   const [checkResults, setCheckResults] = useState<TaskResult[] | null>(null);
-  const activeFile =
-    currentFiles.find((file) => file.name === fileName) ?? currentFiles[0] ?? null;
 
   const { containerRef, dividerPosition, startResizing, isOverlayVisible } =
     useResizable();
-const focusFirstHtmlError = (): boolean => {
-  if (!monaco || !editorRef.current) return false;
 
-  const model = editorRef.current.getModel();
-  if (!model) return false;
+  const focusFirstHtmlError = (): boolean => {
+    if (!monaco || !editorRef.current) return false;
 
-  const markers = monaco.editor
-    .getModelMarkers({ owner: "html-parse5", resource: model.uri })
-    .sort((a, b) =>
-      a.startLineNumber !== b.startLineNumber
-        ? a.startLineNumber - b.startLineNumber
-        : a.startColumn - b.startColumn,
-    );
+    const model = editorRef.current.getModel();
+    if (!model) return false;
 
-  const first = markers[0];
-  if (!first) return false;
+    const markers = monaco.editor
+      .getModelMarkers({ owner: "html-parse5", resource: model.uri })
+      .sort((a, b) =>
+        a.startLineNumber !== b.startLineNumber
+          ? a.startLineNumber - b.startLineNumber
+          : a.startColumn - b.startColumn,
+      );
 
-  editorRef.current.focus();
-  editorRef.current.setSelection({
-    startLineNumber: first.startLineNumber,
-    startColumn: first.startColumn,
-    endLineNumber: first.endLineNumber,
-    endColumn: first.endColumn,
-  });
-  editorRef.current.revealRangeInCenter({
-    startLineNumber: first.startLineNumber,
-    startColumn: first.startColumn,
-    endLineNumber: first.endLineNumber,
-    endColumn: first.endColumn,
-  });
+    const first = markers[0];
+    if (!first) return false;
 
-  return true;
-};
+    editorRef.current.focus();
+    editorRef.current.setSelection({
+      startLineNumber: first.startLineNumber,
+      startColumn: first.startColumn,
+      endLineNumber: first.endLineNumber,
+      endColumn: first.endColumn,
+    });
+    editorRef.current.revealRangeInCenter({
+      startLineNumber: first.startLineNumber,
+      startColumn: first.startColumn,
+      endLineNumber: first.endLineNumber,
+      endColumn: first.endColumn,
+    });
+
+    return true;
+  };
 
   const onMount = (editorInstance: editor.IStandaloneCodeEditor) => {
     editorRef.current = editorInstance;
     editorInstance.focus();
   };
 
+  // Урок змінився, або автор переписав `files[]` — активна вкладка могла зникнути.
   useEffect(() => {
-    // Обновлюємо output при зміні уроку
-    setOutput({
-      html: currentHtml,
-      css: currentCss,
-    });
-  }, [currentHtml, currentCss]);
+    if (files.length === 0) return;
+    if (!files.some((file) => file.name === fileName)) setFileName(files[0].name);
+  }, [fileName, files]);
 
-  useEffect(() => {
-    if (!activeFile && supportedFiles[0]) {
-      setFileName(supportedFiles[0].name);
-      return;
-    }
+  const handleChange = (newValue: string | undefined) => {
+    if (!activeFile || !activeFile.isEditable) return;
 
-    if (activeFile && !currentFiles.some((file) => file.name === activeFile.name) && supportedFiles[0]) {
-      setFileName(supportedFiles[0].name);
-    }
-  }, [activeFile, currentFiles, supportedFiles]);
+    const content = newValue ?? "";
+    dispatch(
+      updateLessonFile({
+        lessonId: lessonDto.id,
+        file: {
+          name: activeFile.name,
+          language: activeFile.language,
+          content,
+        },
+      }),
+    );
 
-const handleChange = (newValue: string | undefined) => {
-  const value = newValue || "";
+    if (activeFile.language !== "html") return;
+    if (!monaco || !editorRef.current) return;
 
-  if (activeFile?.name === "index.html") {
-    dispatch(updateHtml({ lessonId: lessonDto.id, html: value }));
+    const model = editorRef.current.getModel();
+    if (!model) return;
 
-    if (monaco && editorRef.current) {
-      const model = editorRef.current.getModel();
-      if (model) {
-        if (validateTimerRef.current) {
-          window.clearTimeout(validateTimerRef.current);
-        }
-
-        validateTimerRef.current = window.setTimeout(() => {
-          const res = validateHtmlWithParse5(monaco, model, value);
-          setHtmlError(res.firstMessage);
-        }, 150);
-      }
-    }
-  }
-
-  if (activeFile?.name === "style.css") {
-    dispatch(updateCss({ lessonId: lessonDto.id, css: value }));
-  }
-};
-
+    if (validateTimerRef.current) window.clearTimeout(validateTimerRef.current);
+    validateTimerRef.current = window.setTimeout(() => {
+      const result = validateHtmlWithParse5(monaco, model, content);
+      setHtmlError(result.firstMessage);
+    }, 150);
+  };
 
   // Показуємо перше правило, яке не зійшлося у першому незарахованому завданні:
   // список провалів одразу лякає, а сенс гранулярності саме в конкретиці.
@@ -195,57 +180,56 @@ const handleChange = (newValue: string | undefined) => {
       ? { passed: false, text: getFirstFailureText(firstFailed.rules) ?? uk.taskCheck.notPassed }
       : { passed: true, text: uk.taskCheck.allPassed };
 
+  const buildDocument = (source: typeof files) =>
+    runtime.buildDocument ? runtime.buildDocument(source) : "";
+
   const handleRunCode = () => {
-    setOutput({
-      html: currentHtml,
-      css: currentCss,
-    });
-  if (htmlError) {
-    focusFirstHtmlError();
-    return;
-  }
+    const nextDocument = buildDocument(files);
+    setDocumentHtml(nextDocument);
+
+    if (htmlError) {
+      focusFirstHtmlError();
+      return;
+    }
+
     dispatch(touchProgress());
     setCheckResults(
       checkLesson({
         lesson: lessonDto,
-        userHtml: currentHtml,
-        userCss: currentCss,
+        documentHtml: nextDocument,
         passedTaskIds,
         isVideoWatched,
         dispatch,
       }),
     );
-    // Зберігаємо код у Redux як "збережений"
     dispatch(
-      setLessonCode({
-        lessonId: lessonDto.id,
-        html: currentHtml,
-        css: currentCss,
-      })
+      setLessonFiles({ lessonId: lessonDto.id, savedFiles: toSavedFiles(files) }),
     );
-dispatch(saveUserData());
-    // HTML валідація
-    // if (monaco && editorRef.current) {
-    //   validateHtml(monaco, editorRef.current, lessonCode.html || lesson.initialHtml);
-    // }
+    void dispatch(saveUserData());
   };
 
   const clearCode = () => {
     dispatch(
-      setLessonCode({
+      setLessonFiles({
         lessonId: lessonDto.id,
-        html: fallbackHtml,
-        css: fallbackCss,
-      })
+        savedFiles: toSavedFiles(initialFiles),
+      }),
     );
-    setOutput({ html: fallbackHtml, css: fallbackCss });
-   setHtmlError(null);
-   setCheckResults(null);
+    setDocumentHtml(buildDocument(initialFiles));
+    setHtmlError(null);
+    setCheckResults(null);
 
-   if (monaco && editorRef.current) {
-     const model = editorRef.current.getModel();
-     if (model) monaco.editor.setModelMarkers(model, "html-parse5", []);
-   }
+    // Стан редактора живе в моделях Monaco, а не в Redux, тож самого диспатчу мало:
+    // без цього рядка буфер лишився б із написаним, а прогрес — скинутим.
+    if (monaco) {
+      initialFiles.forEach((file) => {
+        const model = monaco.editor.getModel(
+          monaco.Uri.parse(modelPath(lessonDto.id, file.name)),
+        );
+        if (model && model.getValue() !== file.content) model.setValue(file.content);
+        if (model) monaco.editor.setModelMarkers(model, "html-parse5", []);
+      });
+    }
 
     // Скидаємо лише практику: питання техчека вже складені й скидати їх не можна,
     // інакше «Clear Code» викине учня назад на квіз.
@@ -255,13 +239,14 @@ dispatch(saveUserData());
         taskIds: lessonDto.tasks
           .filter((task) => !isQuizRules(task.rules))
           .map((task) => task.id),
-      })
+      }),
     );
-    
   };
- const handleBeforeMount = (monacoInstance: typeof monaco) => {
-   setupMonaco(monacoInstance);
- };
+
+  const handleBeforeMount = (monacoInstance: typeof monaco) => {
+    setupMonaco(monacoInstance);
+  };
+
   const formatCode = () => {
     editorRef.current?.getAction("editor.action.formatDocument")?.run();
   };
@@ -277,16 +262,22 @@ dispatch(saveUserData());
           {isVisible ? "Приховати деталі уроку" : "Деталі уроку"}
         </button>
 
-        {currentFiles.map((file) => (
+        {files.map((file) => (
           <button
             key={file.id}
             className={`${styles.tabButtons} ${
               fileName === file.name ? styles.active : ""
-            }`}
+            } ${file.isEditable ? "" : styles.tabLocked}`}
             disabled={fileName === file.name}
+            title={file.isEditable ? undefined : uk.editor.lockedTab(file.name)}
             onClick={() => setFileName(file.name)}
           >
             {file.name}
+            {!file.isEditable && (
+              <span className={styles.tabLockIcon} aria-hidden="true">
+                🔒
+              </span>
+            )}
           </button>
         ))}
 
@@ -299,22 +290,37 @@ dispatch(saveUserData());
           style={{ width: `${dividerPosition}%` }}
         >
           <div className={styles.editorSurface}>
-          <Editor
-            height="100%"
-            theme="myCustomTheme"
-            language={activeFile?.language ?? "html"}
-            value={activeFile?.content ?? ""}
-            onChange={handleChange}
-            beforeMount={handleBeforeMount}
-            onMount={onMount}
-            options={{
-              formatOnPaste: true,
-              formatOnType: true,
-              wordWrap: "on",
-              minimap: { enabled: false },
-            }}
-          />
+            {activeFile ? (
+              <Editor
+                height="100%"
+                theme="myCustomTheme"
+                // `path` дає Monaco окрему модель на файл: своя історія undo,
+                // свій курсор і — головне — граф файлів для мовних сервісів,
+                // без якого React-уроки лишились би без автодоповнення.
+                path={modelPath(lessonDto.id, activeFile.name)}
+                defaultLanguage={activeFile.language}
+                defaultValue={activeFile.content}
+                onChange={handleChange}
+                beforeMount={handleBeforeMount}
+                onMount={onMount}
+                options={{
+                  readOnly: !activeFile.isEditable,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  wordWrap: "on",
+                  minimap: { enabled: false },
+                }}
+              />
+            ) : (
+              <p className={styles.editorEmpty}>{uk.editor.noFiles}</p>
+            )}
           </div>
+
+          {activeFile && !activeFile.isEditable && (
+            <p className={styles.lockedNotice} role="note">
+              {uk.editor.lockedNotice(activeFile.name)}
+            </p>
+          )}
 
           <CodeButtons
             handleRunCode={handleRunCode}
@@ -341,7 +347,7 @@ dispatch(saveUserData());
           className={styles.browserWindow}
           style={{ width: `${100 - dividerPosition}%` }}
         >
-          <Output html={output.html} css={output.css} />
+          <Output documentHtml={documentHtml} />
         </div>
       </div>
       {isOverlayVisible && <div className={styles.overlay} />}

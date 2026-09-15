@@ -1,0 +1,65 @@
+@use "../../styles/variables" as v;
+
+.blocks {
+  display: grid;
+  gap: 12px;
+}
+
+.text {
+  margin: 0;
+  color: v.$text-muted;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+
+  color: v.$text-muted;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.code {
+  position: relative;
+  border-radius: v.$radius-sm;
+  border: 1px solid v.$border;
+  background: rgb(#{v.$shadow-rgb} / 0.32);
+  padding: 10px 12px;
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    font-family: v.$font-code;
+    font-size: 13px;
+    line-height: 1.5;
+    color: v.$text-main;
+  }
+}
+
+.codeLang {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: v.$text-dimmer;
+}
+
+.note {
+  border-radius: v.$radius-sm;
+  border: 1px solid rgb(#{v.$accent-blue-rgb} / 0.35);
+  background: rgb(#{v.$accent-blue-rgb} / 0.12);
+  padding: 10px 12px;
+
+  color: v.$text-muted;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.noteWarning {
+  border-color: rgb(#{v.$danger-rgb} / 0.35);
+  background: v.$danger-bg;
+}

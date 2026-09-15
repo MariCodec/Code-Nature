@@ -209,3 +209,64 @@
   0% { transform: scale(0.86); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* Підказки завдання. Заміна викладача в самостійному режимі, а не оздоблення —
+   див. PLATFORM_UA, розділ 3. Розкриваються поступово, по одній. */
+.hints {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.hint {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: v.$radius-sm;
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.28);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.1);
+  color: v.$text-muted;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hintCounter {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: v.$text-dimmer;
+}
+
+.hintActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hintButton {
+  padding: 5px 12px;
+  border-radius: v.$radius-round;
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.45);
+  background: transparent;
+  color: v.$accent-secondary;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(#{v.$accent-secondary-rgb} / 0.12);
+  }
+}
+
+.hintButtonQuiet {
+  padding: 5px 12px;
+  border-radius: v.$radius-round;
+  border: 1px solid transparent;
+  background: transparent;
+  color: v.$text-dimmer;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    color: v.$text-muted;
+  }
+}

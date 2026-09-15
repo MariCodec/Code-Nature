@@ -8,6 +8,7 @@ interface TaskListProps {
   tasks: {
     id: string;
     text: string;
+    hints: string[];
   }[];
 }
 

@@ -2,34 +2,21 @@ import React, { useEffect, useRef } from "react";
 import styles from "./CodeEditor.module.scss";
 
 interface OutputProps {
-  html: string;
-  css: string;
-  // js: string;
+  /** Цілий документ, зібраний runtime-ом уроку (`buildDocument` у реєстрі). */
+  documentHtml: string;
 }
 
-const Output: React.FC<OutputProps> = ({ html, css }) => {
+const Output: React.FC<OutputProps> = ({ documentHtml }) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
-    if (iframeRef.current) {
-      const document = iframeRef.current.contentDocument;
-      if (document) {
-        document.open();
-        document.write(`
-          <html>
-            <head>
-              <style>${css}</style>
-            </head>
-            <body>
-              ${html}
-      
-            </body>
-          </html>
-        `);
-        document.close();
-      }
-    }
-  }, [html, css]);
+    const frameDocument = iframeRef.current?.contentDocument;
+    if (!frameDocument) return;
+
+    frameDocument.open();
+    frameDocument.write(documentHtml);
+    frameDocument.close();
+  }, [documentHtml]);
 
   return (
     <>

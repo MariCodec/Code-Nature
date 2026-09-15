@@ -11,8 +11,12 @@ import { isQuizRules } from "../domain/techCheck";
 
 interface CheckLessonProps {
   lesson: Pick<LessonDTO, "id" | "validationType" | "tasks" | "videos">;
-  userHtml: string;
-  userCss: string;
+  /**
+   * Готовий документ пісочниці. Збирає його **runtime уроку** (`buildDocument`
+   * у реєстрі), а не цей файл: як саме файли перетворюються на сторінку —
+   * властивість типу уроку, і в `js-dom` вона буде інша.
+   */
+  documentHtml: string;
   /** Уже зараховані завдання — щоб питання техчека не «губились» при запуску коду. */
   passedTaskIds?: Record<string, boolean>;
   isVideoWatched: boolean;
@@ -31,8 +35,7 @@ interface CheckLessonProps {
  */
 export const checkLesson = ({
   lesson,
-  userHtml,
-  userCss,
+  documentHtml,
   passedTaskIds,
   isVideoWatched,
   dispatch,
@@ -47,12 +50,11 @@ export const checkLesson = ({
     const doc = iframe.contentDocument;
     if (!doc) return [];
 
-    doc.documentElement.innerHTML = `
-      <html>
-        <head><style>${userCss}</style></head>
-        <body>${userHtml}</body>
-      </html>
-    `;
+    // `write`, а не `documentElement.innerHTML`: runtime віддає **цілий** документ,
+    // разом із doctype і `<head>`, і всередину `<html>` він не вкладається.
+    doc.open();
+    doc.write(documentHtml);
+    doc.close();
 
     // Питання техчека перевіряються не по DOM, а звіркою варіантів — тут їх пропускаємо.
     const results: TaskResult[] = lesson.tasks
@@ -79,8 +81,9 @@ export const checkLesson = ({
       videos: lesson.videos,
       taskStatus,
       isVideoWatched,
-      // Кнопки «Пройдено» ще немає — вона потрібна лише урокам без завдань
-      // і без обовʼязкового відео, а такі приїдуть із контентом у Фазі 2.
+      // Явна дія «Пройдено» живе на сторінці уроку — там, де немає завдань.
+      // Сюди вона дійти не може: цей файл викликається кнопкою Run, а Run є
+      // лише в уроків із редактором, тобто саме там, де завдання є.
       isMarkedDone: false,
     });
     if (completion.completed) dispatch(markLessonAsCompleted(lesson.id));
