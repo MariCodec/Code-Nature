@@ -20,9 +20,33 @@ type LessonCode = {
   savedFiles: StudentSavedFileDTO[];
 };
 
-type UserCodeState = Record<string, LessonCode>;
+/**
+ * `isHydrated` — окреме питання «чи піднято збережений код», і воно **не те саме**,
+ * що `progress.isHydrated`: код і прогрес читаються двома різними запитами
+ * (`loadMyCode` / `loadMyProgress`), а у Фазі 8 стануть двома HTTP-викликами, які
+ * цілком можуть завершитись у різний час.
+ *
+ * Без цього прапорця редактор створював модель Monaco із **заготовки** уроку, бо
+ * збережений код ще не приїхав. Модель створюється один раз на файл і `defaultValue`
+ * більше не застосовується, тож редактор так і лишався б із заготовкою, поки прев'ю
+ * й перевірка читали б збережений код зі стану. Перше натискання клавіші записало б
+ * заготовку поверх роботи учня.
+ *
+ * Сьогодні це не спрацьовує лише тому, що Monaco вантажиться довше за читання
+ * `localStorage` — тобто дані виграють гонку випадково. Фаза 8 цю випадковість зніме.
+ */
+type UserCodeState = {
+  lessons: Record<string, LessonCode>;
+  isHydrated: boolean;
+};
 
-const initialState: UserCodeState = {};
+/** Те, що приходить зі сховища: без службового прапорця. */
+export type HydratedUserCode = Record<string, LessonCode>;
+
+const initialState: UserCodeState = {
+  lessons: {},
+  isHydrated: false,
+};
 
 /** Одна константа на всі порожні уроки: селектор має повертати стабільне посилання. */
 const EMPTY_LESSON_CODE: LessonCode = { savedFiles: [] };
@@ -36,7 +60,7 @@ const userCodeSlice = createSlice({
       state,
       action: PayloadAction<{ lessonId: string; savedFiles: StudentSavedFileDTO[] }>,
     ) => {
-      state[action.payload.lessonId] = { savedFiles: action.payload.savedFiles };
+      state.lessons[action.payload.lessonId] = { savedFiles: action.payload.savedFiles };
     },
     /** Один файл змінився в редакторі. Ім'я — ключ: воно ж ім'я вкладки. */
     updateLessonFile: (
@@ -44,32 +68,47 @@ const userCodeSlice = createSlice({
       action: PayloadAction<{ lessonId: string; file: StudentSavedFileDTO }>,
     ) => {
       const { lessonId, file } = action.payload;
-      const lesson = state[lessonId] ?? { savedFiles: [] };
+      const lesson = state.lessons[lessonId] ?? { savedFiles: [] };
       const index = lesson.savedFiles.findIndex((saved) => saved.name === file.name);
 
       if (index >= 0) lesson.savedFiles[index] = file;
       else lesson.savedFiles.push(file);
 
-      state[lessonId] = lesson;
+      state.lessons[lessonId] = lesson;
     },
     resetUserCode: () => initialState,
-    hydrateUserCode: (_state, action: PayloadAction<UserCodeState>) =>
-      Object.fromEntries(
+    hydrateUserCode: (_state, action: PayloadAction<HydratedUserCode>) => ({
+      lessons: Object.fromEntries(
         Object.entries(action.payload).map(([lessonId, value]) => [
           lessonId,
           { savedFiles: value.savedFiles },
         ]),
       ),
+      isHydrated: true,
+    }),
+    setUserCodeHydrated: (state, action: PayloadAction<boolean>) => {
+      state.isHydrated = action.payload;
+    },
   },
 });
 
-export const { hydrateUserCode, setLessonFiles, updateLessonFile, resetUserCode } =
-  userCodeSlice.actions;
+export const {
+  hydrateUserCode,
+  setLessonFiles,
+  updateLessonFile,
+  resetUserCode,
+  setUserCodeHydrated,
+} = userCodeSlice.actions;
 
 export const selectLessonCode = createSelector(
-  (state: RootState) => state.userCode,
+  (state: RootState) => state.userCode.lessons,
   (_: RootState, lessonId: string) => lessonId,
-  (userCode, lessonId) => userCode[lessonId] ?? EMPTY_LESSON_CODE,
+  (lessons, lessonId) => lessons[lessonId] ?? EMPTY_LESSON_CODE,
 );
+
+export const selectIsUserCodeHydrated = (state: RootState) => state.userCode.isHydrated;
+
+/** Те, що йде у сховище: службовий прапорець туди не потрапляє. */
+export const selectPersistableUserCode = (state: RootState) => state.userCode.lessons;
 
 export default userCodeSlice.reducer;

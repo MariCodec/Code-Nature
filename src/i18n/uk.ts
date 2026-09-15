@@ -69,6 +69,7 @@ export const uk = {
     lockedNotice: (fileName: string) =>
       `Файл ${fileName} заблокований у цьому уроці: його можна читати, але не змінювати. Задача розвʼязується в інших файлах.`,
     noFiles: "У цьому уроці немає файлів для редагування.",
+    loadingCode: "Завантажую твій код…",
     runtimeUnsupported: (runtimeType: string) =>
       `Цей урок має тип «${runtimeType}», який застосунок ще не вміє показувати.`,
   },

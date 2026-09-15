@@ -12,6 +12,7 @@ import { CodeButtons } from "./CodeButtons";
 import "../../utils/monacoSetup";
 import { AppDispatch, RootState } from "../../store";
 import {
+  selectIsUserCodeHydrated,
   selectLessonCode,
   setLessonFiles,
   updateLessonFile,
@@ -59,6 +60,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const lessonCode = useSelector((state: RootState) =>
     selectLessonCode(state, lessonDto.id),
   );
+  const isCodeHydrated = useSelector(selectIsUserCodeHydrated);
   // Питання техчека зараховані раніше — без них урок ніколи не завершився б.
   const passedTaskIds = useSelector((state: RootState) =>
     selectTaskStatus(state, lessonDto.id),
@@ -136,6 +138,41 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     editorRef.current = editorInstance;
     editorInstance.focus();
   };
+
+  /**
+   * Моделі Monaco живуть у **глобальному** реєстрі, а не в React: `<Editor path>`
+   * робить get-or-create, тож наявна модель береться як є, а `defaultValue` до неї
+   * більше не застосовується. Не звільняти їх означає дві різні біди.
+   *
+   * Перша — витік: кожен урок × кожен файл лишає буфер із повною історією undo
+   * до перезавантаження сторінки.
+   *
+   * Друга, гірша — **чужий код після виходу**. Вихід це `navigate("/login")` без
+   * перезавантаження, тож `resetUserCode` чистить Redux, а моделі лишаються. Наступний
+   * учень у тому ж браузері відкриває той самий урок і бачить роботу попереднього.
+   *
+   * На вході прибираємо хвости інших уроків, на виході — свої. Приєднану модель
+   * пропускаємо: її звільняє сам `@monaco-editor/react`, і забирати її з-під нього
+   * означало б гасити редактор на очах.
+   */
+  useEffect(() => {
+    if (!monaco) return;
+
+    const prefix = `/${lessonDto.id}/`;
+    const belongsToLesson = (model: editor.ITextModel) =>
+      model.uri.path.startsWith(prefix);
+
+    for (const model of monaco.editor.getModels()) {
+      if (!belongsToLesson(model)) model.dispose();
+    }
+
+    return () => {
+      const attached = editorRef.current?.getModel();
+      for (const model of monaco.editor.getModels()) {
+        if (model !== attached && belongsToLesson(model)) model.dispose();
+      }
+    };
+  }, [monaco, lessonDto.id]);
 
   // Урок змінився, або автор переписав `files[]` — активна вкладка могла зникнути.
   useEffect(() => {
@@ -290,7 +327,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           style={{ width: `${dividerPosition}%` }}
         >
           <div className={styles.editorSurface}>
-            {activeFile ? (
+            {!isCodeHydrated ? (
+              /*
+               * Поки збережений код не піднято, модель створилась би із заготовки
+               * уроку — і лишилась би з нею назавжди. Див. коментар до `isHydrated`
+               * у `userCodeSlice`.
+               */
+              <p className={styles.editorEmpty}>{uk.editor.loadingCode}</p>
+            ) : activeFile ? (
               <Editor
                 height="100%"
                 theme="myCustomTheme"

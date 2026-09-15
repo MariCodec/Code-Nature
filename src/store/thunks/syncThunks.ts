@@ -6,7 +6,11 @@ import type {
   StudentVideoProgressDTO,
 } from "../../types/content";
 import { RootState } from "../index";
-import { hydrateUserCode } from "../slices/userCodeSlice";
+import {
+  hydrateUserCode,
+  selectPersistableUserCode,
+  setUserCodeHydrated,
+} from "../slices/userCodeSlice";
 import { hydrateProgress, setProgressHydrated } from "../slices/progressSlice";
 import { buildLessonCourseMap } from "../../domain/lessonCourses";
 
@@ -162,12 +166,14 @@ export const loadUserData = createAsyncThunk(
     if (!user || user.role !== "student") {
       // Піднімати нічого, але й затирати нічого: гість і викладач прогрес не зберігають.
       dispatch(setProgressHydrated(true));
+      dispatch(setUserCodeHydrated(true));
       return null;
     }
 
     // Поточний стан ще не належить цьому користувачеві — до кінця завантаження
     // збереження заборонене.
     dispatch(setProgressHydrated(false));
+    dispatch(setUserCodeHydrated(false));
 
     try {
       const [code, progress] = await Promise.all([
@@ -178,6 +184,10 @@ export const loadUserData = createAsyncThunk(
       if (code) {
         dispatch(hydrateUserCode(code));
       }
+
+      // Збереженого коду могло не бути зовсім — це теж відповідь. Прапорець
+      // ставиться завжди, інакше редактор чекав би вічно на першому ж уроці.
+      dispatch(setUserCodeHydrated(true));
 
       if (progress) {
         dispatch(hydrateProgress(toHydratedProgressState(progress)));
@@ -190,7 +200,9 @@ export const loadUserData = createAsyncThunk(
       return { code, progress };
     } catch (error) {
       // Читання впало — зберігати не можна: порожній стан ліг би поверх уцілілого.
+      // Охорона від втрати даних падає в закритий бік.
       dispatch(setProgressHydrated(false));
+      dispatch(setUserCodeHydrated(false));
       throw error;
     }
   },
@@ -209,7 +221,7 @@ export const saveUserData = createAsyncThunk(
     // Головна охорона: поки збережений стан не піднято, цей — стартовий і порожній.
     // Саме це знищувало прогрес, коли сторінка уроку зберігала дані на монтуванні,
     // не дочекавшись `loadUserData`.
-    if (!state.progress.isHydrated) {
+    if (!state.progress.isHydrated || !state.userCode.isHydrated) {
       return;
     }
 
@@ -227,7 +239,7 @@ export const saveUserData = createAsyncThunk(
     });
 
     await Promise.all([
-      studentApi.saveMyCode(user.id, state.userCode),
+      studentApi.saveMyCode(user.id, selectPersistableUserCode(state)),
       studentApi.saveMyProgress(
         user.id,
         toPersistedProgressRecord(state, courseByLessonId),
