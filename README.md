@@ -1,50 +1,87 @@
-# React + TypeScript + Vite
+# Code Nature
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Шлях одного уроку
 
-Currently, two official plugins are available:
+Хребет застосунку. Знаючи лише це, можна знайти будь-що інше.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+src/content/lessons/*.json          урок як дані
+  → content/fileContent.ts          читає ВСЮ теку через import.meta.glob
+  → content/parseContent.ts         звіряє зі схемою, віддає типізований урок
+  → api/contentApi.ts               мок API — стане HTTP у Фазі 8
+  → store/slices/contentSlice.ts
+  → pages/lessonPage/LessonPage.tsx            збирає екран
+       ├─ runtimes/registry.ts                 який рушій у цього уроку
+       ├─ components/theory                    теорія
+       ├─ components/CodeEditor                редактор + preview (Output.tsx)
+       └─ components/taskList                  завдання
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Учень тисне **Run**:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
 ```
+CodeEditor.tsx
+  → utils/checkLesson.ts            збирає документ і запускає перевірку
+  → domain/taskValidation.ts        результат по кожному завданню окремо
+  → domain/lessonCompletion.ts      чи урок завершено
+  → store/thunks/syncThunks.ts      зберігає прогрес і код
+```
+
+Новий урок підхоплюється **сам** — достатньо покласти JSON у `content/lessons/`.
+Він одразу потрапляє і в застосунок, і під схема-перевірку в `content/content.test.ts`.
+
+## Теки
+
+| Тека | За що відповідає |
+|---|---|
+| `domain/` | **чиста логіка**: без React, Redux і мережі. Валідація завдань, завершення уроку, прогресія модуля, техчек. Єдина тека з тестами |
+| `content/` | новий контент: JSON-уроки, каталог, парсер зі схема-перевіркою |
+| `pages/` | екрани. Найбільший — `lessonPage/LessonPage.tsx` |
+| `components/` | будівельні блоки екранів: редактор, теорія, список завдань, навігація, техчек |
+| `store/` | Redux: стан (`slices/`) і збереження та гідратація (`thunks/`) |
+| `api/` | **моки** замість сервера. У Фазі 8 начинка замінюється на HTTP — теки лишаються, моків не буде |
+| `runtimes/` | реєстр рушіїв уроку: який урок чим виконується й перевіряється |
+| `types/` | `content.ts` — чинні DTO. `lessonTypes.ts` — старі, доживають |
+| `i18n/` | **усі рядки інтерфейсу**. У компонентах рядків не буває |
+| `styles/` | `_variables.scss` — токени кольорів. Літералів у коді не буває |
+| `features/auth/` | вхід, реєстрація, `AuthGuard` |
+| `hooks/` | прогресія модуля, розтяжка панелей, атрибут теми |
+| `utils/` | склейка файлів уроку, запуск перевірки, налаштування Monaco |
+| `data/` | **старе джерело контенту**. Помирає у Фазі 5 |
+
+## Зламалось — дивись сюди
+
+| Симптом | Де причина |
+|---|---|
+| урок не відкривається або падає схема-перевірка | `content/parseContent.ts` |
+| прогрес не зберігся або зберігся не туди | `store/thunks/syncThunks.ts` |
+| Run не зараховує правильне завдання | `domain/taskValidation.ts` |
+| урок не закривається, хоча все зелене | `domain/lessonCompletion.ts` |
+| редактор показує не ті файли або губить код | `utils/codeFiles.ts` |
+| наступний урок не відкрився, техчек у глухому куті | `domain/progression.ts` |
+| колір, шрифт або тема поїхали | `styles/_variables.scss` |
+| текст в інтерфейсі не той | `i18n/uk.ts` |
+
+Preview і Monaco темі застосунку **не підкоряються** — це вікно браузера
+й окрема система тем. Хром навколо них підкоряється.
+
+## Що живе паралельно
+
+Щоб не відкрити старий файл і не вирішити, що він чинний.
+
+**Два джерела контенту одночасно, і обидва видно в каталозі:**
+
+| | Де | Доля |
+|---|---|---|
+| нове | `content/lessons/*.json` + `content/catalog.json` | лишається |
+| старе | `data/lessonData.ts`, `utils/courseMapping.ts`, інлайнові техчеки в `api/contentApi.ts` | помирає у **Фазі 5**, пункти 5.1–5.3 |
+
+Старе не ховали навмисно: поки воно живе, воно має бути видимим разом зі своїми
+дефектами — інакше про них забудуть.
+
+**Teacher-екрани заморожені, не видалені.** Маршрути вимкнені, `/teacher` дає
+«не знайдено». Тригер видалення — поява справжнього `/teacher/*` API.
+
+**Пісочниці ще немає.** Код учня поки виконується на origin застосунку
+(`components/CodeEditor/Output.tsx`, `utils/checkLesson.ts`). Це обіцянка 3.1,
+і закриває її Фаза 3 — див. `PLATFORM_UA.md`, розділ 9.
