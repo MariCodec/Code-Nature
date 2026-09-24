@@ -105,14 +105,45 @@ const mapTheoryBlock = (block: TheoryBlock, index: number): LessonTheoryBlockDTO
   }
 };
 
-const mapLessonFiles = (lessonId: string, initialHtml: string, initialCss: string): LessonFileDTO[] => [
+/**
+ * Міст для вмираючого джерела: старий контент тримає **фрагмент** розмітки,
+ * а рушій відтоді нічого від себе не додає (PLATFORM_UA, розділ 5, «Формат
+ * документа уроку»). Без обгортки тут ці уроки лишились би і без `<head>`,
+ * і головне — **без стилів**: `<link>` у фрагменті ніхто не писав, бо його
+ * підставляв рушій.
+ *
+ * Обгортка живе саме тут, у джерелі даних, а не в рушії: інакше він знову
+ * почав би тихо формувати програму курсу. Помре разом із `lessonData.ts`
+ * і цим файлом у Фазі 5.
+ */
+const wrapFragmentAsDocument = (title: string, bodyHtml: string) => `<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${title}</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+${bodyHtml}
+  </body>
+</html>
+`;
+
+const mapLessonFiles = (
+  lessonId: string,
+  title: string,
+  initialHtml: string,
+  initialCss: string,
+): LessonFileDTO[] => [
   {
     id: `${lessonId}_file_html`,
     name: "index.html",
     language: "html",
-    initialContent: initialHtml,
+    initialContent: wrapFragmentAsDocument(title, initialHtml),
     orderIndex: 1,
     isEditable: true,
+    isEntry: true,
   },
   {
     id: `${lessonId}_file_css`,
@@ -121,6 +152,7 @@ const mapLessonFiles = (lessonId: string, initialHtml: string, initialCss: strin
     initialContent: initialCss,
     orderIndex: 2,
     isEditable: true,
+    isEntry: false,
   },
 ];
 
@@ -172,7 +204,12 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
   const courseId = categoryToCourse[category].id;
 
   return lessonData[category].map((lesson, index) => {
-    const files = mapLessonFiles(lesson.id, lesson.initialHtml, lesson.initialCss);
+    const files = mapLessonFiles(
+      lesson.id,
+      lesson.title,
+      lesson.initialHtml,
+      lesson.initialCss,
+    );
     const theoryBlocks = lesson.theory?.blocks.map(mapTheoryBlock) ?? [];
     const tasks: LessonTaskDTO[] = lesson.tasks.map((task, taskIndex) => ({
       id: task.id,
@@ -231,6 +268,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
       isPublished: true,
       files: mapLessonFiles(
         lessonId,
+        "Техчек: HTML Basic",
         `<main>\n  <h1>Мій перший техчек</h1>\n  <p>Я закріплюю HTML.</p>\n</main>`,
         `h1 {\n  color: red;\n}`,
       ),
@@ -344,6 +382,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
     isPublished: true,
     files: mapLessonFiles(
       lessonId,
+      "Техчек: CSS Basic",
       `<section class="card">\n  <h1>CSS техчек</h1>\n  <p>Стилізую блок.</p>\n</section>`,
       `.card {\n  padding: 8px;\n}\n\nh1 {\n  color: red;\n}`,
     ),

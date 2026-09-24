@@ -17,7 +17,8 @@
       "language": "html",
       "initialContent": "\n",
       "orderIndex": 1,
-      "isEditable": true
+      "isEditable": true,
+      "isEntry": true
     }
   ],
   "theoryBlocks": [

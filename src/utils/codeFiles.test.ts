@@ -19,6 +19,7 @@ const lessonFile = (
   initialContent: "",
   orderIndex: 1,
   isEditable: true,
+  isEntry: false,
   ...overrides,
 });
 

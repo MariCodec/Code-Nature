@@ -598,7 +598,7 @@ const LessonPage = () => {
         <main className={styles.videoOnlyPage}>
           <div className={styles.videoOnlyTopBar}>
             <button className={styles.detailsButton} onClick={toggleBtn}>
-              {isLessonInfoVisible ? "Приховати деталі уроку" : "Деталі уроку"}
+              {isLessonInfoVisible ? uk.editor.hideDetails : uk.editor.showDetails}
             </button>
             <LessonNavigation currentLessonId={lessonDto.id} />
           </div>

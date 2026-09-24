@@ -15,9 +15,10 @@
       "id": "fil_css_html",
       "name": "index.html",
       "language": "html",
-      "initialContent": "<article class=\"card\">\n  <h1>Кава дня</h1>\n  <p class=\"lead\">Еспресо з нотками карамелі.</p>\n</article>\n",
+      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Кава дня</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <article class=\"card\">\n      <h1>Кава дня</h1>\n      <p class=\"lead\">Еспресо з нотками карамелі.</p>\n    </article>\n  </body>\n</html>\n",
       "orderIndex": 1,
-      "isEditable": false
+      "isEditable": false,
+      "isEntry": true
     },
     {
       "id": "fil_css_css",
@@ -25,7 +26,8 @@
       "language": "css",
       "initialContent": "/* Пиши свої стилі тут */\n",
       "orderIndex": 2,
-      "isEditable": true
+      "isEditable": true,
+      "isEntry": false
     }
   ],
   "theoryBlocks": [

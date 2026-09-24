@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
-import Output from "./Output";
 import LessonNavigation from "../lessonNavigation/LessonNavigation";
 import { useResizable } from "../../hooks/useResizable";
 import { setupMonacoTheme } from "../../utils/setupMonacoTheme";
@@ -27,6 +26,7 @@ import {
 import type { LessonDTO } from "../../types/content";
 import { checkLesson } from "../../utils/checkLesson";
 import type { TaskResult } from "../../domain/runner";
+import { useSandbox } from "../../sandbox/useSandbox";
 import { getFirstFailureText } from "../../i18n/taskFailureText";
 import { uk } from "../../i18n/uk";
 import { isQuizRules } from "../../domain/techCheck";
@@ -90,12 +90,23 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const [fileName, setFileName] = useState<string>(() => files[0]?.name ?? "");
   const activeFile = files.find((file) => file.name === fileName) ?? files[0] ?? null;
 
-  const [documentHtml, setDocumentHtml] = useState<string>(() =>
-    runtime.buildDocument ? runtime.buildDocument(files) : "",
-  );
   const [htmlError, setHtmlError] = useState<string | null>(null);
   // Що саме не зійшлося на останньому запуску. null — ще не запускали.
   const [checkResults, setCheckResults] = useState<TaskResult[] | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  // Пісочниця не відповіла. Окремо від `checkResults`: це не «не зараховано».
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+
+  const { frame, problems, run, check, reset } = useSandbox();
+  const Preview = runtime.Preview;
+
+  /**
+   * Файли для пісочниці читаються через ref, бо вони міняються на кожне
+   * натискання клавіші, а перезапускати сторінку учня треба не на кожне,
+   * а лише коли він сам попросив — або коли зʼявилось що показувати.
+   */
+  const filesRef = useRef(files);
+  filesRef.current = files;
 
   const { containerRef, dividerPosition, startResizing, isOverlayVisible } =
     useResizable();
@@ -174,6 +185,17 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     };
   }, [monaco, lessonDto.id]);
 
+  /**
+   * Перший показ сторінки. Чекаємо на гідратацію з тієї самої причини, що
+   * й редактор: до неї в `files` лежить заготовка уроку, і учень побачив би
+   * її замість власної роботи. Запит доїде й до `ready` — пісочниця складає
+   * такі в чергу, бо iframe вантажиться асинхронно.
+   */
+  useEffect(() => {
+    if (!isCodeHydrated) return;
+    run(filesRef.current);
+  }, [isCodeHydrated, run]);
+
   // Урок змінився, або автор переписав `files[]` — активна вкладка могла зникнути.
   useEffect(() => {
     if (files.length === 0) return;
@@ -211,18 +233,23 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   // Показуємо перше правило, яке не зійшлося у першому незарахованому завданні:
   // список провалів одразу лякає, а сенс гранулярності саме в конкретиці.
   const firstFailed = checkResults?.find((result) => !result.passed) ?? null;
-  const checkFeedback = !checkResults?.length
-    ? null
-    : firstFailed
-      ? { passed: false, text: getFirstFailureText(firstFailed.rules) ?? uk.taskCheck.notPassed }
-      : { passed: true, text: uk.taskCheck.allPassed };
+  const checkFeedback = isRunning
+    ? { passed: false, text: uk.editor.running }
+    : hasTimedOut
+      ? { passed: false, text: uk.taskCheck.timedOut }
+      : !checkResults?.length
+        ? null
+        : firstFailed
+          ? {
+              passed: false,
+              text: getFirstFailureText(firstFailed.rules) ?? uk.taskCheck.notPassed,
+            }
+          : { passed: true, text: uk.taskCheck.allPassed };
 
-  const buildDocument = (source: typeof files) =>
-    runtime.buildDocument ? runtime.buildDocument(source) : "";
-
-  const handleRunCode = () => {
-    const nextDocument = buildDocument(files);
-    setDocumentHtml(nextDocument);
+  const handleRunCode = async () => {
+    // Показуємо сторінку в будь-якому разі: побачити свою помилку в браузері —
+    // теж результат запуску.
+    run(files);
 
     if (htmlError) {
       focusFirstHtmlError();
@@ -230,15 +257,26 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     }
 
     dispatch(touchProgress());
-    setCheckResults(
-      checkLesson({
-        lesson: lessonDto,
-        documentHtml: nextDocument,
-        passedTaskIds,
-        isVideoWatched,
-        dispatch,
-      }),
-    );
+    setIsRunning(true);
+    setHasTimedOut(false);
+
+    const outcome = await checkLesson({
+      lesson: lessonDto,
+      runCheck: check,
+      passedTaskIds,
+      isVideoWatched,
+      dispatch,
+    });
+
+    setIsRunning(false);
+
+    if (outcome.status === "done") setCheckResults(outcome.results);
+    else {
+      // Пісочниці вже немає — її перестворили. Старий результат теж недійсний.
+      setCheckResults(null);
+      setHasTimedOut(true);
+    }
+
     dispatch(
       setLessonFiles({ lessonId: lessonDto.id, savedFiles: toSavedFiles(files) }),
     );
@@ -252,9 +290,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         savedFiles: toSavedFiles(initialFiles),
       }),
     );
-    setDocumentHtml(buildDocument(initialFiles));
     setHtmlError(null);
     setCheckResults(null);
+    setHasTimedOut(false);
+
+    // Перестворення, а не просто перезапуск: `setInterval`, заведений минулим
+    // запуском, переживає і Run, і Clear — зупинити його можна лише разом
+    // із вікном, у якому він живе.
+    reset();
+    run(initialFiles);
 
     // Стан редактора живе в моделях Monaco, а не в Redux, тож самого диспатчу мало:
     // без цього рядка буфер лишився б із написаним, а прогрес — скинутим.
@@ -296,7 +340,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     <div className={styles.editorContainer} ref={containerRef}>
       <div className={styles.tabs}>
         <button className={styles.toggleBtn} onClick={toggleBtn}>
-          {isVisible ? "Приховати деталі уроку" : "Деталі уроку"}
+          {isVisible ? uk.editor.hideDetails : uk.editor.showDetails}
         </button>
 
         {files.map((file) => (
@@ -367,7 +411,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           )}
 
           <CodeButtons
-            handleRunCode={handleRunCode}
+            isRunning={isRunning}
+            handleRunCode={() => void handleRunCode()}
             clearCode={clearCode}
             formatCode={formatCode}
             htmlError={htmlError}
@@ -391,7 +436,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           className={styles.browserWindow}
           style={{ width: `${100 - dividerPosition}%` }}
         >
-          <Output documentHtml={documentHtml} />
+          {Preview && <Preview frame={frame} problems={problems} />}
         </div>
       </div>
       {isOverlayVisible && <div className={styles.overlay} />}

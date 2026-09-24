@@ -36,12 +36,16 @@ background: linear-gradient(
   }
 }
 
-/* Disabled state for run */
+/* Вигляд заблокованої кнопки Run.
+   Без `pointer-events: none`: коли Run заблокований помилкою в HTML, клік по
+   ньому — це і є спосіб стрибнути до цієї помилки в редакторі, а `title`
+   пояснює, чому кнопка тьмяна. З `pointer-events: none` недосяжним було
+   й перше, й друге. Коли кнопка справді вимкнена (триває перевірка),
+   клік тримає атрибут `disabled`. */
 .runBtnDisabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: translateY(0);
-  pointer-events: none;
 }
 
 /* Clear */

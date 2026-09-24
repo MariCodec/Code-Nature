@@ -25,6 +25,7 @@ import type {
 } from "../types/content";
 import type {
   CssRule,
+  DocumentRule,
   SelectorRule,
   TaskRules,
   TextRule,
@@ -188,6 +189,41 @@ function parseCssRule(issues: ContentIssue[], raw: unknown, where: string): CssR
   return rule;
 }
 
+/**
+ * Правила про структуру самого документа.
+ *
+ * Контенту вони відкрились у Фазі 3 — разом із тим, що entry-файл став **цілим**
+ * документом. Доти рушій підставляв власні `<!doctype>` і `<html lang>`, тож такі
+ * правила бачили б обгортку й зараховувались би на порожньому файлі. Обидві
+ * половини й мусили приїхати разом; розтяжка в `content.test.ts` тримала це
+ * до Фази 3 і знята саме тут.
+ */
+function parseDocumentRule(issues: ContentIssue[], raw: unknown, where: string): DocumentRule {
+  const s = scope(issues, where, raw);
+  const rule: DocumentRule = {};
+
+  const hasDoctype = s.raw("hasDoctype");
+  if (hasDoctype !== undefined) {
+    if (typeof hasDoctype === "boolean") rule.hasDoctype = hasDoctype;
+    else issues.push({ where: `${where}.hasDoctype`, message: "очікувався boolean" });
+  }
+
+  for (const key of ["lang", "title", "charset"] as const) {
+    const value = s.raw(key);
+    if (value === undefined) continue;
+    if (typeof value === "string") rule[key] = value;
+    else issues.push({ where: `${where}.${key}`, message: "очікувався рядок" });
+  }
+
+  // `hasDoctype: false` — це «не перевіряти», тож правило з нього одного порожнє.
+  if (rule.hasDoctype !== true && rule.lang === undefined && rule.title === undefined &&
+      rule.charset === undefined)
+    issues.push({ where, message: "правило про документ без жодної умови" });
+
+  s.done();
+  return rule;
+}
+
 function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): TaskRules {
   const kind = isObject(raw) ? raw.kind : undefined;
 
@@ -232,6 +268,8 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
   s.oneOf("kind", ["dom"] as const);
 
   const rules: TaskRules = { kind: "dom" };
+  if (s.raw("document") !== undefined)
+    rules.document = parseDocumentRule(issues, s.raw("document"), `${where}.document`);
   if (s.raw("selectors") !== undefined)
     rules.selectors = s.list("selectors", (item, w) => parseSelectorRule(issues, item, w));
   if (s.raw("textContains") !== undefined)
@@ -239,7 +277,12 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
   if (s.raw("cssChecks") !== undefined)
     rules.cssChecks = s.list("cssChecks", (item, w) => parseCssRule(issues, item, w));
 
-  if (!rules.selectors?.length && !rules.textContains?.length && !rules.cssChecks?.length)
+  if (
+    !rules.document &&
+    !rules.selectors?.length &&
+    !rules.textContains?.length &&
+    !rules.cssChecks?.length
+  )
     issues.push({ where, message: "завдання без жодного правила не зараховується ніколи" });
 
   s.done();
@@ -269,9 +312,48 @@ function parseFile(issues: ContentIssue[], raw: unknown, where: string): LessonF
     initialContent: s.str("initialContent"),
     orderIndex: s.num("orderIndex"),
     isEditable: s.bool("isEditable"),
+    isEntry: s.bool("isEntry"),
   };
   s.done();
   return file;
+}
+
+/**
+ * Головний файл уроку має бути рівно один, і він має бути html.
+ *
+ * Мовчазна помилка найдорожчого сорту: без entry пісочниця показує порожню
+ * сторінку, з двома — беззмістовно «перший у масиві». Учень у обох випадках
+ * бачить не свій урок і шукає помилку в себе.
+ */
+function checkEntryFile(issues: ContentIssue[], files: LessonFileDTO[], where: string) {
+  const htmlFiles = files.filter((file) => file.language === "html");
+  const entries = files.filter((file) => file.isEntry);
+
+  for (const entry of entries) {
+    if (entry.language !== "html")
+      issues.push({
+        where: `${where}.files`,
+        message: `isEntry стоїть на файлі «${entry.name}» мови ${entry.language}, а головним може бути лише html`,
+      });
+  }
+
+  if (htmlFiles.length === 0) {
+    if (entries.length > 0)
+      issues.push({ where: `${where}.files`, message: "isEntry є, а html-файлів немає" });
+    return;
+  }
+
+  if (entries.length === 0)
+    issues.push({
+      where: `${where}.files`,
+      message: "жоден файл не позначений isEntry — невідомо, що вантажити першим",
+    });
+
+  if (entries.length > 1)
+    issues.push({
+      where: `${where}.files`,
+      message: `головних файлів має бути один, а isEntry стоїть у ${entries.length}`,
+    });
 }
 
 function parseTheoryBlock(
@@ -367,6 +449,8 @@ export function parseLesson(
     tasks: s.list("tasks", (item, w) => parseTask(issues, item, w)),
   };
   s.done();
+
+  checkEntryFile(issues, lesson.files, where);
 
   // Правило завершення з розділу 3: `auto` без завдань не завершується ніколи,
   // тож такий урок — не «поки без практики», а глухий кут для учня.

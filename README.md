@@ -21,11 +21,18 @@ src/content/lessons/*.json          урок як дані
 
 ```
 CodeEditor.tsx
-  → utils/checkLesson.ts            збирає документ і запускає перевірку
-  → domain/taskValidation.ts        результат по кожному завданню окремо
+  → sandbox/useSandbox.ts           вантажить сторінку в пісочницю і чекає відповіді
+  → sandbox/composeDocument.ts      entry-файл + сусідні css + агент = srcdoc
+  → sandbox/agent.ts                ВСЕРЕДИНІ iframe: виконує код учня, перевіряє DOM
+       → domain/taskValidation.ts   результат по кожному завданню окремо
+  → utils/checkLesson.ts            розносить результат у стан
   → domain/lessonCompletion.ts      чи урок завершено
   → store/thunks/syncThunks.ts      зберігає прогрес і код
 ```
+
+Код учня виконується **лише** в `<iframe sandbox="allow-scripts">` без
+`allow-same-origin`, звʼязок — повідомленнями. Заглянути туди зі сторінки
+неможливо за визначенням: `contentDocument` закритий.
 
 Новий урок підхоплюється **сам** — достатньо покласти JSON у `content/lessons/`.
 Він одразу потрапляє і в застосунок, і під схема-перевірку в `content/content.test.ts`.
@@ -41,6 +48,7 @@ CodeEditor.tsx
 | `store/` | Redux: стан (`slices/`) і збереження та гідратація (`thunks/`) |
 | `api/` | **моки** замість сервера. У Фазі 8 начинка замінюється на HTTP — теки лишаються, моків не буде |
 | `runtimes/` | реєстр рушіїв уроку: який урок чим виконується й перевіряється |
+| `sandbox/` | пісочниця: складання сторінки, агент усередині iframe, транспорт повідомлень |
 | `types/` | `content.ts` — чинні DTO. `lessonTypes.ts` — старі, доживають |
 | `i18n/` | **усі рядки інтерфейсу**. У компонентах рядків не буває |
 | `styles/` | `_variables.scss` — токени кольорів. Літералів у коді не буває |
@@ -56,6 +64,8 @@ CodeEditor.tsx
 | урок не відкривається або падає схема-перевірка | `content/parseContent.ts` |
 | прогрес не зберігся або зберігся не туди | `store/thunks/syncThunks.ts` |
 | Run не зараховує правильне завдання | `domain/taskValidation.ts` |
+| preview порожній або «перевірка не завершилась» | `sandbox/useSandbox.ts`, `sandbox/agent.ts` |
+| стилі з `style.css` не застосувались | `sandbox/composeDocument.ts` — і перевір `<link>` в уроці |
 | урок не закривається, хоча все зелене | `domain/lessonCompletion.ts` |
 | редактор показує не ті файли або губить код | `utils/codeFiles.ts` |
 | наступний урок не відкрився, техчек у глухому куті | `domain/progression.ts` |

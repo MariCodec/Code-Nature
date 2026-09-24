@@ -15,12 +15,22 @@
       "id": "fil_first_html",
       "name": "index.html",
       "language": "html",
-      "initialContent": "<h1>Мій перший сайт</h1>\n",
+      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Мій перший сайт</title>\n  </head>\n  <body>\n    <h1>Мій перший сайт</h1>\n  </body>\n</html>\n",
       "orderIndex": 1,
-      "isEditable": true
+      "isEditable": true,
+      "isEntry": true
     }
   ],
   "theoryBlocks": [
+    {
+      "id": "thb_first_0",
+      "blockType": "note",
+      "content": {
+        "tone": "info",
+        "text": "У файлі вже є **каркас документа** — рядки від `<!DOCTYPE html>` до `<body>`. Він однаковий на кожній сторінці світу, і докладно розберемо його окремо. Поки що пиши всередині `<body>`."
+      },
+      "orderIndex": 0
+    },
     {
       "id": "thb_first_1",
       "blockType": "text",

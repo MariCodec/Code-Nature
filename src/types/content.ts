@@ -64,6 +64,13 @@ export type LessonFileDTO = {
   initialContent: string;
   orderIndex: number;
   isEditable: boolean;
+  /**
+   * Файл, який вантажиться першим. Обовʼязковий для будь-якого уроку з html-файлами:
+   * без нього неможливий ні `<script src>` у Фазі 4, ні урок із двох сторінок,
+   * а припускати імʼя `index.html` не можна — вкладки будуються з `files[]`,
+   * хай як вони звуться. Див. PLATFORM_UA, розділ 5, «Формат документа уроку».
+   */
+  isEntry: boolean;
 };
 
 export type LessonTheoryBlockDTO =

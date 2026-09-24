@@ -1,12 +1,18 @@
 import type { FC } from "react";
 
-import type { RunnerFile, TaskResult } from "../domain/runner";
 import type { LessonRuntimeType } from "../types/content";
+import type { SandboxFrameHandle } from "../sandbox/SandboxFrame";
+import type { SandboxProblem } from "../sandbox/useSandbox";
 
+/**
+ * Права панель отримує **вікно пісочниці**, а не документ: сторінку учня складає
+ * `sandbox/composePage` і вантажить її як `srcdoc`. Панелі лишається оформлення:
+ * хром браузера, консоль або нічого.
+ */
 export type RuntimePreviewProps = {
-  files: RunnerFile[];
-  results: TaskResult[];
-  isRunning: boolean;
+  frame: SandboxFrameHandle;
+  /** Помилки виконання й `console.warn`/`error` з коду учня. */
+  problems: SandboxProblem[];
 };
 
 /**
@@ -21,9 +27,7 @@ export type LessonRuntime = {
   hasEditor: boolean;
   /** Чи проходиться з телефона — див. «Мобільний режим» у PLATFORM_UA. */
   mobileSupported: boolean;
-  /** Що саме завантажується в пісочницю. Немає в уроків без коду. */
-  buildDocument?: (files: RunnerFile[]) => string;
-  /** Права панель: вікно браузера, консоль або нічого. Зʼявиться у Фазі 3. */
+  /** Вікно браузера, консоль або нічого — у уроків без коду. */
   Preview: FC<RuntimePreviewProps> | null;
 };
 
