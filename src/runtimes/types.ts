@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import type { LessonRuntimeType } from "../types/content";
 import type { SandboxFrameHandle } from "../sandbox/SandboxFrame";
-import type { SandboxProblem } from "../sandbox/useSandbox";
+import type { SandboxConsole } from "../sandbox/useSandbox";
 
 /**
  * Права панель отримує **вікно пісочниці**, а не документ: сторінку учня складає
@@ -11,8 +11,8 @@ import type { SandboxProblem } from "../sandbox/useSandbox";
  */
 export type RuntimePreviewProps = {
   frame: SandboxFrameHandle;
-  /** Помилки виконання й `console.warn`/`error` з коду учня. */
-  problems: SandboxProblem[];
+  /** Вивід програми учня: `console.log`/`warn`/`error` і помилки виконання. */
+  consoleOutput: SandboxConsole;
 };
 
 /**

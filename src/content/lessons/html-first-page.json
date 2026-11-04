@@ -15,7 +15,7 @@
       "id": "fil_first_html",
       "name": "index.html",
       "language": "html",
-      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Мій перший сайт</title>\n  </head>\n  <body>\n    <h1>Мій перший сайт</h1>\n  </body>\n</html>\n",
+      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Мій перший сайт</title>\n  </head>\n  <body>\n    <h1></h1>\n  </body>\n</html>\n",
       "orderIndex": 1,
       "isEditable": true,
       "isEntry": true
@@ -86,16 +86,25 @@
     {
       "id": "tsk_first_1",
       "title": "Заголовок сторінки",
-      "description": "Заміни текст у `<h1>` на назву свого сайту — будь-яку, аби не порожню.",
+      "description": "Напиши всередині `<h1>` назву свого сайту — будь-яку, аби не порожню.",
       "orderIndex": 1,
       "rules": {
         "kind": "dom",
-        "selectors": [{ "selector": "h1" }],
-        "textContains": [{ "selector": "h1", "minLength": 3 }]
+        "selectors": [
+          {
+            "selector": "h1"
+          }
+        ],
+        "textContains": [
+          {
+            "selector": "h1",
+            "minLength": 3
+          }
+        ]
       },
       "hints": [
-        "Текст пишеться між тегами: <h1>ось тут</h1>.",
-        "Самі теги стирати не треба — лише слова всередині."
+        "Текст пишеться між тегами: `<h1>ось тут</h1>`.",
+        "Самі теги стирати не треба — лише допиши слова всередині."
       ]
     },
     {
@@ -105,8 +114,17 @@
       "orderIndex": 2,
       "rules": {
         "kind": "dom",
-        "selectors": [{ "selector": "p" }],
-        "textContains": [{ "selector": "p", "minLength": 10 }]
+        "selectors": [
+          {
+            "selector": "p"
+          }
+        ],
+        "textContains": [
+          {
+            "selector": "p",
+            "minLength": 10
+          }
+        ]
       },
       "hints": [
         "Абзац пишеться так: <p>текст</p>.",
@@ -120,8 +138,17 @@
       "orderIndex": 3,
       "rules": {
         "kind": "dom",
-        "selectors": [{ "selector": "h2" }],
-        "textContains": [{ "selector": "h2", "text": "Про мене" }]
+        "selectors": [
+          {
+            "selector": "h2"
+          }
+        ],
+        "textContains": [
+          {
+            "selector": "h2",
+            "text": "Про мене"
+          }
+        ]
       },
       "hints": [
         "h2 пишеться так само, як h1, лише цифра інша.",

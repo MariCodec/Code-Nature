@@ -3,8 +3,8 @@
   "courseId": "crs_js_basics",
   "moduleId": "mod_js_start",
   "slug": "first-click",
-  "title": "Клік: сторінка відповідає",
-  "description": "Розмітка вже є. Оживляємо її скриптом: міняємо текст і слухаємо натискання.",
+  "title": "Клік і поле: сторінка відповідає",
+  "description": "Розмітка вже є. Оживляємо її скриптом: реагуємо на натискання й читаємо те, що ввів користувач.",
   "lessonKind": "lesson",
   "runtimeType": "js-dom",
   "validationType": "auto",
@@ -15,7 +15,7 @@
       "id": "fil_js_html",
       "name": "index.html",
       "language": "html",
-      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Привітайся</title>\n  </head>\n  <body>\n    <h1>Сторінка, що відповідає</h1>\n\n    <button id=\"greet\">Кнопка</button>\n\n    <p id=\"out\"></p>\n    <p>Натискань: <span id=\"count\">0</span></p>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Привітайся</title>\n  </head>\n  <body>\n    <h1>Сторінка, що відповідає</h1>\n\n    <input id=\"name\" placeholder=\"Твоє ім'я\" />\n    <button id=\"greet\">Кнопка</button>\n\n    <p id=\"out\"></p>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
       "orderIndex": 1,
       "isEditable": false,
       "isEntry": true
@@ -82,13 +82,30 @@
       "orderIndex": 6
     },
     {
+      "id": "thb_js_9",
+      "blockType": "text",
+      "content": {
+        "text": "У поля вводу текст лежить **не** в `textContent`, а у властивості `value`. Саме через неї читають те, що написав користувач."
+      },
+      "orderIndex": 7
+    },
+    {
+      "id": "thb_js_10",
+      "blockType": "code",
+      "content": {
+        "lang": "js",
+        "code": "const nameInput = document.querySelector(\"#name\");\nconsole.log(nameInput.value);   // те, що зараз у полі"
+      },
+      "orderIndex": 8
+    },
+    {
       "id": "thb_js_7",
       "blockType": "note",
       "content": {
         "tone": "info",
         "text": "У файлі `index.html` рядок `<script src=\"script.js\"></script>` стоїть **у кінці** `<body>` — після кнопки й абзаців. Це не випадковість: браузер читає сторінку згори вниз, і скрипт на початку шукав би кнопку, якої ще немає."
       },
-      "orderIndex": 7
+      "orderIndex": 9
     },
     {
       "id": "thb_js_8",
@@ -97,7 +114,7 @@
         "tone": "warning",
         "text": "`index.html` у цьому уроці заблокований: розмітка вже готова. Уся робота — у файлі `script.js`."
       },
-      "orderIndex": 8
+      "orderIndex": 10
     }
   ],
   "videos": [],
@@ -124,19 +141,20 @@
     {
       "id": "tsk_js_click",
       "title": "Відповідь на клік",
-      "description": "Зроби так, щоб **після натискання** кнопки в абзаці `#out` зʼявився текст **Привіт!**. До натискання абзац має лишатись порожнім.",
+      "description": "Зроби так, щоб **після натискання** кнопки в абзаці `#out` зʼявилось привітання — слово **Привіт**. До натискання абзац має лишатись порожнім.",
       "orderIndex": 2,
       "rules": {
         "kind": "dom",
         "act": [
           {
-            "click": "#greet"
+            "kind": "click",
+            "selector": "#greet"
           }
         ],
         "textContains": [
           {
             "selector": "#out",
-            "text": "Привіт!"
+            "text": "Привіт"
           }
         ]
       },
@@ -147,34 +165,34 @@
       ]
     },
     {
-      "id": "tsk_js_count",
-      "title": "Рахуй натискання",
-      "description": "Додай лічильник: після **трьох** натискань у `#count` має стояти `3`. Заведи змінну поза функцією — усередині вона створювалась би заново на кожен клік.",
+      "id": "tsk_js_name",
+      "title": "Привітання на імʼя",
+      "description": "Тепер зроби привітання особистим: візьми те, що користувач написав у полі `#name`, і виведи **Привіт, <імʼя>!** — наприклад, для «Оля» має вийти `Привіт, Оля!`. Коли буде готово — впиши своє імʼя в поле праворуч і натисни кнопку сам.",
       "orderIndex": 3,
       "rules": {
         "kind": "dom",
         "act": [
           {
-            "click": "#greet"
+            "kind": "type",
+            "selector": "#name",
+            "text": "Оля"
           },
           {
-            "click": "#greet"
-          },
-          {
-            "click": "#greet"
+            "kind": "click",
+            "selector": "#greet"
           }
         ],
         "textContains": [
           {
-            "selector": "#count",
-            "text": "3"
+            "selector": "#out",
+            "text": "Привіт, Оля!"
           }
         ]
       },
       "hints": [
-        "`let clicks = 0;` стоїть поруч із `addEventListener`, а не всередині функції.",
-        "Усередині функції число спершу збільшується (`clicks = clicks + 1`), і аж потім записується в елемент.",
-        "`textContent` приймає текст, але число він перетворить сам."
+        "Текст із поля читається через `value`, а не `textContent`.",
+        "Склеїти рядки можна плюсом: `\"Привіт, \" + nameInput.value + \"!\"`.",
+        "Читати `value` треба **всередині** обробника: до кліку поле ще порожнє."
       ]
     }
   ]

@@ -146,8 +146,16 @@ export type LessonListItemDTO = {
   isPublished: boolean;
 };
 
+/**
+ * Картинки й шрифти уроку. Лежать статикою, урок несе лише імʼя й адресу:
+ * підстановка в пісочниці розвʼязує `<img src="beans.svg">` і `url(beans.svg)`
+ * саме за цим імʼям.
+ */
+export type LessonAssetDTO = { name: string; url: string };
+
 export type LessonDTO = LessonListItemDTO & {
   files: LessonFileDTO[];
+  assets: LessonAssetDTO[];
   theoryBlocks: LessonTheoryBlockDTO[];
   videos: LessonVideoDTO[];
   tasks: LessonTaskDTO[];

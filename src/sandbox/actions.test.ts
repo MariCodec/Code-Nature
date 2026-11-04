@@ -92,6 +92,21 @@ describe("дії перед перевіркою", () => {
     expect((doc.querySelector("#name") as HTMLInputElement).value).toBe("нове");
   });
 
+  it("натискати не-HTML елемент — помилка автора, а не виняток", () => {
+    // `click()` є лише в HTML-елементів. Без цієї перевірки виклик кинув би
+    // виняток усередині агента, і учень побачив би таймаут із підписом
+    // про нескінченний цикл у **своєму** коді.
+    const doc = page("<p>поруч</p>");
+    const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("id", "icon");
+    doc.body.append(svg);
+
+    expect(performActions(doc, [{ kind: "click", selector: "#icon" }])).toEqual({
+      reason: "notClickable",
+      selector: "#icon",
+    });
+  });
+
   it("писати не в поле — помилка автора, і вона своя", () => {
     const doc = page(`<p id="name">не поле</p>`);
     expect(performActions(doc, [{ kind: "type", selector: "#name", text: "Оля" }])).toEqual({

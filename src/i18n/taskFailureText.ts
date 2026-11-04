@@ -51,6 +51,12 @@ export function getTaskFailureText(failure: RuleFailure): string {
       return t.doctypeMissing;
     case "documentMismatch":
       return getDocumentMismatchText(failure.part, failure.expected, failure.actual);
+    case "actTargetMissing":
+      return t.actTargetMissing(failure.selector);
+    case "actTargetNotTypeable":
+      return t.actTargetNotTypeable(failure.selector);
+    case "actTargetNotClickable":
+      return t.actTargetNotClickable(failure.selector);
     case "ruleEmpty":
       return t.ruleEmpty;
     case "rulesEmpty":

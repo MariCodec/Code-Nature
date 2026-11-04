@@ -82,6 +82,149 @@ describe("підстановка сусідніх файлів", () => {
   });
 });
 
+describe("підстановка скриптів", () => {
+  const jsFile: RunnerFile = {
+    name: "script.js",
+    language: "javascript",
+    content: 'document.querySelector("h1").textContent = "Готово";',
+    isEntry: false,
+  };
+
+  const scriptsOf = (doc: Document) =>
+    Array.from(doc.querySelectorAll("script")).map((script) => ({
+      src: script.getAttribute("src"),
+      type: script.getAttribute("type"),
+      code: script.textContent,
+    }));
+
+  it("правильне посилання — код їде одразу після елемента", () => {
+    const doc = parse(
+      `<html><head></head><body><h1>x</h1><script src="script.js"></script></body></html>`,
+    );
+    applyNeighborFiles(doc, [jsFile]);
+
+    const original = doc.querySelector("script[src]");
+    expect(original?.nextElementSibling?.tagName.toLowerCase()).toBe("script");
+    expect(original?.nextElementSibling?.textContent).toBe(jsFile.content);
+  });
+
+  it("оригінал заглушений типом, але лишається з усіма атрибутами", () => {
+    const doc = parse(`<html><body><script src="script.js"></script></body></html>`);
+    applyNeighborFiles(doc, [jsFile]);
+
+    // Селекторне правило по `script[src]` має працювати так само, як по `link`.
+    expect(doc.querySelectorAll("script[src]").length).toBe(1);
+    expect(scriptsOf(doc)[0]).toEqual({ src: "script.js", type: "text/plain", code: "" });
+  });
+
+  it("одрук в імені файлу — код не виконається, а елемент лишається", () => {
+    const doc = parse(`<html><body><script src="scrpt.js"></script></body></html>`);
+    applyNeighborFiles(doc, [jsFile]);
+
+    expect(doc.querySelectorAll("script").length).toBe(1);
+    expect(doc.querySelector("script")?.getAttribute("type")).toBe("text/plain");
+  });
+
+  it("зовнішній скрипт не глушиться: він справді кудись веде", () => {
+    const doc = parse(
+      `<html><body><script src="https://cdn.example/lib.js"></script></body></html>`,
+    );
+    applyNeighborFiles(doc, [jsFile]);
+
+    expect(doc.querySelector("script")?.getAttribute("type")).toBeNull();
+    expect(doc.querySelectorAll("script").length).toBe(1);
+  });
+
+  it("посилання на css-файл скриптом не стає", () => {
+    const doc = parse(`<html><body><script src="style.css"></script></body></html>`);
+    applyNeighborFiles(doc, [cssFile]);
+
+    expect(doc.querySelectorAll("script").length).toBe(1);
+  });
+
+  it("`</script>` у коді учня не закриває вставлений тег", () => {
+    const doc = parse(`<html><body><script src="script.js"></script></body></html>`);
+    applyNeighborFiles(doc, [{ ...jsFile, content: 'const s = "</script>";' }]);
+
+    const inline = doc.querySelector("script[src]")?.nextElementSibling;
+    expect(inline?.textContent).not.toContain("</script>");
+    expect(inline?.textContent).toContain(String.raw`"<\/script>"`);
+  });
+});
+
+describe("ассети", () => {
+  const assets = [{ name: "beans.svg", url: "/content/assets/beans.svg" }];
+
+  it("`<img src>` отримує справжню адресу за імʼям ассета", () => {
+    const doc = parse(`<html><body><img src="beans.svg" alt="Зерна"></body></html>`);
+    applyNeighborFiles(doc, [], assets);
+
+    const img = doc.querySelector("img");
+    expect(img?.getAttribute("src")).toBe("/content/assets/beans.svg");
+    // Решта атрибутів учня лишається: правило `img[src][alt]` має працювати.
+    expect(img?.getAttribute("alt")).toBe("Зерна");
+  });
+
+  it("`url()` у **вставленому** css розвʼязується так само", () => {
+    const doc = parse(
+      `<html><head><link rel="stylesheet" href="style.css"></head></html>`,
+    );
+    applyNeighborFiles(
+      doc,
+      [{ ...cssFile, content: ".card { background: url(beans.svg) no-repeat; }" }],
+      assets,
+    );
+
+    // Css-файл інлайниться в `<style>`, тож відносний url резолвиться
+    // в порожнечу — фон мовчки не працював би.
+    expect(doc.querySelector("style")?.textContent).toContain(
+      "url(/content/assets/beans.svg)",
+    );
+  });
+
+  it("лапки всередині url() зберігаються", () => {
+    const doc = parse(`<html><head><style>b { background: url("beans.svg"); }</style></head></html>`);
+    applyNeighborFiles(doc, [], assets);
+    expect(doc.querySelector("style")?.textContent).toContain(
+      'url("/content/assets/beans.svg")',
+    );
+  });
+
+  it("зовнішня адреса не підміняється", () => {
+    const doc = parse(`<html><body><img src="https://example.com/x.png"></body></html>`);
+    applyNeighborFiles(doc, [], assets);
+    expect(doc.querySelector("img")?.getAttribute("src")).toBe("https://example.com/x.png");
+  });
+
+  it("невідоме імʼя лишається як є — одрук має мати наслідок", () => {
+    const doc = parse(`<html><body><img src="bean.svg"></body></html>`);
+    applyNeighborFiles(doc, [], assets);
+    expect(doc.querySelector("img")?.getAttribute("src")).toBe("bean.svg");
+  });
+});
+
+describe("глушник стоїть лише на відносних посиланнях", () => {
+  it("зовнішня таблиця стилів не глушиться — урок про шрифти став можливим", () => {
+    const doc = parse(
+      `<html><head><link rel="stylesheet" href="https://fonts.example/inter.css"></head></html>`,
+    );
+    applyNeighborFiles(doc, []);
+    expect(doc.querySelector("link")?.getAttribute("media")).toBeNull();
+  });
+
+  it("протокольно-відносне посилання теж зовнішнє", () => {
+    const doc = parse(`<html><head><link rel="stylesheet" href="//cdn.example/x.css"></head></html>`);
+    applyNeighborFiles(doc, []);
+    expect(doc.querySelector("link")?.getAttribute("media")).toBeNull();
+  });
+
+  it("відносне глушиться навіть тоді, коли файл знайдено", () => {
+    const doc = parse(`<html><head><link rel="stylesheet" href="style.css"></head></html>`);
+    applyNeighborFiles(doc, [cssFile]);
+    expect(doc.querySelector("link")?.getAttribute("media")).toBe("not all");
+  });
+});
+
 describe("головний файл уроку", () => {
   it("береться з `isEntry`, а не з імені", () => {
     const entry: RunnerFile = {

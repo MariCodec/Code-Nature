@@ -23,10 +23,81 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import agentSource from "virtual:sandbox-agent";
 
 import { isRunnerEvent } from "../domain/runner";
-import type { RunnerFile, RunnerRequest, TaskResult } from "../domain/runner";
+import type { RunnerAsset, RunnerFile, RunnerRequest, TaskResult } from "../domain/runner";
 import type { TaskRules } from "../types/lessonTypes";
 import { composePage, findEntryFile } from "./composeDocument";
 import type { SandboxFrameHandle } from "./SandboxFrame";
+
+/**
+ * Ассети їдуть у пісочницю **вмістом**, а не адресою. Виміряно в браузері,
+ * двома пробами, і результат був несподіваний:
+ *
+ * | Що в `<img src>` усередині `sandbox="allow-scripts"` | Чи завантажилось |
+ * |---|---|
+ * | `/content/assets/beans.svg` | ні — у `srcdoc` немає базової адреси |
+ * | `http://localhost:5173/content/assets/beans.svg` | **ні** — запит навіть не пішов |
+ * | `data:image/svg+xml,…` | **так** |
+ *
+ * Другий рядок і є суттю. Пісочниця живе на **непрозорому** origin, і браузер
+ * рахує такий origin зовнішнім, а `localhost` — внутрішньою адресою; звернення
+ * назовні всередину блокується до того, як стати запитом. Файл при цьому
+ * віддається з кодом 200 — його просто ніхто не просить.
+ *
+ * Тому адреса перетворюється на `data:` **тут**, на сторінці, де origin наш
+ * і завантаження дозволене. Це той самий механізм, який розділ 5 уже назвав
+ * для ассетів **учня** («`blob:` не годиться… а `data:` працює звідусіль,
+ * бо origin для нього не існує») — отже механізм один, а не два.
+ *
+ * Ціна названа: вміст ассета їде в `srcdoc` рядком, тобто base64 на третину
+ * більший за файл. Прийнятно, доки ассети дрібні; **тригер** переглянути —
+ * перший урок із важкою картинкою або власний origin пісочниці, після якого
+ * обхід стане непотрібним.
+ *
+ * Кеш — на модуль, бо той самий файл вантажиться на кожен запуск і на кожне
+ * завдання перевірки.
+ */
+const assetContents = new Map<string, Promise<string>>();
+
+const toDataUrl = (url: string): Promise<string> => {
+  const cached = assetContents.get(url);
+  if (cached) return cached;
+
+  const loading = fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error(String(response.status));
+      return response.blob();
+    })
+    .then(
+      (blob) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(blob);
+        }),
+    )
+    .catch(() => {
+      // Не вийшло — лишаємо адресу. Картинка буде побита, і це видно одразу;
+      // мовчки підставити порожнечу було б гірше.
+      assetContents.delete(url);
+      return url;
+    });
+
+  assetContents.set(url, loading);
+  return loading;
+};
+
+const inlineAssets = async (assets: RunnerAsset[]): Promise<RunnerAsset[]> =>
+  Promise.all(
+    assets.map(async (asset) => {
+      try {
+        const absolute = new URL(asset.url, window.location.href).href;
+        return { ...asset, url: await toDataUrl(absolute) };
+      } catch {
+        return asset;
+      }
+    }),
+  );
 
 /** Порожня пісочниця: агент є, сторінки учня ще (або вже) немає. */
 const BLANK_PAGE = composePage("", [], agentSource);
@@ -54,7 +125,7 @@ type PendingCheck = { resolve: (outcome: SandboxCheckOutcome) => void; timer: nu
 export type SandboxWindow = {
   frame: SandboxFrameHandle;
   /** Завантажити сторінку учня в **нове** вікно. */
-  load: (files: RunnerFile[]) => void;
+  load: (files: RunnerFile[], assets: RunnerAsset[]) => void;
   /** Перестворити вікно порожнім: єдиний спосіб зупинити чужий нескінченний цикл. */
   reset: () => void;
   /** Один round-trip у вже завантажене вікно. Ніколи не висить. */
@@ -77,6 +148,8 @@ export const useSandboxWindow = (
   const queue = useRef<RunnerRequest[]>([]);
   const pending = useRef(new Map<string, PendingCheck>());
   const lastCheckId = useRef(0);
+  /** Лічильник завантажень: пізня відповідь від старого не має затерти нове. */
+  const loadToken = useRef(0);
 
   const consoleRef = useRef(onConsole);
   consoleRef.current = onConsole;
@@ -120,34 +193,68 @@ export const useSandboxWindow = (
   }, []);
 
   /**
+   * Старе вікно більше не чинне: нові запити чекають, старі не дочекаються.
+   *
+   * Окремо від `setPage`, бо між рішенням «вантажимо» і готовим `srcdoc`
+   * може бути очікування — читання ассетів. **Лічильник росте саме тут**,
+   * а не на асинхронній гілці: інакше синхронне завантаження (наприклад
+   * `reset()` по таймауту) не скасовувало б те, що зараз дочитується,
+   * і застаріла сторінка повернулась би вже після перезапуску пісочниці.
+   */
+  const beginLoad = useCallback(() => {
+    isReady.current = false;
+    queue.current = [];
+    loadToken.current += 1;
+
+    // Хто ще чекає — не дочекається: цього вікна зараз не стане.
+    for (const checkId of [...pending.current.keys()]) settle(checkId, { status: "timeout" });
+
+    return loadToken.current;
+  }, [settle]);
+
+  /**
    * Завантажити нову сторінку — **нове вікно**, а не новий вміст старого.
    * Чужий `setInterval` інакше пережив би і Run, і Clear: його стек нам
    * не належить, і зупинити його можна лише разом із вікном.
    */
   const loadPage = useCallback(
     (srcdoc: string) => {
-      isReady.current = false;
-      queue.current = [];
-
-      // Хто ще чекає — не дочекається: цього вікна зараз не стане.
-      for (const checkId of [...pending.current.keys()]) settle(checkId, { status: "timeout" });
-
+      beginLoad();
       setPage((current) => ({ generation: current.generation + 1, srcdoc }));
     },
-    [settle],
+    [beginLoad],
   );
 
   /**
    * Головного файлу може не бути (автор забув `isEntry`) — тоді сторінка порожня,
    * а перевірка голосно не зарахує завдання. Ворота від такого уроку —
    * схема-перевірка контенту, а не мовчазна заглушка тут.
+   *
+   * Урок без ассетів вантажиться **синхронно**, як і до Фази 4: асинхронний
+   * шлях зʼявляється лише там, де є що дочекатись. Інакше кожен урок платив би
+   * за можливість, якою не користується.
    */
   const load = useCallback(
-    (files: RunnerFile[]) => {
+    (files: RunnerFile[], assets: RunnerAsset[]) => {
       const entry = findEntryFile(files);
-      loadPage(composePage(entry?.content ?? "", files, agentSource));
+      const compose = (ready: RunnerAsset[]) =>
+        composePage(entry?.content ?? "", files, agentSource, ready);
+
+      if (assets.length === 0) {
+        loadPage(compose([]));
+        return;
+      }
+
+      const token = beginLoad();
+
+      void inlineAssets(assets).then((ready) => {
+        // Нас обігнали: поки читались ассети, вікно завантажили ще раз
+        // — або перезапустили порожнім. Застаріле не показуємо.
+        if (loadToken.current !== token) return;
+        setPage((current) => ({ generation: current.generation + 1, srcdoc: compose(ready) }));
+      });
     },
-    [loadPage],
+    [beginLoad, loadPage],
   );
 
   const reset = useCallback(() => loadPage(BLANK_PAGE), [loadPage]);

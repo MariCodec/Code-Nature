@@ -15,7 +15,7 @@
       "id": "fil_css_html",
       "name": "index.html",
       "language": "html",
-      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Кава дня</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <article class=\"card\">\n      <h1>Кава дня</h1>\n      <p class=\"lead\">Еспресо з нотками карамелі.</p>\n    </article>\n  </body>\n</html>\n",
+      "initialContent": "<!DOCTYPE html>\n<html lang=\"uk\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Кава дня</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <article class=\"card\">\n      <h1>Кава дня</h1>\n      <p class=\"lead\">Еспресо з нотками карамелі.</p>\n      <img class=\"bean\" src=\"beans.svg\" alt=\"Зерна кави\" width=\"64\" height=\"64\" />\n    </article>\n  </body>\n</html>\n",
       "orderIndex": 1,
       "isEditable": false,
       "isEntry": true
@@ -79,7 +79,13 @@
       "orderIndex": 1,
       "rules": {
         "kind": "dom",
-        "cssChecks": [{ "selector": "h1", "property": "color", "value": "rgb(0, 128, 0)" }]
+        "cssChecks": [
+          {
+            "selector": "h1",
+            "property": "color",
+            "value": "green"
+          }
+        ]
       },
       "hints": [
         "Селектор для заголовка — h1.",
@@ -94,7 +100,13 @@
       "orderIndex": 2,
       "rules": {
         "kind": "dom",
-        "cssChecks": [{ "selector": ".card", "property": "padding", "value": "24px" }]
+        "cssChecks": [
+          {
+            "selector": ".card",
+            "property": "padding",
+            "value": "24px"
+          }
+        ]
       },
       "hints": [
         "Селектор за класом починається з крапки: .card",
@@ -109,14 +121,28 @@
       "rules": {
         "kind": "dom",
         "cssChecks": [
-          { "selector": ".lead", "property": "color", "value": "rgb(102, 102, 102)" },
-          { "selector": ".lead", "property": "font-size", "value": "18px" }
+          {
+            "selector": ".lead",
+            "property": "color",
+            "value": "#666666"
+          },
+          {
+            "selector": ".lead",
+            "property": "font-size",
+            "value": "18px"
+          }
         ]
       },
       "hints": [
         "Одне правило може містити кілька оголошень поспіль.",
         "Розмір шрифту — font-size."
       ]
+    }
+  ],
+  "assets": [
+    {
+      "name": "beans.svg",
+      "url": "/content/assets/beans.svg"
     }
   ]
 }

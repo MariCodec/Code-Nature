@@ -37,38 +37,114 @@
   outline: none;
 }
 
-/* Помилки виконання поверх сторінки учня.
+/* Вивід програми поверх сторінки учня.
    Накладкою, а не третім рядком розмітки: висоти вікна браузера пораховані
    під адресний рядок і preview, і поява смужки знизу з'їдала б саме те,
-   заради чого учень сюди дивиться. */
-.problems {
+   заради чого учень сюди дивиться.
+
+   Кольори тут літеральні свідомо: смужка лежить **усередині вікна браузера**,
+   а воно темі застосунку не підкоряється (CLAUDE.md, перелік винятків).
+   Токен `$danger` у світлій і темній темі різний, і на білому тлі preview
+   один із двох читався б погано. Вигляд консолі розробника доречний і тим,
+   що це рівно вона й є. */
+.console {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: 40%;
+  display: flex;
+  flex-direction: column;
+  max-height: 45%;
+  background: #2b2b33;
+  font-family: v.$font-code;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Згорнутий стан — це вся смужка: один рядок із лічильником.
+   Клікабельна вона цілком, бо ціль у 24px заввишки має бути широкою. */
+.consoleBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 12px;
+  border: none;
+  border-top: 1px solid #3c3c48;
+  background: #23232b;
+  color: #c9c9d4;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #2f2f3a;
+  }
+}
+
+.consoleLabel {
+  letter-spacing: 0.02em;
+}
+
+/* Лічильник видно й згорнутим: інакше «програма щось надрукувала»
+   не відрізнити від «програма мовчала». */
+.consoleCount {
+  padding: 0 6px;
+  border-radius: 8px;
+  background: #3c3c48;
+  color: #f0f0f5;
+  font-size: 11px;
+}
+
+.consoleAlarm {
+  margin-left: auto;
+  color: #ff8a8a;
+  font-weight: 600;
+}
+
+.consoleLines {
   overflow-y: auto;
   margin: 0;
   padding: 8px 12px;
   list-style: none;
-  /* Кольори тут літеральні свідомо: смужка лежить **усередині вікна браузера**,
-     а воно темі застосунку не підкоряється (CLAUDE.md, перелік винятків).
-     Токен `$danger` у світлій і темній темі різний, і на білому тлі preview
-     один із двох читався б погано. Вигляд консолі розробника доречний і тим,
-     що це рівно вона й є. */
-  background: #2b2b33;
-  color: #ff8a8a;
-  font-family: v.$font-code;
-  font-size: 12px;
-  line-height: 1.45;
+  color: #c9c9d4;
 
   li + li {
     margin-top: 4px;
   }
 }
 
-.problemError {
+/* Рівень видно кольором, а не лише текстом: учень шукає очима те, що впало. */
+.consoleLog {
+  color: #c9c9d4;
+}
+
+.consoleWarn {
+  color: #ffd27f;
+}
+
+.consoleError {
+  color: #ff8a8a;
   font-weight: 600;
+}
+
+.consoleDropped {
+  color: #8a8a99;
+  font-style: italic;
+}
+
+/* Вікно, у якому працює перевірка. Прибране з очей, але не з верстки:
+   `display: none` лишив би браузеру право поводитись із ним інакше, а нам
+   потрібне звичайне вікно, яке справді вантажить сторінку й виконує скрипти. */
+.checkFrame {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  left: -9999px;
+  top: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .overlay {

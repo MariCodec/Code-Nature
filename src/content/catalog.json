@@ -30,7 +30,23 @@
       "level": "beginner",
       "accessLevel": "free",
       "progression": "sequential",
-      "prerequisiteCourseIds": ["crs_html_basics"],
+      "prerequisiteCourseIds": [
+        "crs_html_basics"
+      ],
+      "isPublished": true
+    },
+    {
+      "id": "crs_js_basics",
+      "trackId": "trk_frontend",
+      "slug": "js-basics",
+      "title": "JavaScript з нуля",
+      "description": "Сторінка починає відповідати: події, пошук елементів, зміна вмісту.",
+      "level": "beginner",
+      "accessLevel": "free",
+      "progression": "sequential",
+      "prerequisiteCourseIds": [
+        "crs_css_basics"
+      ],
       "isPublished": true
     }
   ],
@@ -50,6 +66,15 @@
       "slug": "start",
       "title": "Перші стилі",
       "description": "Як підключити CSS і змінити вигляд елементів.",
+      "orderIndex": 1,
+      "isPublished": true
+    },
+    {
+      "id": "mod_js_start",
+      "courseId": "crs_js_basics",
+      "slug": "start",
+      "title": "Перші дії",
+      "description": "Як підключити скрипт і змусити сторінку реагувати на кліки.",
       "orderIndex": 1,
       "isPublished": true
     }

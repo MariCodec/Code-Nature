@@ -235,6 +235,8 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
       orderIndex: lesson.order || index + 1,
       isPublished: true,
       files,
+      // Старе джерело ассетів не має й не матиме: воно помирає у Фазі 5.
+      assets: [],
       theoryBlocks,
       videos: mapLessonVideos(lesson.id, lesson.title),
       tasks,
@@ -266,7 +268,8 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
       validationType: "auto",
       orderIndex,
       isPublished: true,
-      files: mapLessonFiles(
+      assets: [],
+    files: mapLessonFiles(
         lessonId,
         "Техчек: HTML Basic",
         `<main>\n  <h1>Мій перший техчек</h1>\n  <p>Я закріплюю HTML.</p>\n</main>`,
@@ -380,6 +383,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
     validationType: "auto",
     orderIndex,
     isPublished: true,
+    assets: [],
     files: mapLessonFiles(
       lessonId,
       "Техчек: CSS Basic",

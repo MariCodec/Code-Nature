@@ -611,7 +611,7 @@ const LessonPage = () => {
               onFinish={finishLessonWithoutTasks}
             />
           ) : (
-            /* Тип уроку, для якого реалізації ще немає: `js-dom`, `code-output`,
+            /* Тип уроку, для якого реалізації ще немає: `code-output`,
                `spa-preview`. Порожній редактор тут був би гіршим за чесний напис —
                учень вирішив би, що зламався застосунок. */
             <p className={styles.finishHint}>

@@ -16,6 +16,7 @@
 import type {
   CourseDTO,
   CourseModuleDTO,
+  LessonAssetDTO,
   LessonDTO,
   LessonFileDTO,
   LessonTaskDTO,
@@ -26,6 +27,8 @@ import type {
 import type {
   CssRule,
   DocumentRule,
+  DomAction,
+  QuizTaskRules,
   SelectorRule,
   TaskRules,
   TextRule,
@@ -224,6 +227,73 @@ function parseDocumentRule(issues: ContentIssue[], raw: unknown, where: string):
   return rule;
 }
 
+/**
+ * Дія перед перевіркою. Видів поки один, але тег обовʼязковий: без нього
+ * другий вид довелось би вгадувати за формою полів — та сама помилка,
+ * якої ми не робимо в `TaskRules`.
+ */
+function parseDomAction(issues: ContentIssue[], raw: unknown, where: string): DomAction {
+  const s = scope(issues, where, raw);
+  const kind = s.oneOf("kind", ["click", "type"] as const);
+  const selector = s.str("selector");
+  // `text` обовʼязковий саме для `type`: ввести «нічого» — це не дія,
+  // а опечатка автора, і мовчки вона дала б непрохідне завдання.
+  const action: DomAction =
+    kind === "type" ? { kind, selector, text: s.str("text") } : { kind, selector };
+  s.done();
+  return action;
+}
+
+/**
+ * Чи питання взагалі можна розвʼязати.
+ *
+ * Форма правил тут бездоганна — помилка у **звʼязку** між полями, і тому
+ * її не бачить ні `tsc`, ні перевірка типів: `correctOptionIds` це просто
+ * масив рядків, і вказати ним на варіант, якого немає, синтаксично законно.
+ *
+ * Ціна найвища з можливих: техчек — це **ворота**. Питання, яке не зараховується
+ * ніколи, замикає модуль назавжди, а учень бачить лише «спробуй ще» і не має
+ * у кого спитати. Виміряно чотирма пробами перед Фазою 4 — усі чотири пройшли
+ * схема-перевірку з нулем зауважень.
+ */
+function checkQuizSolvable(
+  issues: ContentIssue[],
+  rules: QuizTaskRules,
+  where: string,
+): void {
+  const optionIds = new Set(rules.options.map((option) => option.id));
+
+  if (optionIds.size !== rules.options.length)
+    issues.push({
+      where: `${where}.options`,
+      message: "два варіанти з однаковим id — незрозуміло, на який вказує correctOptionIds",
+    });
+
+  if (rules.correctOptionIds.length === 0)
+    issues.push({
+      where: `${where}.correctOptionIds`,
+      message: "питання без правильної відповіді не зараховується ніколи",
+    });
+
+  for (const id of rules.correctOptionIds) {
+    if (optionIds.has(id)) continue;
+    issues.push({
+      where: `${where}.correctOptionIds`,
+      message: `вказує на варіант "${id}", якого немає серед options`,
+    });
+  }
+
+  // `single` малює radio, тобто обрати можна **один** варіант, а зараховується
+  // лише повний збіг (`domain/techCheck.checkQuizAnswer`). Два правильні
+  // в цьому режимі — питання, яке не закриває ніхто.
+  if (rules.selectionMode === "single" && rules.correctOptionIds.length > 1)
+    issues.push({
+      where,
+      message:
+        "selectionMode: single, але правильних варіантів кілька — обрати всі неможливо",
+    });
+}
+
 function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): TaskRules {
   const kind = isObject(raw) ? raw.kind : undefined;
 
@@ -260,6 +330,8 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
       else issues.push({ where: `${where}.reviewLessonId`, message: "очікувався рядок" });
     }
 
+    checkQuizSolvable(issues, rules, where);
+
     s.done();
     return rules;
   }
@@ -268,6 +340,8 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
   s.oneOf("kind", ["dom"] as const);
 
   const rules: TaskRules = { kind: "dom" };
+  if (s.raw("act") !== undefined)
+    rules.act = s.list("act", (item, w) => parseDomAction(issues, item, w));
   if (s.raw("document") !== undefined)
     rules.document = parseDocumentRule(issues, s.raw("document"), `${where}.document`);
   if (s.raw("selectors") !== undefined)
@@ -283,6 +357,9 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
     !rules.textContains?.length &&
     !rules.cssChecks?.length
   )
+    // `act` сюди не рахується навмисно: дія — це підготовка, а не умова.
+    // Завдання з самими діями зараховувалось би на порожній множині умов,
+    // тобто завжди — та сама помилка, що з уроком без завдань.
     issues.push({ where, message: "завдання без жодного правила не зараховується ніколи" });
 
   s.done();
@@ -354,6 +431,142 @@ function checkEntryFile(issues: ContentIssue[], files: LessonFileDTO[], where: s
       where: `${where}.files`,
       message: `головних файлів має бути один, а isEntry стоїть у ${entries.length}`,
     });
+}
+
+function parseAsset(issues: ContentIssue[], raw: unknown, where: string): LessonAssetDTO {
+  const s = scope(issues, where, raw);
+  const asset: LessonAssetDTO = { name: s.str("name"), url: s.str("url") };
+  s.done();
+  return asset;
+}
+
+/** Відносні посилання `<img src>` у тексті entry-файлу. */
+const findImageSources = (html: string): string[] => {
+  const sources: string[] = [];
+
+  for (const [tag] of html.matchAll(/<img\b[^>]*>/gi)) {
+    const src = /\bsrc\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
+    if (src) sources.push(src.replace(/^\.\//, ""));
+  }
+
+  return sources;
+};
+
+/**
+ * Картинка, яка веде в нікуди.
+ *
+ * У пісочниці немає файлової системи, тож `<img src="beans.svg">` працює **лише**
+ * через підстановку за імʼям ассета. Забув оголосити ассет — і учень бачить
+ * порожню рамку замість картинки, а урок про зображення втрачає сенс.
+ *
+ * Та сама помилка з другого боку: ассет оголошений, але в розмітці на нього
+ * ніхто не дивиться. Це вже не поломка, лише зайвий рядок, тож мовчимо —
+ * у CSS ассет може використовуватись через `url()`, якого тут не видно.
+ */
+function checkAssetReferences(
+  issues: ContentIssue[],
+  files: LessonFileDTO[],
+  assets: LessonAssetDTO[],
+  where: string,
+): void {
+  const names = new Set<string>();
+  for (const asset of assets) {
+    if (names.has(asset.name))
+      issues.push({
+        where: `${where}.assets`,
+        message: `два ассети з імʼям «${asset.name}» — підстановка не знатиме, який брати`,
+      });
+    names.add(asset.name);
+  }
+
+  const entry = files.find((file) => file.isEntry);
+  if (!entry) return;
+
+  for (const src of findImageSources(entry.initialContent)) {
+    if (/^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith("//")) continue;
+    if (names.has(src)) continue;
+    issues.push({
+      where: `${where}.assets`,
+      message: `${entry.name} показує «${src}», а такого ассета в уроці немає — картинка веде в нікуди`,
+    });
+  }
+}
+
+/**
+ * Посилання на таблиці стилів у тексті entry-файлу.
+ *
+ * Регулярка, а не `DOMParser`, і це свідомо: схема-перевірка працює і в тестах
+ * під Node, де DOM-у немає взагалі. Ціна прийнятна саме тут — помилка цієї
+ * перевірки **гучна** (автор бачить повідомлення й перевіряє сам), на відміну
+ * від підстановки в пісочниці, яка мусить бути точною й тому розбирає DOM.
+ */
+const findStylesheetHrefs = (html: string): string[] => {
+  const hrefs: string[] = [];
+
+  for (const [tag] of html.matchAll(/<link\b[^>]*>/gi)) {
+    if (!/\brel\s*=\s*["'][^"']*\bstylesheet\b/i.test(tag)) continue;
+
+    const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1];
+    if (href) hrefs.push(href.replace(/^\.\//, ""));
+  }
+
+  return hrefs;
+};
+
+/**
+ * Css-файл, на який ніхто не посилається, мовчки нічого не дає.
+ *
+ * Рушій більше не інжектить стилі від себе (розділ 5, «Формат документа уроку»):
+ * файл потрапляє на сторінку **лише** через `<link rel="stylesheet">` в entry.
+ * Забув посилання — і CSS-урок виглядає зламаним для всіх: учень пише правильні
+ * стилі, сторінка не міняється, `cssChecks` не зараховується, і винним здається він.
+ *
+ * Зворотний бік теж помилка автора: `<link>` є, а такого файлу в уроці немає.
+ * Для учня це білий екран без жодної підказки.
+ */
+function checkStylesheetLinks(
+  issues: ContentIssue[],
+  files: LessonFileDTO[],
+  where: string,
+): void {
+  const entry = files.find((file) => file.isEntry);
+  if (!entry) return;
+
+  /**
+   * Редагований entry перевіряється лише «зайвим посиланням», але не відсутнім.
+   *
+   * Знахідка `/code-review`: урок «підключи таблицю стилів» за побудовою
+   * починається **без** `<link>` — його пише учень, і це рівно та задача.
+   * Вимагати посилання в заготовці означало б заборонити урок, який розділ 5
+   * прямо описує (випадок з одруком `styl.css` — це учень редагує href).
+   *
+   * Там, де entry заблокований, такого уроку бути не може: його пише автор,
+   * і забуте посилання — його помилка.
+   */
+  const studentWritesEntry = entry.isEditable;
+
+  const hrefs = new Set(findStylesheetHrefs(entry.initialContent));
+  const cssNames = new Set(
+    files.filter((file) => file.language === "css").map((file) => file.name),
+  );
+
+  for (const name of cssNames) {
+    if (studentWritesEntry || hrefs.has(name)) continue;
+    issues.push({
+      where: `${where}.files`,
+      message: `на css-файл «${name}» немає <link rel="stylesheet"> у ${entry.name} — стилі не потраплять на сторінку`,
+    });
+  }
+
+  for (const href of hrefs) {
+    // Зовнішні посилання ведуть у справжній інтернет — це не наш файл.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("//")) continue;
+    if (cssNames.has(href)) continue;
+    issues.push({
+      where: `${where}.files`,
+      message: `${entry.name} посилається на «${href}», а такого css-файлу в уроці немає`,
+    });
+  }
 }
 
 function parseTheoryBlock(
@@ -444,6 +657,10 @@ export function parseLesson(
     orderIndex: s.num("orderIndex"),
     isPublished: s.bool("isPublished"),
     files: s.list("files", (item, w) => parseFile(issues, item, w)),
+    assets:
+      s.raw("assets") === undefined
+        ? []
+        : s.list("assets", (item, w) => parseAsset(issues, item, w)),
     theoryBlocks: s.list("theoryBlocks", (item, w) => parseTheoryBlock(issues, item, w)),
     videos: s.list("videos", (item, w) => parseVideo(issues, item, w)),
     tasks: s.list("tasks", (item, w) => parseTask(issues, item, w)),
@@ -451,6 +668,8 @@ export function parseLesson(
   s.done();
 
   checkEntryFile(issues, lesson.files, where);
+  checkStylesheetLinks(issues, lesson.files, where);
+  checkAssetReferences(issues, lesson.files, lesson.assets, where);
 
   // Правило завершення з розділу 3: `auto` без завдань не завершується ніколи,
   // тож такий урок — не «поки без практики», а глухий кут для учня.
@@ -458,6 +677,41 @@ export function parseLesson(
     issues.push({ where, message: "validationType: auto, але завдань немає" });
 
   return { lesson, issues };
+}
+
+/**
+ * Посилання **між** уроками. Єдина перевірка, яку неможливо зробити під час
+ * розбору одного файлу: `reviewLessonId` веде в інший урок, а розбір бачить
+ * лише той, що в руках.
+ *
+ * Ламається вона тихо й у найгіршому місці: учень відповів неправильно в техчеку,
+ * натиснув «повернутись до уроку» — і потрапив у «Урок не знайдено». Це той
+ * момент, коли він і так розгублений, бо щойно помилився.
+ *
+ * Найчастіша причина — перейменування: урок дістав новий id, а посилання
+ * лишилось зі старим. `tsc` цього не бачить, бо обидва рядки.
+ */
+export function checkLessonReferences(lessons: LessonDTO[]): ContentIssue[] {
+  const issues: ContentIssue[] = [];
+  const knownIds = new Set(lessons.map((lesson) => lesson.id));
+
+  for (const lesson of lessons) {
+    for (const task of lesson.tasks) {
+      if (task.rules.kind !== "quiz") continue;
+
+      const target = task.rules.reviewLessonId;
+      if (target === undefined) continue;
+
+      const where = `${lesson.id}.${task.id}.rules.reviewLessonId`;
+
+      if (!knownIds.has(target))
+        issues.push({ where, message: `уроку "${target}" не існує` });
+      else if (target === lesson.id)
+        issues.push({ where, message: "урок відсилає сам на себе" });
+    }
+  }
+
+  return issues;
 }
 
 export function parseCatalog(

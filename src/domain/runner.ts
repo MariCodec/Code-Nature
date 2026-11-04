@@ -28,6 +28,13 @@ export type RunnerFile = {
  * не зійшлося. Рядка тут немає — правила повертають ключі, текст складає інтерфейс
  * із `i18n`, тож через `postMessage` їде структура, а не українське речення.
  */
+/**
+ * Ассет уроку — **посилання**, а не файл. `lesson_files.initial_content` це рядок,
+ * тож бінарник туди не лягає, а `data:` URI в контенті означав би, що картинка
+ * на 50 КБ парситься з JSON на кожне відкриття уроку (PLATFORM_UA, розділ 5).
+ */
+export type RunnerAsset = { name: string; url: string };
+
 export type TaskResult = {
   taskId: string;
   passed: boolean;

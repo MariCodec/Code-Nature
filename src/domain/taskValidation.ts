@@ -55,6 +55,16 @@ export type RuleFailure =
       expected: string;
       actual: string;
     }
+  /**
+   * Дію перед перевіркою виконати не вдалося: елемента немає. Помилка автора
+   * уроку — або учня, якщо розмітку пише він. Окремий ключ, бо «не знайшла h1»
+   * і «нікуди було клікнути» ведуть учня в різні боки.
+   */
+  | { key: "actTargetMissing"; selector: string }
+  /** Елемент є, але писати в нього не можна: дія `type` по не-полю. */
+  | { key: "actTargetNotTypeable"; selector: string }
+  /** Елемент є, але натиснути його не можна: `click` по не-HTML елементу. */
+  | { key: "actTargetNotClickable"; selector: string }
   /** Правило без жодної умови — теж помилка автора. */
   | { key: "ruleEmpty" }
   /** У завдання немає жодного правила. */
@@ -143,6 +153,56 @@ function checkTextRule(doc: Document, rule: TextRule): RuleResult {
 }
 
 /**
+ * Значення автора проганяється через **той самий браузер**, що рахує стиль учня.
+ *
+ * Без цього автор мусив би писати обчислену форму: `rgb(0, 128, 0)`, а не `green`;
+ * `24px`, а не `1.5rem`. Помилка тут тиха й найдорожча — завдання стає непрохідним
+ * **для всіх**, а повідомлення «color зараз rgb(0, 128, 0), а має бути green»
+ * виглядає як помилка учня, хоч учень зробив усе правильно.
+ *
+ * **Проба — копія самого елемента, поставлена поруч, а не `div` у `<body>`.**
+ * Виміряно в браузері: той самий запис `padding-left: 1em` дає 15px на пробному
+ * `div` у body і 20px на абзаці з власним `font-size: 20px`. Відносні одиниці —
+ * `em`, `%`, `vw` — рахуються від контексту, тож нормалізувати їх деінде означає
+ * зробити завдання непрохідним рівно тим способом, проти якого нормалізація
+ * й написана. Копія поруч має той самий батьківський шрифт і той самий
+ * контейнер, тобто той самий контекст.
+ *
+ * `id` з копії знімається: двох однакових `id` ми не лишаємо навіть на мить.
+ * Проба прибирається **до** того, як правило поверне відповідь, тож у вибірку
+ * вона потрапити не може — пошук на той момент уже завершено.
+ *
+ * Якщо нормалізувати не вдалося (властивості не існує, значення нерозбірне,
+ * елементу нема куди поставити сусіда), повертається вихідний рядок — порівняння
+ * тоді дослівне. Мовчки зарахувати це не може: невідоме значення не збігається ні з чим.
+ */
+const normalizeCssValue = (element: Element, property: string, value: string): string => {
+  const view = element.ownerDocument.defaultView;
+  if (!view || !element.parentNode) return value;
+
+  const probe = element.cloneNode(false) as Element;
+  probe.removeAttribute("id");
+
+  const style = (probe as Partial<HTMLElement>).style;
+  if (!style) return value;
+
+  try {
+    style.setProperty(property, value);
+    // Не розпізнане значення браузер не приймає взагалі — тоді нормалізувати
+    // нічого, і дослівне порівняння чесніше за вигадане.
+    if (style.getPropertyValue(property) === "") return value;
+
+    element.after(probe);
+    const computed = view.getComputedStyle(probe).getPropertyValue(property).trim();
+    return computed || value;
+  } catch {
+    return value;
+  } finally {
+    probe.remove();
+  }
+};
+
+/**
  * Перевіряється **обчислений** стиль, а не написаний у CSS: учень міг задати колір
  * будь-яким селектором, важливий результат.
  *
@@ -163,7 +223,9 @@ function checkCssRule(doc: Document, rule: CssRule): RuleResult {
     const value = view
       ? view.getComputedStyle(element).getPropertyValue(rule.property).trim()
       : "";
-    if (value === rule.value) return PASSED;
+    // Нормалізація **для цього елемента**: відносні одиниці інакше порахувались би
+    // в чужому контексті. Пошук уже завершено, тож проба у вибірку не потрапить.
+    if (value === normalizeCssValue(element, rule.property, rule.value)) return PASSED;
     if (!actual) actual = value;
   }
 
@@ -171,6 +233,8 @@ function checkCssRule(doc: Document, rule: CssRule): RuleResult {
     key: "cssMismatch",
     selector: rule.selector,
     property: rule.property,
+    // Учневі показуємо те, що написав автор: обчислена форма сказала б
+    // «має бути rgb(0, 128, 0)» там, де в уроці написано «green».
     expected: rule.value,
     actual,
   });

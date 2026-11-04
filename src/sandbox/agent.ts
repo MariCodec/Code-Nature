@@ -21,12 +21,20 @@
  */
 
 import { checkTask } from "../domain/taskValidation";
+import { performActions } from "./actions";
 import type {
   ConsoleLevel,
   RunnerEvent,
   RunnerRequest,
   TaskResult,
 } from "../domain/runner";
+
+/** Причина невдалої дії → ключ, з якого інтерфейс складе речення учневі. */
+const ACT_FAILURE_KEY = {
+  missing: "actTargetMissing",
+  notTypeable: "actTargetNotTypeable",
+  notClickable: "actTargetNotClickable",
+} as const;
 
 /** Правила завдання в тому вигляді, в якому вони приїжджають у `check`. */
 type RunnerCheckRules = Extract<RunnerRequest, { type: "check" }>["tasks"][number]["rules"];
@@ -98,20 +106,77 @@ const onRejection = (event: PromiseRejectionEvent) => {
 };
 
 /**
+ * Дочекатись наслідків дії перед тим, як дивитись на DOM.
+ *
+ * `setTimeout(0)`, а **не** `requestAnimationFrame`, і це виміряно, а не вибрано
+ * за смаком. Кадр планується лише тоді, коли сторінку справді малюють: у вкладці
+ * у фоні, у згорнутому вікні чи в панелі, яка не композитить iframe, `rAF`
+ * не спрацьовує **ніколи** — агент мовчить, сторінка чекає пʼять секунд
+ * і каже «перевірка не завершилась». Спіймано саме так: `result` не приходив,
+ * хоча `ready` приходив і дія виконувалась.
+ *
+ * Правило загальніше за цей випадок: **перевірка не має залежати від того,
+ * чи сторінку видно.** Таймер цієї залежності не має, а відмальовка нам і
+ * не потрібна — `textContent` міняється синхронно, і прочитати його можна
+ * до першого кадру.
+ *
+ * Межа названа чесно: `setTimeout` усередині обробника учня сюди не влізе —
+ * перевірка побачить сторінку до спрацювання його таймера. **Тригер**
+ * повернутись — урок, який вчить саме відкладені дії.
+ */
+const settled = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+/**
  * Перевірка йде по **живому** DOM — тому вона й живе тут, а не на сторінці.
  * Питання техчека сюди не доїжджають: їх відфільтровує викликач, бо відповідь
  * на них не в документі.
+ *
+ * Дії (`rules.act`) виконуються **перед** поглядом, і саме тут, а не на сторінці:
+ * ззовні документ пісочниці недоступний за визначенням. Валідатор від цього
+ * лишається чистим — до його виклику дії вже сталися.
+ *
+ * Сторінка надсилає завдання **по одному**, кожне в своєму вікні: дія змінює
+ * документ, і перевіряти наступне завдання в залишеному стані означало б
+ * зробити порядок завдань значущим.
  */
-const runCheck = (checkId: string, tasks: { id: string; rules: RunnerCheckRules }[]) => {
+const runCheck = async (
+  checkId: string,
+  tasks: { id: string; rules: RunnerCheckRules }[],
+) => {
   if (cancelled.has(checkId)) {
     send({ type: "timeout", checkId });
     return;
   }
 
-  const results: TaskResult[] = tasks.map((task) => {
+  const results: TaskResult[] = [];
+
+  for (const task of tasks) {
+    const act = task.rules.kind === "dom" ? task.rules.act : undefined;
+
+    if (act?.length) {
+      const failure = performActions(document, act);
+      if (failure) {
+        results.push({
+          taskId: task.id,
+          passed: false,
+          rules: [
+            {
+              passed: false,
+              failure: { key: ACT_FAILURE_KEY[failure.reason], selector: failure.selector },
+            },
+          ],
+        });
+        continue;
+      }
+      await settled();
+    }
+
     const check = checkTask(document, task.rules);
-    return { taskId: task.id, passed: check.passed, rules: check.rules };
-  });
+    results.push({ taskId: task.id, passed: check.passed, rules: check.rules });
+  }
+
+  // Сторінка могла передумати, поки ми чекали кадр.
+  if (cancelled.has(checkId)) return;
 
   send({ type: "result", checkId, results });
 };
@@ -128,7 +193,7 @@ const onMessage = (event: MessageEvent<RunnerRequest>) => {
 
   switch (request.type) {
     case "check":
-      runCheck(request.checkId, request.tasks);
+      void runCheck(request.checkId, request.tasks);
       return;
     case "cancel":
       cancelled.add(request.checkId);

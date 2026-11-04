@@ -199,3 +199,94 @@ describe("checkTask: структура документа", () => {
     expect(firstFailure(parsed(full), dom({ document: {} }))).toEqual({ key: "ruleEmpty" });
   });
 });
+
+/**
+ * Нормалізація значень автора — пункт 4.8.
+ *
+ * **Виміряно, і це найважливіше в цьому блоці:** `happy-dom` і справжній браузер
+ * нормалізують **по-різному**. Довжини він рахує (`1.5rem` → `24px`), а кольори —
+ * ні: `green` лишається `green`, тоді як Chromium віддає `rgb(0, 128, 0)`.
+ *
+ * Тому тут перевіряється лише те, що однакове в обох: довжини й те, що пробний
+ * елемент не потрапляє у вибірку. Рівність нотацій кольору (`green` ↔ `#008000`)
+ * доводиться **в браузері**, і зелений тест такого доказу не дає.
+ */
+describe("значення автора нормалізується тим самим браузером", () => {
+  it("довжина в rem звіряється з пікселями учня", () => {
+    const doc = live("<head><style>p { font-size: 24px; }</style></head><body><p>x</p></body>");
+    expect(
+      checkTask(doc, dom({ cssChecks: [{ selector: "p", property: "font-size", value: "1.5rem" }] }))
+        .passed,
+    ).toBe(true);
+  });
+
+  it("різні значення не зближуються нормалізацією", () => {
+    const doc = live("<head><style>p { font-size: 24px; }</style></head><body><p>x</p></body>");
+    expect(
+      checkTask(doc, dom({ cssChecks: [{ selector: "p", property: "font-size", value: "2rem" }] }))
+        .passed,
+    ).toBe(false);
+  });
+
+  it("учневі показується нотація автора, а не обчислена форма", () => {
+    const doc = live("<head><style>p { font-size: 10px; }</style></head><body><p>x</p></body>");
+    expect(
+      firstFailure(doc, dom({ cssChecks: [{ selector: "p", property: "font-size", value: "1.5rem" }] })),
+    ).toEqual({
+      key: "cssMismatch",
+      selector: "p",
+      property: "font-size",
+      expected: "1.5rem",
+      actual: "10px",
+    });
+  });
+
+  it("пробний елемент не потрапляє у вибірку правила", () => {
+    // Нормалізація створює `<div>`; якби він лишався в документі, правило
+    // «рівно два div» зараховувалось би на трьох.
+    const doc = live("<body><div>a</div><div>b</div></body>");
+    expect(
+      checkTask(
+        doc,
+        dom({
+          cssChecks: [{ selector: "div", property: "font-size", value: "16px" }],
+          selectors: [{ selector: "div", minCount: 2 }],
+        }),
+      ).rules.every((rule) => rule.passed),
+    ).toBe(true);
+    expect(doc.querySelectorAll("div").length).toBe(2);
+  });
+
+  it("нерозбірне значення лишається дослівним і нічого не зараховує", () => {
+    const doc = live("<head><style>p { color: red; }</style></head><body><p>x</p></body>");
+    expect(
+      checkTask(doc, dom({ cssChecks: [{ selector: "p", property: "color", value: "не-колір" }] }))
+        .passed,
+    ).toBe(false);
+  });
+});
+
+/**
+ * Відносні одиниці рахуються від **контексту елемента**. Знахідка `/code-review`:
+ * перша реалізація нормалізувала на `div` у `<body>`, і виміряно в браузері,
+ * що `padding-left: 1em` дає там 15px, а на абзаці з `font-size: 20px` — 20px.
+ * Тобто правило ставало непрохідним для всіх — рівно те, проти чого нормалізація.
+ */
+describe("нормалізація бере контекст самого елемента", () => {
+  it("em рахується від шрифту елемента, а не від чужого", () => {
+    const doc = live(
+      "<head><style>p { font-size: 20px; padding-left: 1em; }</style></head>" +
+        "<body><p>x</p></body>",
+    );
+    expect(
+      checkTask(doc, dom({ cssChecks: [{ selector: "p", property: "padding-left", value: "1em" }] }))
+        .passed,
+    ).toBe(true);
+  });
+
+  it("проба не лишається в документі", () => {
+    const doc = live("<body><p>x</p></body>");
+    checkTask(doc, dom({ cssChecks: [{ selector: "p", property: "font-size", value: "1em" }] }));
+    expect(doc.querySelectorAll("p").length).toBe(1);
+  });
+});

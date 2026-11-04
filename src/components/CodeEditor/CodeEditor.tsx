@@ -7,6 +7,7 @@ import { useResizable } from "../../hooks/useResizable";
 import { setupMonacoTheme } from "../../utils/setupMonacoTheme";
 import { validateHtmlWithParse5 } from "../../utils/validateHtmlParse5";
 
+import SandboxFrame from "../../sandbox/SandboxFrame";
 import { CodeButtons } from "./CodeButtons";
 import "../../utils/monacoSetup";
 import { AppDispatch, RootState } from "../../store";
@@ -97,7 +98,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   // Пісочниця не відповіла. Окремо від `checkResults`: це не «не зараховано».
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
-  const { frame, problems, run, check, reset } = useSandbox();
+  const { frame, checkFrame, consoleOutput, run, check, reset } = useSandbox();
   const Preview = runtime.Preview;
 
   /**
@@ -107,6 +108,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
    */
   const filesRef = useRef(files);
   filesRef.current = files;
+
+  // Ассети читаються так само через ref: ефект нижче про **гідратацію**,
+  // і додавати до нього залежність, яка міняється разом з уроком, означало б
+  // перезавантажувати сторінку з іншої причини, ніж написано в його назві.
+  const assetsRef = useRef(lessonDto.assets);
+  assetsRef.current = lessonDto.assets;
 
   const { containerRef, dividerPosition, startResizing, isOverlayVisible } =
     useResizable();
@@ -193,7 +200,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
    */
   useEffect(() => {
     if (!isCodeHydrated) return;
-    run(filesRef.current);
+    run(filesRef.current, assetsRef.current);
   }, [isCodeHydrated, run]);
 
   // Урок змінився, або автор переписав `files[]` — активна вкладка могла зникнути.
@@ -249,7 +256,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const handleRunCode = async () => {
     // Показуємо сторінку в будь-якому разі: побачити свою помилку в браузері —
     // теж результат запуску.
-    run(files);
+    run(files, lessonDto.assets);
 
     if (htmlError) {
       focusFirstHtmlError();
@@ -262,7 +269,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
     const outcome = await checkLesson({
       lesson: lessonDto,
-      runCheck: check,
+      // Файли йдуть сюди, бо перевірка сама вантажить сторінку — по одній
+      // на завдання, інакше дії одного завдання псували б стан наступного.
+      runCheck: (tasks) => check(tasks, files, lessonDto.assets),
       passedTaskIds,
       isVideoWatched,
       dispatch,
@@ -298,7 +307,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     // запуском, переживає і Run, і Clear — зупинити його можна лише разом
     // із вікном, у якому він живе.
     reset();
-    run(initialFiles);
+    run(initialFiles, lessonDto.assets);
 
     // Стан редактора живе в моделях Monaco, а не в Redux, тож самого диспатчу мало:
     // без цього рядка буфер лишився б із написаним, а прогрес — скинутим.
@@ -436,10 +445,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           className={styles.browserWindow}
           style={{ width: `${100 - dividerPosition}%` }}
         >
-          {Preview && <Preview frame={frame} problems={problems} />}
+          {Preview && <Preview frame={frame} consoleOutput={consoleOutput} />}
         </div>
       </div>
       {isOverlayVisible && <div className={styles.overlay} />}
+
+      {/* Службове вікно перевірки. Сховане, але **намальоване**: iframe,
+          якого немає в дереві, нічого не завантажує, а значить і не перевіряє.
+          Не `display: none` навмисно — так вікно лишається звичайним, і його
+          поведінка не залежить від того, як браузер оптимізує невидиме. */}
+      <SandboxFrame
+        frame={checkFrame}
+        className={styles.checkFrame}
+        title={uk.editor.checkFrameTitle}
+      />
     </div>
   );
 };

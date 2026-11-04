@@ -20,6 +20,7 @@
 
 import type { LessonDTO } from "../types/content";
 import {
+  checkLessonReferences,
   parseCatalog,
   parseLesson,
   type CatalogDTO,
@@ -61,8 +62,8 @@ const readCatalog = (): CatalogDTO => {
   return catalog;
 };
 
-const readLessons = (): LessonDTO[] =>
-  Object.entries(lessonModules)
+const readLessons = (): LessonDTO[] => {
+  const lessons = Object.entries(lessonModules)
     // Порядок теки залежить від файлової системи, а каталог має бути однаковий
     // у всіх запусках — інакше «перший курс» на сторінці плаває без причини.
     .sort(([a], [b]) => a.localeCompare(b))
@@ -71,6 +72,13 @@ const readLessons = (): LessonDTO[] =>
       report(path, issues);
       return lesson;
     });
+
+  // Посилання між уроками видно лише тоді, коли прочитані всі: розбір одного
+  // файлу не знає, чи існує урок, на який той посилається.
+  report("посилання між уроками", checkLessonReferences(lessons));
+
+  return lessons;
+};
 
 export const fileCatalog: CatalogDTO = readCatalog();
 export const fileLessons: LessonDTO[] = readLessons();

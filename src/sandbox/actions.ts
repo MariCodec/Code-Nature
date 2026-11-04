@@ -20,7 +20,7 @@ import type { DomAction } from "../types/lessonTypes";
  * елемент не можна писати» ведуть у різні боки.
  */
 export type ActionFailure = {
-  reason: "missing" | "notTypeable";
+  reason: "missing" | "notTypeable" | "notClickable";
   selector: string;
 };
 
@@ -58,9 +58,18 @@ export const performActions = (
     if (!element) return { reason: "missing", selector: action.selector };
 
     switch (action.kind) {
-      case "click":
-        (element as HTMLElement).click();
+      case "click": {
+        // `click()` є лише в HTML-елементів: у `<svg>` його немає взагалі,
+        // і виклик кинув би виняток усередині агента. Назовні це виглядало б
+        // як таймаут із підписом «найчастіше так буває через нескінченний
+        // цикл у коді» — тобто застосунок звинуватив би учня в помилці автора.
+        const clickable = element as Partial<HTMLElement>;
+        if (typeof clickable.click !== "function")
+          return { reason: "notClickable", selector: action.selector };
+
+        clickable.click();
         break;
+      }
       case "type":
         if (!isTypeable(element))
           return { reason: "notTypeable", selector: action.selector };
