@@ -1,0 +1,74 @@
+@use "../../styles/variables" as v;
+
+.bottomBtn {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* base */
+.btn {
+  padding: 12px 22px;
+  border-radius: v.$radius-sm;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border: 2px solid transparent;
+  color: v.$text-main;
+  cursor: pointer;
+  transition: all v.$tr-base;
+}
+
+/* Run */
+.runBtn {
+  @extend .btn;
+background: linear-gradient(
+  90deg,
+  rgb(#{v.$accent-secondary-rgb} / 0.55),  
+  rgb(#{v.$accent-secondary-rgb} / 0.15) 
+);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.4);
+  box-shadow: 0 6px 22px rgb(#{v.$accent-primary-rgb} / 0.12);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgb(#{v.$accent-primary-rgb} / 0.45);
+  }
+}
+
+/* Вигляд заблокованої кнопки Run.
+   Без `pointer-events: none`: коли Run заблокований помилкою в HTML, клік по
+   ньому — це і є спосіб стрибнути до цієї помилки в редакторі, а `title`
+   пояснює, чому кнопка тьмяна. З `pointer-events: none` недосяжним було
+   й перше, й друге. Коли кнопка справді вимкнена (триває перевірка),
+   клік тримає атрибут `disabled`. */
+.runBtnDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: translateY(0);
+}
+
+/* Clear */
+.clearBtn {
+  @extend .btn;
+  background: transparent;
+  border-color: rgb(#{v.$danger-rgb} / 0.18);
+  box-shadow: 0 6px 18px rgb(#{v.$danger-rgb} / 0.08);
+
+  &:hover {
+    background: v.$danger-bg;
+    border-color: rgb(#{v.$danger-rgb} / 0.25);
+  }
+}
+
+/* Format */
+.formatCodeBtn {
+  @extend .btn;
+  background: v.$panel;
+  border-color: v.$border;
+
+  &:hover {
+    background: v.$border;
+    transform: translateY(-1px);
+  }
+}

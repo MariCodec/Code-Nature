@@ -1,0 +1,59 @@
+@use "../../styles/variables" as v;
+
+.navigationContainer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.navButton,
+.completeButton {
+background: linear-gradient(
+  90deg,
+  rgb(#{v.$accent-secondary-rgb} / 0.55),  
+  rgb(#{v.$accent-secondary-rgb} / 0.15) 
+);
+
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.35);
+  padding: 10px 15px;
+  cursor: pointer;
+  color: v.$text-main;
+  border-radius: v.$radius-sm;
+  transition: all v.$tr-base;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 25px rgb(#{v.$accent-primary-rgb} / 0.18);
+  }
+
+  &:disabled {
+    background: v.$panel;
+    border-color: v.$border;
+    color: v.$text-muted;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.navButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.hint {
+  font-size: 11px;
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+.accent {
+  background: linear-gradient(90deg, rgb(#{v.$accent-secondary-rgb} / 0.9), rgb(#{v.$accent-primary-rgb} / 0.55));
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.7);
+  font-weight: 600;
+  box-shadow: 0 0 22px rgb(#{v.$accent-primary-rgb} / 0.22);
+}

@@ -1,0 +1,272 @@
+@use "../../styles/variables" as v;
+
+.taskListWrapper {
+  padding: 14px;
+  border-radius: v.$radius-lg;
+
+  background: v.$panel;
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Header ---------- */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  padding: 6px 6px 10px;
+  border-bottom: 1px solid v.$border;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: v.$text-main;
+}
+
+.counter {
+  height: 26px;
+  min-width: 28px;
+  padding: 0 10px;
+  border-radius: v.$radius-round;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 750;
+
+  color: v.$text-muted;
+  background: rgb(#{v.$text-main-rgb} / 0.05);
+  border: 1px solid v.$border;
+}
+
+/* ---------- List ---------- */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px 2px;
+}
+
+/* ---------- Task Item ---------- */
+.taskItem {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 34px;
+  align-items: start;
+  gap: 12px;
+
+  padding: 12px;
+  border-radius: v.$radius-md;
+
+  background: rgb(#{v.$text-main-rgb} / 0.04);
+  border: 1px solid v.$border;
+
+  box-shadow: 0 10px 22px rgb(#{v.$shadow-rgb} / 0.18);
+
+  transition: transform v.$tr-fast, box-shadow v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast, opacity v.$tr-fast;
+}
+
+.taskItem:hover {
+  transform: translateY(-1px);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
+  box-shadow: 0 16px 34px rgb(#{v.$shadow-rgb} / 0.28);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.index {
+  width: 32px;
+  height: 32px;
+  border-radius: v.$radius-md;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+
+  color: v.$text-muted;
+  background: rgb(#{v.$text-main-rgb} / 0.04);
+  border: 1px solid v.$border;
+}
+
+.text {
+  min-width: 0;
+  color: v.$text-main;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 560;
+  /* Без обрізання: умова завдання має читатись цілком, інакше її неможливо виконати */
+  overflow-wrap: anywhere;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.iconBadge {
+  width: 26px;
+  height: 26px;
+  border-radius: v.$radius-round;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  color: v.$text-main;
+  background: rgb(#{v.$accent-secondary-rgb} / 0.14);
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.28);
+}
+
+/* ---------- ACTIVE ---------- */
+.active {
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.28);
+  box-shadow: 0 16px 34px rgb(#{v.$accent-secondary-rgb} / 0.12);
+}
+
+.active .index {
+  background: rgb(#{v.$accent-secondary-rgb} / 0.14);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.30);
+  color: v.$glow-strong;
+}
+
+.active::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: v.$radius-round;
+  background: v.$glow-strong;
+  opacity: 0.9;
+}
+
+/* ---------- COMPLETED ---------- */
+.completed {
+  opacity: 0.9;
+ border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
+  background: linear-gradient(
+    135deg,
+    rgb(#{v.$accent-secondary-rgb} / 0.14),
+    rgb(#{v.$fg-rgb} / 0.03)
+  );
+}
+
+.completed .text {
+  color: rgb(#{v.$text-main-rgb} / 0.5);
+}
+
+.completed .index {
+  background: rgb(#{v.$accent-secondary-rgb} / 0.10);
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.22);
+  color: rgb(#{v.$glow-strong-rgb} / 0.9);
+}
+
+/* ---------- DISABLED ---------- */
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.disabled:hover {
+  transform: none;
+  box-shadow: 0 10px 22px rgb(#{v.$shadow-rgb} / 0.18);
+}
+
+/* ---------- Check pop ---------- */
+.pop {
+  animation: pop 180ms ease-out;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.86); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Підказки завдання. Заміна викладача в самостійному режимі, а не оздоблення —
+   див. PLATFORM_UA, розділ 3. Розкриваються поступово, по одній. */
+.hints {
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.hint {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: v.$radius-sm;
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.28);
+  background: rgb(#{v.$accent-secondary-rgb} / 0.1);
+  color: v.$text-muted;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hintCounter {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: v.$text-dimmer;
+}
+
+.hintActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hintButton {
+  padding: 5px 12px;
+  border-radius: v.$radius-round;
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.45);
+  background: transparent;
+  color: v.$accent-secondary;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(#{v.$accent-secondary-rgb} / 0.12);
+  }
+}
+
+.hintButtonQuiet {
+  padding: 5px 12px;
+  border-radius: v.$radius-round;
+  border: 1px solid transparent;
+  background: transparent;
+  color: v.$text-dimmer;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    color: v.$text-muted;
+  }
+}

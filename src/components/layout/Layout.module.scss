@@ -1,0 +1,185 @@
+@use "../../styles/variables" as v;
+
+.siteName {
+  font-size: 26px;
+  line-height: 26px;
+  font-weight: 500;
+  text-align: left;
+  align-self: end;
+
+  background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  span {
+    display: block;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-sizing: border-box;
+
+  padding: 10px 20px;
+  height: 64px;
+  width: 100%;
+
+  background: linear-gradient(
+    135deg,
+    v.$bg-surface 0%,
+    rgb(#{v.$surface-rgb} / 1) 100%
+  );
+
+  border-bottom: 1px solid v.$border;
+  box-shadow: v.$shadow-soft;
+  backdrop-filter: blur(10px);
+
+  top: 0;
+  left: 0;
+
+  .logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .navLinks {
+    display: flex;
+    gap: 20px;
+    margin-left: auto;
+
+    .navLink {
+      position: relative;
+      font-size: 1rem;
+      font-weight: 400;
+      color: v.$text-muted;
+      text-decoration: none;
+      transition: color v.$tr-base;
+
+      &:hover {
+        color: v.$text-main;
+      }
+    }
+
+    .navLinkActive {
+      color: v.$text-main;
+      font-weight: 700;
+    }
+
+    .navLinkActive::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      height: 2px;
+      border-radius: v.$radius-round;
+      background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
+    }
+  }
+}
+
+.authControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboardLink,
+.secondaryLink,
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: v.$radius-md;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform v.$tr-fast, filter v.$tr-fast, border-color v.$tr-fast;
+}
+
+.dashboardLink {
+  color: v.$text-dark;
+  background: linear-gradient(135deg, v.$glow-strong, rgb(#{v.$accent-blue-rgb} / 0.92));
+
+  &[aria-current="page"] {
+    filter: brightness(1.08);
+  }
+}
+
+.secondaryLink,
+.logoutButton {
+  color: v.$text-main;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.38);
+  background: rgb(#{v.$surface-rgb} / 0.4);
+}
+
+.logoutButton {
+  cursor: pointer;
+}
+
+@media (max-width: 1120px) {
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: 12px;
+  }
+
+  .navLinks {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .authControls {
+    margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 720px) {
+  .siteName {
+    font-size: 22px;
+    line-height: 22px;
+  }
+
+  .authControls {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .dashboardLink,
+  .secondaryLink,
+  .logoutButton {
+    min-height: 38px;
+  }
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-round;
+  background: transparent;
+  color: v.$text-muted;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color v.$tr-fast, border-color v.$tr-fast;
+
+  &:hover {
+    color: v.$accent-primary;
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.5);
+  }
+}

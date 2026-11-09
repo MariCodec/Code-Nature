@@ -1,0 +1,107 @@
+@use "../../styles/variables" as v;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(#{v.$surface-rgb} / 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.card {
+  width: min(520px, 100%);
+  padding: 32px;
+  border-radius: v.$radius-lg;
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.28);
+  background: linear-gradient(160deg, v.$bg-surface, v.$bg-deep);
+  box-shadow: v.$shadow-card;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: v.$accent-primary;
+}
+
+.title {
+  margin: 0 0 12px;
+  color: v.$text-main;
+}
+
+.lead {
+  margin: 0 0 24px;
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 28px;
+}
+
+.stat {
+  flex: 1;
+  padding: 14px;
+  border-radius: v.$radius-md;
+  background: v.$panel;
+  border: 1px solid v.$border;
+
+  dt {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: v.$text-muted;
+  }
+
+  dd {
+    margin: 6px 0 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: v.$text-main;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary,
+.secondary {
+  padding: 12px 18px;
+  border-radius: v.$radius-sm;
+  cursor: pointer;
+  transition: all v.$tr-base;
+  font-size: 15px;
+}
+
+.primary {
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.7);
+  background: linear-gradient(90deg, rgb(#{v.$accent-secondary-rgb} / 0.9), rgb(#{v.$accent-primary-rgb} / 0.55));
+  color: v.$text-main;
+  font-weight: 600;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 25px rgb(#{v.$accent-primary-rgb} / 0.22);
+  }
+}
+
+.secondary {
+  border: 1px solid v.$border;
+  background: transparent;
+  color: v.$text-muted;
+
+  &:hover {
+    color: v.$text-main;
+    border-color: rgb(#{v.$accent-primary-rgb} / 0.35);
+  }
+}

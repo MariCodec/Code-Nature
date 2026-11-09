@@ -1,0 +1,204 @@
+
+
+@use "../../styles/variables" as v;
+
+/* full page background */
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 28px 16px 44px;
+
+  background:
+    radial-gradient(1200px 700px at 15% 20%, rgb(#{v.$glow-rgb} / 0.10), transparent 55%),
+    radial-gradient(900px 500px at 85% 18%, rgb(#{v.$accent-blue-rgb} / 0.10), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
+}
+
+/* center card */
+.container {
+  max-width: 1100px;          /* можна змінити */
+  margin: 0 auto;
+  padding: 22px;
+
+  border-radius: v.$radius-lg;
+  background: v.$panel;
+  border: 1px solid v.$border;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(12px);
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.kicker {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(#{v.$accent-primary-rgb} / 0.78);
+  text-align: left;
+}
+
+.heading {
+  font-size: 26px;
+  font-weight: 900;
+  text-align: left;
+  margin: 8px 0 0;
+
+  background: linear-gradient(90deg, v.$accent-primary, v.$accent-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.progressButton,
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.36);
+  border-radius: v.$radius-md;
+  background: rgb(#{v.$surface-rgb} / 0.42);
+  color: v.$text-main;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform v.$tr-fast, filter v.$tr-fast, border-color v.$tr-fast;
+}
+
+.backLink {
+  color: v.$text-muted;
+}
+
+.progressButton:hover,
+.backLink:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.5);
+}
+
+.lessonCardContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* ширше */
+  gap: 16px;
+}
+
+.moduleSection {
+  display: grid;
+  gap: 14px;
+}
+
+.moduleSection + .moduleSection {
+  margin-top: 24px;
+}
+
+.moduleHeader {
+  text-align: left;
+}
+
+.moduleHeader h3 {
+  margin: 0;
+  color: v.$text-main;
+  font-size: 20px;
+}
+
+.moduleHeader p {
+  margin: 6px 0 0;
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+/* lesson card */
+.lessonCard {
+  padding: 18px 18px 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid v.$border;
+
+  background: rgb(#{v.$fg-rgb} / 0.04);
+  box-shadow: 0 14px 30px rgb(#{v.$shadow-rgb} / 0.35);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 170px;
+
+  cursor: pointer;
+  transition: transform v.$tr-base, box-shadow v.$tr-base, border-color v.$tr-base;
+}
+
+.lessonCard:hover {
+  transform: translateY(-2px);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.25);
+  box-shadow: 0 20px 55px rgb(#{v.$shadow-rgb} / 0.55);
+}
+
+.lessonCardTitle {
+  font-size: 20px;
+  font-weight: 900;
+  margin: 0 0 8px;
+  color: rgb(#{v.$accent-primary-rgb} / 0.95);
+}
+
+.lessonCard p {
+  margin: 0;
+  color: v.$text-muted;
+  line-height: 1.45;
+}
+
+.completedCard {
+  border-color: rgb(#{v.$accent-secondary-rgb} / 0.55);
+  background: linear-gradient(
+    135deg,
+    rgb(#{v.$accent-secondary-rgb} / 0.14),
+    rgb(#{v.$fg-rgb} / 0.03)
+  );
+}
+
+.techCheckCard {
+  min-height: 138px;
+  margin-top: 14px;
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.34);
+  background:
+    linear-gradient(135deg, rgb(#{v.$accent-primary-rgb} / 0.12), rgb(#{v.$accent-blue-rgb} / 0.07)),
+    rgb(#{v.$fg-rgb} / 0.035);
+}
+
+.techCheckLabel {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: rgb(#{v.$accent-primary-rgb} / 0.86);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  margin-top: 10px;
+  color: v.$text-muted;
+}
+
+.completedText {
+  color: rgb(#{v.$accent-secondary-rgb} / 0.95);
+  font-weight: 900;
+}
+
+@media (max-width: 720px) {
+  .headerRow {
+    grid-template-columns: 1fr;
+  }
+
+  .progressButton,
+  .backLink {
+    width: 100%;
+  }
+}

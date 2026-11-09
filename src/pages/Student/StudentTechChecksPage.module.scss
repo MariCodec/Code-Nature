@@ -1,0 +1,166 @@
+@use "../../styles/variables" as v;
+
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 28px 16px 44px;
+  background:
+    radial-gradient(920px 540px at 10% 8%, rgb(#{v.$glow-rgb} / 0.1), transparent 60%),
+    radial-gradient(820px 520px at 92% 12%, rgb(#{v.$accent-blue-rgb} / 0.1), transparent 56%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
+}
+
+.shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.hero,
+.courseBlock,
+.emptyState {
+  border: 1px solid v.$border;
+  border-radius: v.$radius-lg;
+  background: v.$panel;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(12px);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: end;
+  padding: 24px;
+  text-align: left;
+}
+
+.kicker {
+  margin: 0;
+  color: rgb(#{v.$accent-primary-rgb} / 0.78);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.courseBlock h2,
+.checkRow h3,
+.emptyState h1 {
+  color: v.$text-main;
+}
+
+.hero h1 {
+  margin: 8px 0 0;
+  font-size: 2.25rem;
+}
+
+.hero p,
+.checkRow p,
+.emptyState p {
+  color: v.$text-muted;
+  line-height: 1.55;
+}
+
+.hero p {
+  max-width: 680px;
+  margin: 12px 0 0;
+}
+
+.heroStats span,
+.checkMeta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.22);
+  border-radius: v.$radius-round;
+  background: rgb(#{v.$surface-rgb} / 0.44);
+  color: v.$text-main;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.checkList,
+.courseBlock {
+  display: grid;
+  gap: 14px;
+}
+
+.courseBlock {
+  padding: 22px;
+  text-align: left;
+}
+
+.courseHeader h2 {
+  margin: 6px 0 0;
+  font-size: 1.45rem;
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgb(#{v.$accent-primary-rgb} / 0.28);
+  border-radius: v.$radius-md;
+  background:
+    linear-gradient(135deg, rgb(#{v.$accent-primary-rgb} / 0.1), rgb(#{v.$accent-blue-rgb} / 0.06)),
+    rgb(#{v.$fg-rgb} / 0.035);
+  text-decoration: none;
+  transition: transform v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
+}
+
+.checkRow:hover {
+  transform: translateY(-1px);
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.48);
+  background: rgb(#{v.$surface-rgb} / 0.58);
+}
+
+.checkRow h3 {
+  margin: 5px 0 0;
+  font-size: 1.12rem;
+}
+
+.checkRow p {
+  margin: 6px 0 0;
+}
+
+.checkMeta {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.checkMeta strong {
+  color: v.$text-main;
+}
+
+.emptyState {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 26px;
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .hero,
+  .checkRow {
+    grid-template-columns: 1fr;
+  }
+
+  .checkMeta {
+    justify-items: start;
+  }
+}
+
+.checkRowLocked {
+  opacity: 0.55;
+  cursor: not-allowed;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

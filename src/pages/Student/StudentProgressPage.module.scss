@@ -1,0 +1,314 @@
+@use "../../styles/variables" as v;
+
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 28px 16px 44px;
+  background:
+    radial-gradient(900px 540px at 12% 8%, rgb(#{v.$glow-rgb} / 0.12), transparent 60%),
+    radial-gradient(860px 520px at 92% 10%, rgb(#{v.$accent-blue-rgb} / 0.12), transparent 55%),
+    linear-gradient(180deg, v.$bg-main, v.$bg-deep);
+}
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.pageHeader,
+.courseCard,
+.activeLessonCard,
+.panel,
+.statCard,
+.emptyState {
+  border-radius: v.$radius-lg;
+  border: 1px solid v.$border;
+  background: v.$panel;
+  box-shadow: v.$shadow-card;
+  backdrop-filter: blur(12px);
+}
+
+.pageHeader {
+  padding: 24px;
+}
+
+.pageHeader,
+.courseCard,
+.activeLessonCard {
+  text-align: left;
+}
+
+.eyebrow,
+.sectionLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(#{v.$accent-primary-rgb} / 0.78);
+}
+
+.pageHeader h1,
+.courseCard h2,
+.activeLessonCard h2,
+.panel h2 {
+  color: v.$text-main;
+}
+
+.pageHeader h1 {
+  margin-top: 8px;
+  font-size: 2.3rem;
+  line-height: 1.05;
+}
+
+.heroText {
+  max-width: 640px;
+  margin-top: 14px;
+  color: v.$text-muted;
+  line-height: 1.65;
+  text-align: left;
+}
+
+.progressMeta,
+.lessonMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.progressMeta span,
+.lessonMeta span,
+.badge,
+.statusText,
+.blockBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: v.$radius-round;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.2);
+  background: rgb(#{v.$surface-rgb} / 0.44);
+  color: v.$text-main;
+  font-size: 0.9rem;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+  gap: 18px;
+}
+
+.courseCard,
+.activeLessonCard {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.courseCard {
+  background:
+    radial-gradient(700px 280px at 0% 0%, rgb(#{v.$glow-rgb} / 0.08), transparent 70%),
+    v.$panel;
+}
+
+.activeLessonCard {
+  background:
+    linear-gradient(145deg, rgb(#{v.$accent-secondary-rgb} / 0.16), rgb(#{v.$accent-blue-rgb} / 0.10)),
+    rgb(#{v.$surface-rgb} / 0.52);
+  border: 1px solid rgb(#{v.$accent-secondary-rgb} / 0.28);
+}
+
+.courseDescription,
+.activeLessonCard p {
+  color: v.$text-muted;
+  line-height: 1.55;
+}
+
+.courseCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.blockBadge {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: v.$radius-round;
+  background: rgb(#{v.$fg-rgb} / 0.08);
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, v.$accent-secondary, v.$accent-primary);
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: v.$radius-md;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform v.$tr-fast, filter v.$tr-fast, border-color v.$tr-fast;
+}
+
+.primaryAction {
+  width: fit-content;
+  padding: 0 18px;
+  color: v.$text-dark;
+  background: linear-gradient(135deg, v.$glow-strong, rgb(#{v.$accent-blue-rgb} / 0.92));
+}
+
+.secondaryAction {
+  min-width: 112px;
+  padding: 0 14px;
+  color: v.$text-main;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.28);
+  background: rgb(#{v.$surface-rgb} / 0.48);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.statsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.statCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  text-align: left;
+}
+
+.statCard strong {
+  color: v.$text-main;
+  font-size: 1.3rem;
+  line-height: 1.25;
+}
+
+.statCard span {
+  color: v.$text-muted;
+  line-height: 1.5;
+}
+
+.panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+}
+
+.panelHeader h2 {
+  margin-top: 8px;
+  font-size: 1.4rem;
+}
+
+.lessonList {
+  display: grid;
+  gap: 12px;
+}
+
+.lessonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: v.$radius-md;
+  border: 1px solid rgb(#{v.$glow-strong-rgb} / 0.12);
+  background: rgb(#{v.$surface-rgb} / 0.34);
+  text-align: left;
+}
+
+.lessonRow h3,
+.placeholderBlock h3 {
+  color: v.$text-main;
+  font-size: 1.05rem;
+}
+
+.lessonRow p,
+.placeholderBlock p {
+  margin-top: 8px;
+  color: v.$text-muted;
+  line-height: 1.55;
+}
+
+.placeholderBlock,
+.emptyState {
+  text-align: left;
+}
+
+.emptyState {
+  padding: 24px;
+}
+
+.emptyState h1 {
+  color: v.$text-main;
+  font-size: 2rem;
+}
+
+.emptyState p {
+  margin-top: 12px;
+  color: v.$text-muted;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .overviewGrid,
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-inline: 12px;
+  }
+
+  .pageHeader,
+  .courseCard,
+  .activeLessonCard,
+  .panel,
+  .statCard,
+  .emptyState {
+    padding: 18px;
+  }
+
+  .pageHeader h1 {
+    font-size: 1.9rem;
+  }
+
+  .courseCardHeader,
+  .lessonRow,
+  .panelHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .secondaryAction,
+  .primaryAction {
+    width: 100%;
+  }
+}
