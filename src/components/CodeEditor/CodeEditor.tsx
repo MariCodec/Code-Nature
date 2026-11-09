@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
-import LessonNavigation from "../lessonNavigation/LessonNavigation";
 import { useResizable } from "../../hooks/useResizable";
 import { setupMonacoTheme } from "../../utils/setupMonacoTheme";
 import { validateHtmlWithParse5 } from "../../utils/validateHtmlParse5";
@@ -40,8 +39,6 @@ interface CodeEditorProps {
   lessonDto: LessonDTO;
   /** Runtime уроку з реєстру: він і збирає документ для preview й перевірки. */
   runtime: LessonRuntime;
-  toggleBtn: () => void;
-  isVisible: boolean;
 }
 
 /**
@@ -51,12 +48,7 @@ interface CodeEditorProps {
  */
 const modelPath = (lessonId: string, fileName: string) => `${lessonId}/${fileName}`;
 
-const CodeEditor: React.FC<CodeEditorProps> = ({
-  lessonDto,
-  runtime,
-  toggleBtn,
-  isVisible,
-}) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ lessonDto, runtime }) => {
   const dispatch = useDispatch<AppDispatch>();
   const lessonCode = useSelector((state: RootState) =>
     selectLessonCode(state, lessonDto.id),
@@ -65,9 +57,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   // Питання техчека зараховані раніше — без них урок ніколи не завершився б.
   const passedTaskIds = useSelector((state: RootState) =>
     selectTaskStatus(state, lessonDto.id),
-  );
-  const isVideoWatched = useSelector((state: RootState) =>
-    Boolean(state.progress.videoStatus[lessonDto.id]),
   );
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -273,7 +262,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       // на завдання, інакше дії одного завдання псували б стан наступного.
       runCheck: (tasks) => check(tasks, files, lessonDto.assets),
       passedTaskIds,
-      isVideoWatched,
       dispatch,
     });
 
@@ -347,11 +335,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
   return (
     <div className={styles.editorContainer} ref={containerRef}>
+      {/* Ряд вкладок — це вже лише файли. Кнопка «Деталі уроку» зникла разом
+          із бічною шухлядою (теорія стала кроком), а навігація по уроках
+          переїхала в підвал каркаса: місце ряду — файли, а не все підряд.
+          Самі вкладки перебудовує 4c. */}
       <div className={styles.tabs}>
-        <button className={styles.toggleBtn} onClick={toggleBtn}>
-          {isVisible ? uk.editor.hideDetails : uk.editor.showDetails}
-        </button>
-
         {files.map((file) => (
           <button
             key={file.id}
@@ -370,8 +358,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
             )}
           </button>
         ))}
-
-        <LessonNavigation currentLessonId={lessonDto.id} />
       </div>
 
       <div className={styles.container}>

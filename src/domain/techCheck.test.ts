@@ -20,7 +20,6 @@ const quizRules = (correct: string[], mode?: "single" | "multiple"): QuizTaskRul
     { id: "c", text: "C" },
   ],
   correctOptionIds: correct,
-  explanation: "бо так",
 });
 
 const question = (id: string, orderIndex: number, correct: string[]): QuizTask => ({
@@ -30,6 +29,7 @@ const question = (id: string, orderIndex: number, correct: string[]): QuizTask =
   orderIndex,
   rules: quizRules(correct),
   hints: [],
+  explanation: "бо так",
 });
 
 const practice = (id: string, orderIndex: number): LessonTaskDTO => ({
@@ -39,6 +39,7 @@ const practice = (id: string, orderIndex: number): LessonTaskDTO => ({
   orderIndex,
   rules: { kind: "dom", selectors: [{ selector: "h1" }] },
   hints: [],
+  explanation: "",
 });
 
 describe("checkQuizAnswer", () => {

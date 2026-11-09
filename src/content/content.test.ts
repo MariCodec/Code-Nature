@@ -48,19 +48,22 @@ describe("контент звіряється з типами проєкту", (
  * не бачить ні `tsc`, ні перевірка типів — лише звірка полів між собою.
  */
 describe("питання, яке неможливо розвʼязати", () => {
-  const quiz = (rules: Record<string, unknown>) => {
+  const quiz = (rules: Record<string, unknown>, task: Record<string, unknown> = {}) => {
     const raw = readJson(join(LESSONS_DIR, "html-start-techcheck.json")) as {
-      tasks: { rules: Record<string, unknown> }[];
+      tasks: Record<string, unknown>[];
     };
-    raw.tasks[0].rules = {
-      kind: "quiz",
-      options: [
-        { id: "a", text: "перший" },
-        { id: "b", text: "другий" },
-      ],
-      correctOptionIds: ["a"],
-      explanation: "бо так",
-      ...rules,
+    raw.tasks[0] = {
+      ...raw.tasks[0],
+      rules: {
+        kind: "quiz",
+        options: [
+          { id: "a", text: "перший" },
+          { id: "b", text: "другий" },
+        ],
+        correctOptionIds: ["a"],
+        ...rules,
+      },
+      ...task,
     };
     return parseLesson(raw, "питання").issues;
   };
@@ -94,6 +97,14 @@ describe("питання, яке неможливо розвʼязати", () =>
     // лише повний збіг. Разом це непрохідні ворота.
     const issues = quiz({ selectionMode: "single", correctOptionIds: ["a", "b"] });
     expect(format(issues)).toContain("обрати всі неможливо");
+  });
+
+  it("питання без пояснення не проходить", () => {
+    // Вимогу раніше тримав розбір `QuizTaskRules`, де `explanation` було
+    // обовʼязковим полем. Поле переїхало на завдання (розділ 3) — вимога
+    // мусила переїхати разом із ним, інакше техчек тихо лишився б без
+    // заміни викладача, якого в самонавчанні спитати нікому.
+    expect(format(quiz({}, { explanation: "   " }))).toContain("без пояснення");
   });
 });
 

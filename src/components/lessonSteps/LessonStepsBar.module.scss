@@ -1,0 +1,72 @@
+@use "../../styles/variables" as v;
+
+.steps {
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+
+  color: v.$text-muted;
+  border: 1px solid v.$border;
+  border-radius: v.$radius-round;
+  background: rgb(#{v.$fg-rgb} / 0.04);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
+}
+
+.step:hover {
+  color: v.$text-main;
+  border-color: v.$border-strong;
+  background: rgb(#{v.$fg-rgb} / 0.08);
+}
+
+.step:focus-visible {
+  outline: none;
+  box-shadow: v.$shadow-focus;
+}
+
+/* Поточний крок — єдиний стан, який смужка показує. Позначки «пройдено» тут
+   немає навмисно: позиція лівіше не означає зробленого. */
+.current {
+  color: v.$text-main;
+  border-color: rgb(#{v.$accent-primary-rgb} / 0.55);
+  background: rgb(#{v.$accent-primary-rgb} / 0.12);
+}
+
+.number {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+  background: rgb(#{v.$fg-rgb} / 0.1);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.current .number {
+  color: v.$text-dark;
+  background: v.$accent-primary;
+}
+
+.label {
+  white-space: nowrap;
+}

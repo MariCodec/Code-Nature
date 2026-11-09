@@ -149,7 +149,7 @@ export default function TechCheckQuiz({
           <div className={`${styles.feedback} ${styles.feedbackWrong}`}>
             <strong>{feedbackKey && uk.techCheck.feedback[feedbackKey]}</strong>
             <p>
-              <InlineMarkdown text={question.rules.explanation} />
+              <InlineMarkdown text={question.explanation} />
             </p>
             {question.rules.reviewLessonId && (
               <Link
@@ -166,7 +166,7 @@ export default function TechCheckQuiz({
           <div className={`${styles.feedback} ${styles.feedbackRight}`}>
             <strong>{uk.techCheck.correct}</strong>
             <p>
-              <InlineMarkdown text={question.rules.explanation} />
+              <InlineMarkdown text={question.explanation} />
             </p>
           </div>
         )}

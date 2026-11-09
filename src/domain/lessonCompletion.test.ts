@@ -6,9 +6,7 @@ import type { LessonCompletionInput } from "./lessonCompletion";
 const input = (patch: Partial<LessonCompletionInput>): LessonCompletionInput => ({
   validationType: "auto",
   tasks: [],
-  videos: [],
   taskStatus: undefined,
-  isVideoWatched: false,
   isMarkedDone: false,
   ...patch,
 });
@@ -42,33 +40,12 @@ describe("getLessonCompletion", () => {
     ).toEqual({ completed: false, blockedBy: "tasks" });
   });
 
-  it("none: обовʼязкове відео завершує урок, невідивлене — ні", () => {
-    const videos = [{ isRequired: true }];
+  it("none: завершує лише явна дія учня", () => {
+    expect(getLessonCompletion(input({ validationType: "none" }))).toEqual({
+      completed: false,
+      blockedBy: "confirmation",
+    });
 
-    expect(
-      getLessonCompletion(input({ validationType: "none", videos })),
-    ).toEqual({ completed: false, blockedBy: "video" });
-
-    expect(
-      getLessonCompletion(
-        input({ validationType: "none", videos, isVideoWatched: true }),
-      ),
-    ).toEqual({ completed: true });
-  });
-
-  it("none: необовʼязкове відео не рахується за обовʼязкове", () => {
-    expect(
-      getLessonCompletion(
-        input({
-          validationType: "none",
-          videos: [{ isRequired: false }],
-          isVideoWatched: true,
-        }),
-      ),
-    ).toEqual({ completed: false, blockedBy: "confirmation" });
-  });
-
-  it("none без обовʼязкового відео: лишається явна дія учня", () => {
     expect(
       getLessonCompletion(input({ validationType: "none", isMarkedDone: true })),
     ).toEqual({ completed: true });
@@ -81,7 +58,6 @@ describe("getLessonCompletion", () => {
           validationType: "manual",
           tasks: [{ id: "t1" }],
           taskStatus: { t1: true },
-          isVideoWatched: true,
           isMarkedDone: true,
         }),
       ),

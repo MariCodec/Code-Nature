@@ -161,14 +161,17 @@ const LessonNavigation: React.FC<{ currentLessonId: string }> = ({
         {uk.lessonNav.previous}
       </button>
 
+      {/* Підпис-пояснення живе в `title`, а не під назвою. Другим рядком він
+          робив кнопку вдвічі вищою й ширшою за сусідню, і ряд навігації
+          стрибав залежно від того, що саме зараз заблоковано. Пояснення
+          потрібне лише тому, хто вперся, — тобто за наведенням. */}
       <button
         onClick={nextAction.onClick}
         disabled={nextAction.disabled}
         title={nextAction.hint}
         className={`${styles.navButton} ${nextAction.accent ? styles.accent : ""}`}
       >
-        <span>{nextAction.label}</span>
-        {nextAction.hint && <small className={styles.hint}>{nextAction.hint}</small>}
+        {nextAction.label}
       </button>
     </div>
   );

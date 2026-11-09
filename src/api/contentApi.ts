@@ -169,7 +169,6 @@ const mapLessonVideos = (lessonId: string, title: string): LessonVideoDTO[] => [
     transcript: null,
     captionsUrl: null,
     orderIndex: 1,
-    isRequired: false,
   },
 ];
 
@@ -217,9 +216,10 @@ const getLessonsForModule = (moduleId: string): LessonDTO[] => {
       description: task.text,
       orderIndex: taskIndex + 1,
       rules: task.rules,
-      // Старий формат підказок не має. Порожній масив, а не вигаданий текст:
-      // підказки приїдуть із контенту у Фазі 5, коли це джерело помре.
+      // Старий формат ні підказок, ні пояснень не має. Порожньо, а не вигаданий
+      // текст: і те, й те приїде з контенту у Фазі 5, коли це джерело помре.
       hints: [],
+      explanation: "",
     }));
 
     return {
@@ -303,11 +303,11 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               { id: "d", text: "<header>" },
             ],
             correctOptionIds: ["c"],
-            explanation:
-              "<head> — службова частина документа, її не видно. <title> — назва вкладки браузера. <header> — верхня частина сторінки, але сама по собі не заголовок. Видимий головний заголовок це <h1>.",
             reviewLessonId: "intro",
           },
           hints: [],
+          explanation:
+            "<head> — службова частина документа, її не видно. <title> — назва вкладки браузера. <header> — верхня частина сторінки, але сама по собі не заголовок. Видимий головний заголовок це <h1>.",
         },
         {
           id: `${lessonId}_q2`,
@@ -324,11 +324,11 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               { id: "d", text: "Заголовок має бути найпершим тегом у документі" },
             ],
             correctOptionIds: ["a", "c"],
-            explanation:
-              "Рівень означає важливість у структурі, а не розмір — розмір задається через CSS. h1 на сторінці зазвичай один, як назва розділу в книжці. Першим тегом заголовок бути не зобовʼязаний.",
             reviewLessonId: "intro",
           },
           hints: [],
+          explanation:
+            "Рівень означає важливість у структурі, а не розмір — розмір задається через CSS. h1 на сторінці зазвичай один, як назва розділу в книжці. Першим тегом заголовок бути не зобовʼязаний.",
         },
         {
           id: `${lessonId}_q3`,
@@ -344,11 +344,11 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
               { id: "c", text: "Програмою, скомпільованою під конкретний браузер" },
             ],
             correctOptionIds: ["b"],
-            explanation:
-              "Сервер надсилає звичайний текст із тегами. Малює сторінку вже браузер — саме тому її можна написати в текстовому редакторі.",
             reviewLessonId: "intro",
           },
           hints: [],
+          explanation:
+            "Сервер надсилає звичайний текст із тегами. Малює сторінку вже браузер — саме тому її можна написати в текстовому редакторі.",
         },
         {
           id: `${lessonId}_practice`,
@@ -366,6 +366,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
             cssChecks: [{ selector: "h1", property: "color", value: "rgb(0, 128, 0)" }],
           },
           hints: [],
+          explanation: "",
         },
       ],
     };
@@ -417,10 +418,10 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
             { id: "c", text: "card" },
           ],
           correctOptionIds: ["b"],
-          explanation:
-            "Крапка — це клас, решітка — ідентифікатор, а без символу — назва тега.",
         },
         hints: [],
+        explanation:
+          "Крапка — це клас, решітка — ідентифікатор, а без символу — назва тега.",
       },
       {
         id: `${lessonId}_q2`,
@@ -436,10 +437,10 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
             { id: "c", text: "padding" },
           ],
           correctOptionIds: ["c"],
-          explanation:
-            "padding — відступ усередині елемента, між його краєм і вмістом. margin — навпаки, зовні.",
         },
         hints: [],
+        explanation:
+          "padding — відступ усередині елемента, між його краєм і вмістом. margin — навпаки, зовні.",
       },
       {
         id: `${lessonId}_practice`,
@@ -456,6 +457,7 @@ const getTechCheckForModule = (moduleId: string): LessonDTO | null => {
           ],
         },
         hints: [],
+        explanation: "",
       },
     ],
   };

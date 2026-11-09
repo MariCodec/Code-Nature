@@ -16,12 +16,9 @@ import type { LessonValidationType } from "../types/content";
 export type LessonCompletionInput = {
   validationType: LessonValidationType;
   tasks: readonly { id: string }[];
-  /** Відео уроку. Важливі лише обовʼязкові. */
-  videos: readonly { isRequired: boolean }[];
   /** Зараховані завдання саме цього уроку. */
   taskStatus: Record<string, boolean> | undefined;
-  isVideoWatched: boolean;
-  /** Явна дія учня «Пройдено» — там, де перевіряти нічого. */
+  /** Явна дія учня — там, де перевіряти нічого. */
   isMarkedDone: boolean;
 };
 
@@ -33,7 +30,7 @@ export type LessonCompletion =
        * `noRule` — помилка контенту: урок обіцяє автоперевірку, але завдань немає.
        * Решта — нормальні стани, у яких учень ще чогось не зробив.
        */
-      blockedBy: "tasks" | "video" | "confirmation" | "teacher" | "noRule";
+      blockedBy: "tasks" | "confirmation" | "teacher" | "noRule";
     };
 
 const DONE: LessonCompletion = { completed: true };
@@ -49,15 +46,23 @@ export function getLessonCompletion(input: LessonCompletionInput): LessonComplet
       return allDone ? DONE : { completed: false, blockedBy: "tasks" };
     }
 
-    case "none": {
-      const requiresVideo = input.videos.some((video) => video.isRequired);
-      if (requiresVideo)
-        return input.isVideoWatched ? DONE : { completed: false, blockedBy: "video" };
-
-      // Ні завдань, ні обовʼязкового відео — лишається явна дія учня.
-      // Інакше такий урок або завершується сам собою, або не завершується ніколи.
+    case "none":
+      /**
+       * Лишилась **одна** відповідь — явна дія учня, і гілки з обовʼязковим
+       * відео тут більше немає (розділ 3).
+       *
+       * Знята вона не заради спрощення. Виконати «додивлене до кінця» можна було
+       * лише для файлового плеєра: YouTube і Vimeo в айфреймі про кінець не
+       * повідомляють без власних API. Тобто правило було правдою для одного
+       * випадку й обіцянкою для решти — а «додивився» тим часом проставлявся
+       * кліком «далі», у тому числі на уроці, чиє відео взагалі не існувало.
+       *
+       * Замість нагляду, який неможливо добудувати, відповідальність віддана
+       * учневі: це самонавчання без викладача й без сертифіката, тож проминуте
+       * відео обманює лише того, хто його проминув. Той самий принцип, що
+       * з передумовами курсу — попереджаємо, не перекриваємо.
+       */
       return input.isMarkedDone ? DONE : { completed: false, blockedBy: "confirmation" };
-    }
 
     case "manual":
       // Викладача в MVP немає, тож підтвердити нікому — див. розділ 2.

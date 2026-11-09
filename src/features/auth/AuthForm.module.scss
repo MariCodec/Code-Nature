@@ -64,6 +64,12 @@
 .form {
   display: grid;
   gap: 12px;
+
+  /* Ширини не було: форма лишалась по контенту (173px), а поля з `width: 100%`
+     з неї вилазили. Тепер колонка одна на всю картку — і гостьова кнопка під
+     формою стає з нею в один край. */
+  width: 100%;
+  max-width: 420px;
 }
 
 .field {
@@ -163,4 +169,48 @@
 .link:hover {
   color: v.$glow-strong;
   border-bottom-color: rgb(#{v.$glow-strong-rgb} / 0.55);
+}
+
+/* Гостьовий вхід: другорядна дія, тож контур замість градієнта — щоб не
+   сперечався за увагу з основною кнопкою входу. */
+.buttonGhost {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: v.$radius-md;
+
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+
+  color: v.$text-main;
+  background: rgb(#{v.$surface-rgb} / 0.65);
+  border: 1px solid v.$border;
+
+  transition: transform v.$tr-fast, border-color v.$tr-fast, background v.$tr-fast;
+}
+
+.buttonGhost:hover {
+  transform: translateY(-1px);
+  border-color: rgb(#{v.$glow-strong-rgb} / 0.55);
+  background: rgb(#{v.$surface-rgb} / 0.8);
+}
+
+.buttonGhost:active {
+  transform: translateY(0);
+}
+
+.buttonGhost:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.hint {
+  margin: 8px 0 0;
+  max-width: 420px;
+  font-size: 12px;
+  color: v.$text-muted;
+  text-align: center;
 }

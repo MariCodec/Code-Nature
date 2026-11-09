@@ -165,24 +165,28 @@
   }
 }
 
-/* Контейнер редактора */
+/*
+ * Контейнер редактора.
+ *
+ * Висоту тримає `.stepBody` сторінки уроку: прив'язка до `100vh` лишала
+ * редактор на повний екран поруч із шапкою й підвалом каркаса, і кнопки
+ * Run / Clear / Format виїжджали вниз.
+ *
+ * Власного хрому в нього більше немає — ні рамки, ні підкладки, ні тіні,
+ * ні внутрішніх відступів. Виміряно на 1512×950: картка навколо редактора
+ * їла 32px вертикалі, а всередині кроку практики вона ще й читалась як
+ * зайвий рівень вкладеності — коробка в коробці. Свої межі мають сам Monaco
+ * і вікно браузера, і цього досить.
+ */
 .editorContainer {
-  width: 100%;
-  /* Прив'язка до вьюпорта: інакше Monaco розтягує колонку,
-     і кнопки Run / Clear / Format виїжджають за екран. */
-  height: calc(100vh - 64px);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-
-  background: linear-gradient(135deg, v.$bg-surface, v.$bg-300);
-  border: 1px solid v.$border;
-  box-shadow: 0 10px 35px rgb(#{v.$shadow-rgb} / 0.7);
-
-  padding: 20px;
-  transition: all v.$tr-base;
+  gap: 10px;
 }
 
 /* Верхня панель з вкладками */
@@ -194,41 +198,17 @@
 
   background: rgb(#{v.$fg-rgb} / 0.02);
   border-radius: v.$radius-round;
-  padding: 6px 10px;
+  padding: 3px 6px;
   backdrop-filter: blur(8px);
 
   border-top: 1px solid rgb(#{v.$fg-rgb} / 0.05);
   border-bottom: 1px solid rgb(#{v.$fg-rgb} / 0.05);
 }
 
-/* Кнопка для показу/приховування деталей */
-.toggleBtn {
-  border: 2px solid rgb(#{v.$accent-secondary-rgb} / 0.55);
-  color: v.$text-muted;
-  background-color: transparent;
-
-  font-weight: 600;
-  padding: 10px 16px;
-  border-radius: v.$radius-round;
-  cursor: pointer;
-
-  box-shadow: 0 0px 8px rgb(#{v.$accent-secondary-rgb} / 0.35);
-  transition: all v.$tr-base;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0px 8px rgb(#{v.$accent-secondary-rgb} / 0.35);
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
 /* Вкладки (index.html / style.css) */
 .tabButtons {
-  font-size: 16px;
-  padding: 10px 16px;
+  font-size: 14px;
+  padding: 7px 14px;
 
   color: v.$text-muted;
   background: transparent;
@@ -255,7 +235,7 @@
 /* Основна зона редактора */
 .container {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   flex: 1;
   /* без min-height: 0 flex-дитина не стискається нижче свого вмісту */
   min-height: 0;
@@ -265,15 +245,19 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
   width: 50%;
   min-height: 0;
 }
 
-/* Monaco забирає весь вільний простір, кнопки лишаються під ним */
+/* Monaco забирає весь вільний простір, кнопки лишаються під ним.
+   Рамка тут єдина, що лишилась від картки навколо редактора: без неї
+   поле вводу зливається з тлом сторінки, бо власного фону Monaco майже
+   не відрізняє. Коштує 2px вертикалі замість 32px. */
 .editorSurface {
   flex: 1;
   min-height: 0;
+  border: 1px solid v.$border;
   border-radius: 10px;
   overflow: hidden;
 }
