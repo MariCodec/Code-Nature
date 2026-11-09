@@ -23,12 +23,12 @@ import {
 import { saveUserData } from "../../store/thunks/syncThunks";
 import {
   markLessonAsCompleted,
-  markLessonVideoAsWatched,
   selectIsProgressHydrated,
   setCurrentLesson,
 } from "../../store/slices/progressSlice";
 import type { LessonVideoDTO } from "../../types/content";
 import LessonNavigation from "../../components/lessonNavigation/LessonNavigation";
+import LessonStepsBar from "../../components/lessonSteps/LessonStepsBar";
 import ModuleCompleteOverlay from "../../components/moduleProgress/ModuleCompleteOverlay";
 import { useModuleProgression } from "../../hooks/useModuleProgression";
 import TechCheckQuiz from "../../components/techCheck/TechCheckQuiz";
@@ -41,6 +41,7 @@ import { markTaskAsCompleted } from "../../store/slices/progressSlice";
 import TheoryBlocks from "../../components/theory/TheoryBlocks";
 import { getLessonRuntime } from "../../runtimes/registry";
 import { getLessonCompletion } from "../../domain/lessonCompletion";
+import { getLessonSteps } from "../../domain/lessonSteps";
 import { uk } from "../../i18n/uk";
 
 const getVideoEmbedUrl = (video: LessonVideoDTO): string | null => {
@@ -72,40 +73,40 @@ const getVideoEmbedUrl = (video: LessonVideoDTO): string | null => {
 const isFileVideo = (video: LessonVideoDTO) =>
   video.provider === "upload" || video.provider === "mux" || video.provider === "external";
 
-const LessonIntroScreen = ({
-  lessonTitle,
-  video,
-  onContinue,
-}: {
-  lessonTitle: string;
-  video: LessonVideoDTO;
-  onContinue: () => void;
-}) => {
-  const [isFileVideoFinished, setIsFileVideoFinished] = useState(false);
-  const source = getVideoEmbedUrl(video);
-  const shouldWaitForVideoEnd = Boolean(source && isFileVideo(video));
-  const canContinue = !shouldWaitForVideoEnd || isFileVideoFinished;
+/**
+ * Крок «Відео» — **єдине** місце, де в уроці живе плеєр.
+ *
+ * Їх було три: екран-інтро на весь екран, картка в бічній панелі й список
+ * на сторінці уроку без редактора. Повернутись до відео під час практики
+ * тепер можна кроком, а не другим плеєром (розділ 4).
+ *
+ * Заглушки «відео буде додано» тут немає й бути не може: крок існує лише тоді,
+ * коли є джерело, і цю умову рахує `getLessonSteps`, а не розмітка.
+ */
+const LessonVideoStep = ({ videos }: { videos: LessonVideoDTO[] }) => {
+  const playable = [...videos]
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .filter((video) => getVideoEmbedUrl(video) !== null);
 
   return (
-    <main className={styles.lessonIntroPage}>
-      <section className={styles.lessonIntroCard}>
-        <p className={styles.introEyebrow}>Початок уроку</p>
-        <h1>Вітаю на уроці "{lessonTitle}"</h1>
-        <p className={styles.introLead}>
-          Перед практикою уважно подивись коротке пояснення. Після цього
-          відкриється редактор, завдання і preview.
-        </p>
+    <section className={styles.videoSection}>
+      {playable.map((video) => {
+        const source = getVideoEmbedUrl(video) as string;
 
-        <div className={styles.introVideoFrame}>
-          {source ? (
-            isFileVideo(video) ? (
+        return (
+          <article key={video.id} className={styles.videoCard}>
+            <div className={styles.videoCopy}>
+              <h2>{video.title}</h2>
+              {video.description && <p>{video.description}</p>}
+            </div>
+
+            {isFileVideo(video) ? (
               <video
-                className={styles.introVideo}
+                className={styles.videoPlayer}
                 controls
                 preload="metadata"
                 poster={video.thumbnailUrl ?? undefined}
                 src={source}
-                onEnded={() => setIsFileVideoFinished(true)}
               >
                 {video.captionsUrl && (
                   <track
@@ -118,94 +119,12 @@ const LessonIntroScreen = ({
               </video>
             ) : (
               <iframe
-                className={styles.introVideo}
+                className={styles.videoPlayer}
                 src={source}
                 title={video.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
-            )
-          ) : (
-            <div className={styles.introVideoPlaceholder}>
-              <strong>Відео буде додано</strong>
-              <span>
-                Тут буде AI-відео або YouTube-пояснення для цього уроку.
-              </span>
-            </div>
-          )}
-        </div>
-
-        <button
-          className={styles.startPracticeButton}
-          type="button"
-          disabled={!canContinue}
-          onClick={onContinue}
-        >
-          {canContinue
-            ? "Перейти до практики"
-            : "Додивись відео, щоб перейти до практики"}
-        </button>
-      </section>
-    </main>
-  );
-};
-
-const LessonVideos = ({
-  videos,
-  onFileVideoEnded,
-}: {
-  videos: LessonVideoDTO[];
-  onFileVideoEnded?: () => void;
-}) => {
-  const orderedVideos = [...videos].sort((a, b) => a.orderIndex - b.orderIndex);
-
-  if (orderedVideos.length === 0) return null;
-
-  return (
-    <section className={styles.videoSection}>
-      {orderedVideos.map((video) => {
-        const source = getVideoEmbedUrl(video);
-
-        return (
-          <article key={video.id} className={styles.videoCard}>
-            <div className={styles.videoCopy}>
-              <h2>{video.title}</h2>
-              {video.description && <p>{video.description}</p>}
-            </div>
-
-            {source ? (
-              isFileVideo(video) ? (
-                <video
-                  className={styles.videoPlayer}
-                  controls
-                  preload="metadata"
-                  poster={video.thumbnailUrl ?? undefined}
-                  src={source}
-                  onEnded={onFileVideoEnded}
-                >
-                  {video.captionsUrl && (
-                    <track
-                      kind="captions"
-                      src={video.captionsUrl}
-                      srcLang="uk"
-                      label="Українська"
-                    />
-                  )}
-                </video>
-              ) : (
-                <iframe
-                  className={styles.videoPlayer}
-                  src={source}
-                  title={video.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )
-            ) : (
-              <div className={styles.videoPlaceholder}>
-                <strong>Відео буде додано</strong>
-                <span>Поки що це місце для короткого пояснення теми.</span>
-              </div>
             )}
 
             {video.transcript && (
@@ -221,124 +140,27 @@ const LessonVideos = ({
   );
 };
 
-const LessonSidebarVideo = ({
-  video,
-  onReplayIntro,
-}: {
-  video: LessonVideoDTO;
-  onReplayIntro: () => void;
-}) => {
-  const source = getVideoEmbedUrl(video);
-
-  return (
-    <section className={styles.sidebarVideoCard} aria-label="Відео уроку">
-      <div className={styles.sidebarVideoHeader}>
-        <span>Відеоурок</span>
-        <button type="button" onClick={onReplayIntro}>
-          Відкрити на весь екран
-        </button>
-      </div>
-
-      {source ? (
-        isFileVideo(video) ? (
-          <video
-            className={styles.sidebarVideoPlayer}
-            controls
-            preload="metadata"
-            poster={video.thumbnailUrl ?? undefined}
-            src={source}
-          >
-            {video.captionsUrl && (
-              <track
-                kind="captions"
-                src={video.captionsUrl}
-                srcLang="uk"
-                label="Українська"
-              />
-            )}
-          </video>
-        ) : (
-          <iframe
-            className={styles.sidebarVideoPlayer}
-            src={source}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        )
-      ) : (
-        <div className={styles.sidebarVideoPlaceholder}>
-          <strong>Відео буде додано</strong>
-          <span>Тут буде коротке пояснення перед практикою.</span>
-        </div>
-      )}
-    </section>
-  );
-};
-
 /**
- * Урок без редактора: відео і теорія.
+ * Крок «Теорія» — головна колонка шириною для читання, а не бічна шухляда.
  *
- * Runtime каже `hasEditor: false` — сторінка не питає «а це часом не video?»,
- * вона питає реєстр. Сюди однаково потрапляють `video` і `theory-only`.
- *
- * Завершення таких уроків — це гілка `validation_type: none` (розділ 3): обовʼязкове
- * відео додивлене, а якщо додивлятись нема чого — явна дія учня. Без неї урок,
- * у якому немає завдань, не завершується **ніколи**: правило `auto` спирається
- * на завдання, а їх тут нуль.
+ * Шухляда тихо формувала спосіб писати уроки: автор, який бачить теорію
+ * згорнутою й закритою за замовчуванням, пише її як необовʼязкову. Той самий
+ * механізм, через який рушій до Фази 3 формував програму курсу, — тільки тут
+ * формував макет (розділ 4).
  */
-const LessonWithoutEditor = ({
-  videos,
-  isFinished,
-  isRequiredVideo,
-  onFinish,
+const LessonTheoryStep = ({
+  blocks,
 }: {
-  videos: LessonVideoDTO[];
-  isFinished: boolean;
-  isRequiredVideo: boolean;
-  onFinish: () => void;
-}) => {
-  const [isFileVideoFinished, setIsFileVideoFinished] = useState(false);
-  const mainVideo = [...videos].sort((a, b) => a.orderIndex - b.orderIndex)[0] ?? null;
-  const source = mainVideo ? getVideoEmbedUrl(mainVideo) : null;
-  // Дочекатись кінця можна лише там, де кінець нам повідомляють. YouTube без свого
-  // API мовчить, а відео без джерела не існує — тоді лишається явна дія учня.
-  const shouldWaitForVideoEnd = Boolean(
-    isRequiredVideo && source && mainVideo && isFileVideo(mainVideo),
-  );
-  const canFinish = !shouldWaitForVideoEnd || isFileVideoFinished;
-
-  return (
-    <>
-      <LessonVideos videos={videos} onFileVideoEnded={() => setIsFileVideoFinished(true)} />
-
-      <section className={styles.finishSection}>
-        {!source && isRequiredVideo && (
-          <p className={styles.finishHint}>{uk.videoLesson.noVideoYet}</p>
-        )}
-
-        <button
-          type="button"
-          className={styles.finishButton}
-          disabled={isFinished || !canFinish}
-          onClick={onFinish}
-        >
-          {isFinished
-            ? uk.videoLesson.finished
-            : canFinish
-              ? uk.videoLesson.finish
-              : uk.videoLesson.watchToFinish}
-        </button>
-      </section>
-    </>
-  );
-};
+  blocks: React.ComponentProps<typeof TheoryBlocks>["blocks"];
+}) => (
+  <section className={styles.readingColumn}>
+    <TheoryBlocks blocks={blocks} />
+  </section>
+);
 
 const LessonPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [isLessonInfoVisible, setIsLessonInfoVisible] = useState(false);
-  const [isPracticeStarted, setIsPracticeStarted] = useState(false);
-  const [isVideoReviewMode, setIsVideoReviewMode] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
   const [isModuleSummaryDismissed, setIsModuleSummaryDismissed] = useState(false);
   const navigate = useNavigate();
   const { courseId, moduleId, id } = useParams<{
@@ -365,7 +187,6 @@ const LessonPage = () => {
   const completedLessons = useSelector(
     (state: RootState) => state.progress.completedLessons,
   );
-  const videoStatus = useSelector((state: RootState) => state.progress.videoStatus);
   const taskStatus = useSelector((state: RootState) => state.progress.taskStatus);
   const contentError = useSelector(selectContentError);
   const moduleProgression = useModuleProgression(courseId, moduleId);
@@ -408,8 +229,7 @@ const LessonPage = () => {
   }, [dispatch, id, isProgressHydrated]);
 
   useEffect(() => {
-    setIsPracticeStarted(false);
-    setIsVideoReviewMode(false);
+    setStepIndex(0);
     setIsModuleSummaryDismissed(false);
   }, [id]);
 
@@ -425,7 +245,6 @@ const LessonPage = () => {
     return <h2>Урок не знайдено</h2>;
   }
 
-  const toggleBtn = () => setIsLessonInfoVisible((prev) => !prev);
   /**
    * Тип уроку читається з реєстру, а не вгадується по полях.
    *
@@ -435,48 +254,26 @@ const LessonPage = () => {
    * тому «додати новий тип уроку = один запис, нуль правок у сторінці» (розділ 5).
    */
   const runtime = getLessonRuntime(lessonDto.runtimeType);
-  const introVideo = [...lessonDto.videos].sort(
-    (a, b) => a.orderIndex - b.orderIndex,
-  )[0];
-  const isIntroVideoWatched = Boolean(videoStatus[lessonDto.id]);
-  const startPractice = () => {
-    dispatch(markLessonVideoAsWatched(lessonDto.id));
-    setIsPracticeStarted(true);
-    setIsVideoReviewMode(false);
-    void dispatch(saveUserData());
-  };
-
-  const hasRequiredVideo = lessonDto.videos.some((video) => video.isRequired);
   const isLessonFinished = completedLessons.includes(lessonDto.id);
 
   /**
-   * Єдина дія учня на уроці без завдань. Вона повідомляє **один факт**, а чи
-   * цього досить — вирішує правило з домену: на уроці з невиконаними завданнями
-   * `getLessonCompletion` поверне `blockedBy` і нічого не зарахує.
-   *
-   * Який саме факт — залежить від уроку, і це не одне й те саме: «додивився»
-   * стосується обовʼязкового відео, «пройдено» — уроку, де дивитись нема чого.
-   * Що відео справді додивлене, тримає не правило, а кнопка: сигнал про кінець
-   * дає лише файловий плеєр, і доменне правило його побачити не може.
+   * Єдина дія учня на уроці без завдань. Вона повідомляє **один факт** —
+   * «пройдено», — а чи цього досить, вирішує правило з домену: на уроці
+   * з невиконаними завданнями `getLessonCompletion` поверне `blockedBy`
+   * і нічого не зарахує.
    */
   const finishLessonWithoutTasks = () => {
-    const reportedFact = hasRequiredVideo
-      ? { isVideoWatched: true, isMarkedDone: false }
-      : { isVideoWatched: isIntroVideoWatched, isMarkedDone: true };
-
-    if (hasRequiredVideo) dispatch(markLessonVideoAsWatched(lessonDto.id));
-
     const completion = getLessonCompletion({
       validationType: lessonDto.validationType,
       tasks: lessonDto.tasks,
-      videos: lessonDto.videos,
       taskStatus: taskStatus[lessonDto.id],
-      ...reportedFact,
+      isMarkedDone: true,
     });
 
     if (completion.completed) dispatch(markLessonAsCompleted(lessonDto.id));
     void dispatch(saveUserData());
   };
+
   // Підсумок показуємо лише на останньому елементі модуля: інакше він вискакував би
   // на будь-якому уроці, відкритому повторно після завершення модуля.
   const lastModuleItem = moduleProgression.state.ordered.at(-1) ?? null;
@@ -484,14 +281,6 @@ const LessonPage = () => {
     moduleProgression.state.isModuleComplete &&
     lastModuleItem?.id === lessonDto.id &&
     !isModuleSummaryDismissed;
-
-  // Екран «спершу відео, потім практика» має сенс лише там, де практика є.
-  // Питає про це той самий реєстр: урок-відео й теорія ведуть до себе самих.
-  const shouldShowIntroBeforePractice =
-    lessonDto.lessonKind === "lesson" &&
-    Boolean(runtime?.hasEditor) &&
-    Boolean(introVideo) &&
-    ((!isIntroVideoWatched && !isPracticeStarted) || isVideoReviewMode);
 
   // Техчек: спершу питання, практика відкривається лише після всіх правильних відповідей.
   const { questions: quizQuestions, practice: practiceTasks } = splitTechCheckTasks(
@@ -520,54 +309,43 @@ const LessonPage = () => {
     );
   }
 
-  if (shouldShowIntroBeforePractice && introVideo) {
-    return (
-      <LessonIntroScreen
-        lessonTitle={lessonDto.title}
-        video={introVideo}
-        onContinue={startPractice}
-      />
-    );
-  }
+  /**
+   * Кроки уроку — з домену, а не з умов у розмітці.
+   *
+   * `hasEditor` беремо в реєстру: сторінка питає, а не вгадує по `runtimeType`.
+   * Урок, якого реєстр не знає, редактора не має — і тоді крок практики
+   * не зʼявиться навіть за наявності завдань.
+   */
+  const steps = getLessonSteps({
+    videos: lessonDto.videos,
+    theoryBlocks: lessonDto.theoryBlocks,
+    tasks: lessonDto.tasks,
+    hasEditor: Boolean(runtime?.hasEditor),
+  });
+  // Крок міг зникнути разом зі зміною уроку швидше, ніж спрацює ефект скидання.
+  const currentStep = steps[stepIndex] ?? steps[0] ?? null;
+  const currentIndex = currentStep ? steps.indexOf(currentStep) : 0;
+  const isPracticeStep = currentStep?.kind === "practice";
+
+  const visibleTasks = (
+    lessonDto.lessonKind === "tech_check" ? practiceTasks : lessonDto.tasks
+  ).map((task) => ({ id: task.id, text: task.description, hints: task.hints }));
 
   return (
-    <div className={styles.wrapper}>
-      <div
-        className={`${styles.lessonInfo} ${isLessonInfoVisible ? styles.show : ""}`}
-      >
-        <div className={styles.sidebarCard}>
-          <LessonHeader
-            title={lessonDto.title}
-            description={lessonDto.description}
-            lessonKind={lessonDto.lessonKind}
-            moduleLessonsCount={moduleProgression.state.totalLessonsCount}
-          />
-          {introVideo && (
-            <LessonSidebarVideo
-              video={introVideo}
-              onReplayIntro={() => setIsVideoReviewMode(true)}
-            />
-          )}
-          {lessonDto.theoryBlocks.length > 0 && (
-            <section className={styles.theorySection}>
-              <h2 className={styles.theoryTitle}>{uk.theory.title}</h2>
-              <TheoryBlocks blocks={lessonDto.theoryBlocks} />
-            </section>
-          )}
-
-          <TaskList
-            lessonId={lessonDto.id}
-            tasks={(lessonDto.lessonKind === "tech_check"
-              ? practiceTasks
-              : lessonDto.tasks
-            ).map((task) => ({
-              id: task.id,
-              text: task.description,
-              hints: task.hints,
-            }))}
-          />
-        </div>
-      </div>
+    <div className={styles.lessonPage}>
+      <header className={styles.lessonTopBar}>
+        <LessonHeader
+          title={lessonDto.title}
+          description={lessonDto.description}
+          lessonKind={lessonDto.lessonKind}
+          moduleLessonsCount={moduleProgression.state.totalLessonsCount}
+        />
+        <LessonStepsBar
+          steps={steps}
+          currentIndex={currentIndex}
+          onSelect={setStepIndex}
+        />
+      </header>
 
       {shouldShowModuleSummary && (
         <ModuleCompleteOverlay
@@ -586,40 +364,77 @@ const LessonPage = () => {
         />
       )}
 
-      {runtime?.hasEditor ? (
-        <CodeEditor
-          key={lessonDto.id}
-          lessonDto={lessonDto}
-          runtime={runtime}
-          toggleBtn={toggleBtn}
-          isVisible={isLessonInfoVisible}
-        />
-      ) : (
-        <main className={styles.videoOnlyPage}>
-          <div className={styles.videoOnlyTopBar}>
-            <button className={styles.detailsButton} onClick={toggleBtn}>
-              {isLessonInfoVisible ? uk.editor.hideDetails : uk.editor.showDetails}
-            </button>
-            <LessonNavigation currentLessonId={lessonDto.id} />
-          </div>
+      <div
+        className={`${styles.stepBody} ${isPracticeStep ? styles.stepBodyPractice : ""}`}
+      >
+        {!currentStep && (
+          /* Нуль кроків — недописаний контент. Чесний напис кращий за каркас
+             навколо порожнечі: учень інакше вирішить, що зламався застосунок. */
+          <p className={styles.emptyLesson}>{uk.lessonSteps.empty}</p>
+        )}
 
-          {runtime ? (
-            <LessonWithoutEditor
-              videos={lessonDto.videos}
-              isFinished={isLessonFinished}
-              isRequiredVideo={hasRequiredVideo}
-              onFinish={finishLessonWithoutTasks}
-            />
+        {currentStep?.kind === "video" && <LessonVideoStep videos={lessonDto.videos} />}
+
+        {currentStep?.kind === "theory" && (
+          <LessonTheoryStep blocks={lessonDto.theoryBlocks} />
+        )}
+
+        {currentStep?.kind === "practice" && runtime && (
+          <>
+            <aside className={styles.tasksPanel}>
+              <TaskList lessonId={lessonDto.id} tasks={visibleTasks} />
+            </aside>
+            <CodeEditor key={lessonDto.id} lessonDto={lessonDto} runtime={runtime} />
+          </>
+        )}
+
+        {/* Тип уроку, для якого реалізації ще немає: `code-output`, `spa-preview`.
+            Порожній редактор тут був би гіршим за чесний напис — учень вирішив би,
+            що зламався застосунок. */}
+        {!runtime && currentStep && (
+          <p className={styles.emptyLesson}>
+            {uk.editor.runtimeUnsupported(lessonDto.runtimeType)}
+          </p>
+        )}
+      </div>
+
+      <footer className={styles.lessonFooter}>
+        <div className={styles.stepNav}>
+          <button
+            type="button"
+            className={styles.stepButton}
+            disabled={currentIndex === 0}
+            onClick={() => setStepIndex(currentIndex - 1)}
+          >
+            {uk.lessonSteps.back}
+          </button>
+
+          {currentIndex < steps.length - 1 ? (
+            <button
+              type="button"
+              className={`${styles.stepButton} ${styles.stepButtonAccent}`}
+              onClick={() => setStepIndex(currentIndex + 1)}
+            >
+              {uk.lessonSteps.next}
+            </button>
           ) : (
-            /* Тип уроку, для якого реалізації ще немає: `code-output`,
-               `spa-preview`. Порожній редактор тут був би гіршим за чесний напис —
-               учень вирішив би, що зламався застосунок. */
-            <p className={styles.finishHint}>
-              {uk.editor.runtimeUnsupported(lessonDto.runtimeType)}
-            </p>
+            /* Останній крок уроку без завдань завершує сам урок. Кнопка тут
+               тимчасова: «Далі» має робити це без окремої «Пройдено» — 4b.8. */
+            !isPracticeStep && (
+              <button
+                type="button"
+                className={`${styles.stepButton} ${styles.stepButtonAccent}`}
+                disabled={isLessonFinished}
+                onClick={finishLessonWithoutTasks}
+              >
+                {isLessonFinished ? uk.videoLesson.finished : uk.videoLesson.finish}
+              </button>
+            )
           )}
-        </main>
-      )}
+        </div>
+
+        <LessonNavigation currentLessonId={lessonDto.id} />
+      </footer>
     </div>
   );
 };

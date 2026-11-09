@@ -9,7 +9,20 @@ import {
   selectIsAuthenticated,
   selectIsSessionResolved,
 } from "../../store/slices/authSlice";
+import { uk } from "../../i18n/uk";
 import styles from "./AuthForm.module.scss";
+
+const t = uk.auth.login;
+
+/**
+ * Акаунт для демо-розгортання. Мок пускає будь-яку пошту з «@» і будь-який
+ * непорожній пароль (`api/authApi.ts`), тож гість — це не обхід входу, а той
+ * самий вхід із заздалегідь відомими даними: одна кнопка замість форми.
+ *
+ * Коли Фаза 6, пункт 6.3 відкриє перший урок без акаунта, ця кнопка стає
+ * зайвою — публічний шар робить те саме чесніше й без сесії.
+ */
+const GUEST = { email: "demo@code-nature.app", password: "demo1234" };
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,16 +42,24 @@ export default function LoginPage() {
 
   if (isAuth) return <Navigate to="/student" replace />;
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await dispatch(login({ email, password }));
+  const isLoading = status === "loading";
+
+  // Спільний хвіст форми й гостьової кнопки: редірект лише на успіх, бо
+  // `login` на помилці резолвиться теж — помилку показує `error` вище.
+  const enter = async (payload: typeof GUEST) => {
+    const res = await dispatch(login(payload));
     if (login.fulfilled.match(res)) navigate("/student", { replace: true });
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void enter({ email, password });
   };
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.title}>Login</h2>
-      <p className={styles.subtitle}>Welcome back! Continue learning ✨</p>
+      <h2 className={styles.title}>{t.title}</h2>
+      <p className={styles.subtitle}>{t.subtitle}</p>
 
       <form onSubmit={onSubmit} className={styles.form}>
         <input
@@ -46,7 +67,7 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
-          placeholder="Email"
+          placeholder={t.email}
           required
         />
 
@@ -55,19 +76,33 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           type="password"
-          placeholder="Password"
+          placeholder={t.password}
           required
         />
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <button className={styles.button} disabled={status === "loading"}>
-          {status === "loading" ? "Loading..." : "Login"}
+        <button className={styles.button} disabled={isLoading}>
+          {isLoading ? t.loading : t.submit}
         </button>
       </form>
 
-      <p className={styles.link}>
-        No account? <Link to="/register">Register</Link>
+      {/* Поза формою навмисно: інакше `required` в полях не дав би натиснути. */}
+      <button
+        type="button"
+        className={styles.buttonGhost}
+        onClick={() => void enter(GUEST)}
+        disabled={isLoading}
+      >
+        {t.guest}
+      </button>
+      <p className={styles.hint}>{t.guestHint}</p>
+
+      <p className={styles.footer}>
+        {t.noAccount}{" "}
+        <Link className={styles.link} to="/register">
+          {t.register}
+        </Link>
       </p>
     </div>
   );

@@ -1,26 +1,37 @@
 @use "../../styles/variables" as v;
 
+/*
+ * Теорія — крок у головній колонці, а не текст у бічній шухляді.
+ *
+ * Розміри нижче були підібрані під панель завширшки з третину екрана: 14px
+ * приглушеним кольором і щільні проміжки. У колонці шириною для читання це
+ * вже не теорія, а підпис під чимось іншим — тому розмір, міжрядковий інтервал
+ * і колір тут такі, якими читають, а не переглядають.
+ *
+ * Це мінімум, якого вимагає сам крок, а не візуальний прохід: типографіка
+ * й ритм відступів лишаються за Фазою 6b, на екранах, які вже не переписують.
+ */
 .blocks {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .text {
   margin: 0;
-  color: v.$text-muted;
-  font-size: 14px;
-  line-height: 1.6;
+  color: v.$text-main;
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .list {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 
-  color: v.$text-muted;
-  font-size: 14px;
-  line-height: 1.55;
+  color: v.$text-main;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .code {
@@ -34,8 +45,8 @@
   pre {
     margin: 0;
     font-family: v.$font-code;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.6;
     color: v.$text-main;
   }
 }
@@ -52,11 +63,11 @@
   border-radius: v.$radius-sm;
   border: 1px solid rgb(#{v.$accent-blue-rgb} / 0.35);
   background: rgb(#{v.$accent-blue-rgb} / 0.12);
-  padding: 10px 12px;
+  padding: 12px 14px;
 
   color: v.$text-muted;
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .noteWarning {

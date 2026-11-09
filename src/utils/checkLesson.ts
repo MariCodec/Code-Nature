@@ -12,7 +12,7 @@ import type {
 } from "../sandbox/useSandbox";
 
 interface CheckLessonProps {
-  lesson: Pick<LessonDTO, "id" | "validationType" | "tasks" | "videos">;
+  lesson: Pick<LessonDTO, "id" | "validationType" | "tasks">;
   /**
    * Round-trip до пісочниці. Документ звідси не передається: сторінку складає
    * агент із файлів, які вже показані через `run` — як саме файли стають
@@ -21,7 +21,6 @@ interface CheckLessonProps {
   runCheck: (tasks: SandboxCheckTask[]) => Promise<SandboxCheckOutcome>;
   /** Уже зараховані завдання — щоб питання техчека не «губились» при запуску коду. */
   passedTaskIds?: Record<string, boolean>;
-  isVideoWatched: boolean;
   dispatch: AppDispatch;
 }
 
@@ -41,7 +40,6 @@ export const checkLesson = async ({
   lesson,
   runCheck,
   passedTaskIds,
-  isVideoWatched,
   dispatch,
 }: CheckLessonProps): Promise<SandboxCheckOutcome> => {
   if (!lesson.tasks.length) return { status: "done", results: [] };
@@ -72,10 +70,8 @@ export const checkLesson = async ({
   const completion = getLessonCompletion({
     validationType: lesson.validationType,
     tasks: lesson.tasks,
-    videos: lesson.videos,
     taskStatus,
-    isVideoWatched,
-    // Явна дія «Пройдено» живе на сторінці уроку — там, де немає завдань.
+    // Явна дія учня живе на сторінці уроку — там, де немає завдань.
     // Сюди вона дійти не може: цей файл викликається кнопкою Run, а Run є
     // лише в уроків із редактором, тобто саме там, де завдання є.
     isMarkedDone: false,

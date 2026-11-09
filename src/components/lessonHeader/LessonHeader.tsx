@@ -1,4 +1,5 @@
 import type { LessonKind } from "../../types/content";
+import { uk } from "../../i18n/uk";
 import styles from "./LessonHeader.module.scss";
 
 interface LessonHeaderProps {
@@ -22,19 +23,19 @@ export default function LessonHeader({
       className={`${styles.lessonHeader} ${isTechCheck ? styles.techCheck : ""}`}
     >
       <div className={styles.lessonTitle}>
-        <span className={styles.kindBadge}>
-          {isTechCheck ? "Контрольна перевірка" : "Урок"}
-        </span>
-        <h1>{title}</h1>
+        {/* Бейдж у рядку з назвою, а не над нею: окремим рядком він коштував
+            24px вертикалі на кожному кроці — а на кроці практики кожен піксель
+            висоти йде редакторові. */}
+        <div className={styles.titleRow}>
+          <span className={styles.kindBadge}>
+            {isTechCheck ? uk.techCheck.badge : uk.techCheck.lessonBadge}
+          </span>
+          <h1>{title}</h1>
+        </div>
         <p>{description}</p>
         {isTechCheck && (
           <p className={styles.techCheckNote}>
-            Це підсумок модуля{
-              typeof moduleLessonsCount === "number" && moduleLessonsCount > 0
-                ? ` з ${moduleLessonsCount} уроків`
-                : ""
-            }. Нової теорії тут немає, підказок майже немає — збери рішення сам.
-            Скласти можна з будь-якої спроби.
+            {uk.techCheck.note(moduleLessonsCount ?? 0)}
           </p>
         )}
       </div>

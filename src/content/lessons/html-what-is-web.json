@@ -62,8 +62,7 @@
       "thumbnailUrl": null,
       "transcript": null,
       "captionsUrl": null,
-      "orderIndex": 1,
-      "isRequired": true
+      "orderIndex": 1
     }
   ],
   "tasks": []

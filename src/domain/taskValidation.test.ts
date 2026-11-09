@@ -58,7 +58,6 @@ describe("checkTask: що не зараховується мовчки", () => {
       kind: "quiz",
       options: [{ id: "a", text: "а" }],
       correctOptionIds: ["a"],
-      explanation: "",
     };
 
     expect(firstFailure(parsed("<p>x</p>"), quiz)).toEqual({

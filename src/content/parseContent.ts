@@ -311,7 +311,6 @@ function parseTaskRules(issues: ContentIssue[], raw: unknown, where: string): Ta
         return option;
       }),
       correctOptionIds: s.strings("correctOptionIds"),
-      explanation: s.str("explanation"),
     };
 
     if (selectionMode !== undefined) {
@@ -375,7 +374,24 @@ function parseTask(issues: ContentIssue[], raw: unknown, where: string): LessonT
     orderIndex: s.num("orderIndex"),
     rules: parseTaskRules(issues, s.raw("rules"), `${where}.rules`),
     hints: s.raw("hints") === undefined ? [] : s.strings("hints"),
+    explanation: s.raw("explanation") === undefined ? "" : s.str("explanation"),
   };
+
+  /**
+   * Пояснення необовʼязкове взагалі, але обовʼязкове для **питання**, і перевірка
+   * стоїть тут, а не в типі: поле живе на завданні, а вимога — лише до одного
+   * виду правил. Доки `explanation` лежало всередині `QuizTaskRules`, цю вимогу
+   * тримав парсер правил; переїзд не має її мовчки знімати.
+   *
+   * Ціна пропуску найвища з можливих: техчек — це ворота, а пояснення там
+   * заміна викладача. Без нього учень бачить саме «неправильно» й тицяє навмання.
+   */
+  if (task.rules.kind === "quiz" && task.explanation.trim() === "")
+    issues.push({
+      where: `${where}.explanation`,
+      message: "питання без пояснення: учень побачить «неправильно» і не дізнається чому",
+    });
+
   s.done();
   return task;
 }
@@ -631,7 +647,6 @@ function parseVideo(issues: ContentIssue[], raw: unknown, where: string): Lesson
     transcript: s.strOrNull("transcript"),
     captionsUrl: s.strOrNull("captionsUrl"),
     orderIndex: s.num("orderIndex"),
-    isRequired: s.bool("isRequired"),
   };
   s.done();
   return video;
