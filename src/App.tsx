@@ -25,7 +25,13 @@ function App() {
   return (
     <>
       <AppInitializer />
-      <Router>
+      {/*
+        `basename` — з конфіга Vite, не константою: локально це `/`, на демо
+        `/code-nature/`. Без нього роутер читав би `/code-nature/login` цілком
+        і не знаходив жодного маршруту — сторінка входу віддавала б «Такої
+        сторінки немає», і так само кожна адреса демо.
+      */}
+      <Router basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

@@ -62,6 +62,31 @@ const readCatalog = (): CatalogDTO => {
   return catalog;
 };
 
+/**
+ * Ассети лежать у `public/`, тож їхня адреса залежить від префікса, під яким
+ * стоїть застосунок: локально `/`, на GitHub Pages — `/code-nature/`.
+ * У JSON url записана від кореня (`/content/assets/beans.svg`), бо в `srcdoc`
+ * пісочниці відносна адреса ні до чого не прив'язана — там потрібна абсолютна.
+ *
+ * Перерахунок живе тут, у мок-джерелі контенту: саме воно знає, де лежать його
+ * власні файли. У Фазі 8 адреси почне віддавати сервер, і ця функція зникне
+ * разом із мокою, а не лишиться переписувати чужі url.
+ */
+const withBaseAssets = (lesson: LessonDTO): LessonDTO => {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  if (base === "" || lesson.assets.length === 0) return lesson;
+
+  return {
+    ...lesson,
+    assets: lesson.assets.map((asset) =>
+      // `//cdn/...` — чужий хост, його не чіпаємо.
+      asset.url.startsWith("/") && !asset.url.startsWith("//")
+        ? { ...asset, url: `${base}${asset.url}` }
+        : asset,
+    ),
+  };
+};
+
 const readLessons = (): LessonDTO[] => {
   const lessons = Object.entries(lessonModules)
     // Порядок теки залежить від файлової системи, а каталог має бути однаковий
@@ -70,7 +95,7 @@ const readLessons = (): LessonDTO[] => {
     .map(([path, module]) => {
       const { lesson, issues } = parseLesson(module.default, path);
       report(path, issues);
-      return lesson;
+      return withBaseAssets(lesson);
     });
 
   // Посилання між уроками видно лише тоді, коли прочитані всі: розбір одного
